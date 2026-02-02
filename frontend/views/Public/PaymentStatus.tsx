@@ -12,40 +12,52 @@ export const PaymentStatusView: React.FC = () => {
   const sessionId = searchParams.get('sessionId');
   const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
-  const [status, setStatus] = useState<'checking' | 'success' | 'failed' | 'pending'>('checking');
+  const [status, setStatus] = useState<'checking' | 'success' | 'failed' | 'pending' | 'expired'>('checking');
   const [tickets, setTickets] = useState<any[]>([]);
 
   useEffect(() => {
+    if (!sessionId) return;
+    let isMounted = true;
+    let pollId: number | undefined;
+
     const checkStatus = async () => {
-      if (!sessionId) return;
       try {
-        const data = await apiService.getOrderStatus(sessionId);
+        const data = await apiService.getPaymentStatus(sessionId);
+        if (!isMounted) return;
         if (data) {
           setOrder(data);
           if (data.status === 'PAID') {
             setStatus('success');
             const tix = await apiService.getTicketsByOrder(sessionId);
-            setTickets(Array.isArray(tix) ? tix : []);
+            if (isMounted) setTickets(Array.isArray(tix) ? tix : []);
+            if (pollId) window.clearInterval(pollId);
           } else if (data.status === 'FAILED') {
             setStatus('failed');
-          } else if (data.status === 'PENDING_PAYMENT') {
-            // For demo, treat pending as success after redirect
-            setStatus('success');
-            const tix = await apiService.getTicketsByOrder(sessionId);
-            setTickets(Array.isArray(tix) ? tix : []);
+            if (pollId) window.clearInterval(pollId);
+          } else if (data.status === 'EXPIRED') {
+            setStatus('expired');
+            if (pollId) window.clearInterval(pollId);
           } else {
             setStatus('pending');
           }
         } else {
           setStatus('failed');
+          if (pollId) window.clearInterval(pollId);
         }
       } catch (err) {
         console.error(err);
-        setStatus('failed');
+        if (isMounted) setStatus('failed');
+        if (pollId) window.clearInterval(pollId);
       }
     };
-    
+
     checkStatus();
+    pollId = window.setInterval(checkStatus, 5000);
+
+    return () => {
+      isMounted = false;
+      if (pollId) window.clearInterval(pollId);
+    };
   }, [sessionId]);
 
   const renderContent = () => {
@@ -114,6 +126,21 @@ export const PaymentStatusView: React.FC = () => {
             </p>
             <Button className="w-full max-w-xs bg-[#2F80ED] hover:bg-[#1F3A5F] text-white" variant="primary" size="lg" onClick={() => navigate('/events')}>
               Try Again
+            </Button>
+          </div>
+        );
+      case 'expired':
+        return (
+          <div className="flex flex-col items-center py-10 px-6 text-center">
+            <div className="w-20 h-20 bg-[#1F3A5F]/10 text-[#1F3A5F] rounded-full flex items-center justify-center mb-6">
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v5m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+            <h1 className="text-3xl font-black text-[#1F3A5F] mb-2">Reservation Expired</h1>
+            <p className="text-[#1F3A5F]/60 max-w-sm mb-8">
+              Your payment window expired before completion. Please select your tickets again to continue.
+            </p>
+            <Button className="w-full max-w-xs bg-[#2F80ED] hover:bg-[#1F3A5F] text-white" variant="primary" size="lg" onClick={() => navigate('/events')}>
+              Back to Events
             </Button>
           </div>
         );

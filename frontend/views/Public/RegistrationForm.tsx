@@ -120,10 +120,10 @@ export const RegistrationForm: React.FC = () => {
   const grandTotal = selectedItems.reduce((acc, item) => acc + (item.ticket.priceAmount * item.qty), 0);
 
   return (
-    <div className="min-h-screen bg-[#F4F6F8] py-10 px-6 lg:py-16 animate-in fade-in duration-700">
+    <div className="min-h-screen bg-[#F4F6F8] px-4 py-8 sm:px-6 sm:py-10 lg:py-16 animate-in fade-in duration-700">
       <div className="max-w-6xl mx-auto">
         
-        <div className="mb-10">
+        <div className="mb-8 sm:mb-10">
           <button 
             onClick={() => navigate(-1)} 
             className="group flex items-center gap-2 text-[#1F3A5F]/50 hover:text-[#2F80ED] font-black text-[9px] uppercase tracking-[0.2em] transition-colors mb-4"
@@ -131,7 +131,7 @@ export const RegistrationForm: React.FC = () => {
             <svg className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
             Change Selection
           </button>
-          <h1 className="text-4xl lg:text-5xl font-black text-[#1F3A5F] tracking-tighter mb-2 leading-none">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#1F3A5F] tracking-tighter mb-2 leading-tight sm:leading-none">
             Complete Registration
           </h1>
           <div className="flex items-center gap-3">
@@ -144,13 +144,13 @@ export const RegistrationForm: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-10 items-start">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 items-start">
           
           <div className="flex-1 w-full">
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <Card className="p-8 lg:p-12 border-none shadow-[0_30px_60px_-15px_rgba(0,0,0,0.02)] ring-1 ring-[#F4F6F8] rounded-[3rem] bg-white relative overflow-hidden">
+            <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
+              <Card className="p-6 sm:p-8 lg:p-12 border-none shadow-[0_30px_60px_-15px_rgba(0,0,0,0.02)] ring-1 ring-[#F4F6F8] rounded-[2rem] sm:rounded-[3rem] bg-white relative overflow-hidden">
                 <div className="relative z-10">
-                  <div className="flex items-center justify-center gap-6 mb-12">
+                  <div className="flex items-center justify-center gap-6 mb-8 sm:mb-12">
                     <div className="w-12 h-px bg-[#F4F6F8]"></div>
                     <h3 className="text-[11px] font-black text-[#2F80ED] uppercase tracking-[0.4em] whitespace-nowrap text-center">
                       Primary Registrant
@@ -158,42 +158,42 @@ export const RegistrationForm: React.FC = () => {
                     <div className="w-12 h-px bg-[#F4F6F8]"></div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 sm:gap-x-8 gap-y-6 sm:gap-y-8">
                     <div className="space-y-2">
-                      <label className="text-[13px] font-bold text-[#1F3A5F]/70 ml-1">Full Name *</label>
+                      <label className="text-[12px] sm:text-[13px] font-bold text-[#1F3A5F]/70 ml-1">Full Name *</label>
                       <Input 
                         placeholder="Full name as per identification" 
-                        className="py-5 px-6 rounded-[1.25rem] font-bold bg-[#F4F6F8] border-transparent focus:bg-white focus:border-[#2F80ED]/30 text-[#1F3A5F] placeholder:text-[#1F3A5F]/40 transition-all text-[15px] shadow-sm"
+                        className="py-4 sm:py-5 px-5 sm:px-6 rounded-[1.25rem] font-bold bg-[#F4F6F8] border-transparent focus:bg-white focus:border-[#2F80ED]/30 text-[#1F3A5F] placeholder:text-[#1F3A5F]/40 transition-all text-[14px] sm:text-[15px] shadow-sm"
                         value={formData.name}
                         onChange={(e: any) => setFormData({...formData, name: e.target.value})}
                         error={errors.name}
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[13px] font-bold text-[#1F3A5F]/70 ml-1">Email Address *</label>
+                      <label className="text-[12px] sm:text-[13px] font-bold text-[#1F3A5F]/70 ml-1">Email Address *</label>
                       <Input 
                         type="email" 
                         placeholder="name@organization.com" 
-                        className="py-5 px-6 rounded-[1.25rem] font-bold bg-[#F4F6F8] border-transparent focus:bg-white focus:border-[#2F80ED]/30 text-[#1F3A5F] placeholder:text-[#1F3A5F]/40 transition-all text-[15px] shadow-sm"
+                        className="py-4 sm:py-5 px-5 sm:px-6 rounded-[1.25rem] font-bold bg-[#F4F6F8] border-transparent focus:bg-white focus:border-[#2F80ED]/30 text-[#1F3A5F] placeholder:text-[#1F3A5F]/40 transition-all text-[14px] sm:text-[15px] shadow-sm"
                         value={formData.email}
                         onChange={(e: any) => setFormData({...formData, email: e.target.value})}
                         error={errors.email}
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[13px] font-bold text-[#1F3A5F]/70 ml-1">Contact Number</label>
+                      <label className="text-[12px] sm:text-[13px] font-bold text-[#1F3A5F]/70 ml-1">Contact Number</label>
                       <Input 
                         placeholder="+63 ...." 
-                        className="py-5 px-6 rounded-[1.25rem] font-bold bg-[#F4F6F8] border-transparent focus:bg-white focus:border-[#2F80ED]/30 text-[#1F3A5F] placeholder:text-[#1F3A5F]/40 transition-all text-[15px] shadow-sm"
+                        className="py-4 sm:py-5 px-5 sm:px-6 rounded-[1.25rem] font-bold bg-[#F4F6F8] border-transparent focus:bg-white focus:border-[#2F80ED]/30 text-[#1F3A5F] placeholder:text-[#1F3A5F]/40 transition-all text-[14px] sm:text-[15px] shadow-sm"
                         value={formData.phone}
                         onChange={(e: any) => setFormData({...formData, phone: e.target.value})}
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[13px] font-bold text-[#1F3A5F]/70 ml-1">Company</label>
+                      <label className="text-[12px] sm:text-[13px] font-bold text-[#1F3A5F]/70 ml-1">Company</label>
                       <Input 
                         placeholder="Organization / Entity" 
-                        className="py-5 px-6 rounded-[1.25rem] font-bold bg-[#F4F6F8] border-transparent focus:bg-white focus:border-[#2F80ED]/30 text-[#1F3A5F] placeholder:text-[#1F3A5F]/40 transition-all text-[15px] shadow-sm"
+                        className="py-4 sm:py-5 px-5 sm:px-6 rounded-[1.25rem] font-bold bg-[#F4F6F8] border-transparent focus:bg-white focus:border-[#2F80ED]/30 text-[#1F3A5F] placeholder:text-[#1F3A5F]/40 transition-all text-[14px] sm:text-[15px] shadow-sm"
                         value={formData.company}
                         onChange={(e: any) => setFormData({...formData, company: e.target.value})}
                       />
@@ -226,7 +226,7 @@ export const RegistrationForm: React.FC = () => {
                 <Button 
                   type="submit" 
                   size="lg" 
-                  className="flex-[2] py-5 rounded-2xl shadow-xl shadow-[#2F80ED]/20 font-black text-lg transition-all hover:scale-[1.01] bg-[#2F80ED]" 
+                  className="flex-[2] py-4 sm:py-5 rounded-2xl shadow-xl shadow-[#2F80ED]/20 font-black text-base sm:text-lg transition-all hover:scale-[1.01] bg-[#2F80ED]" 
                   disabled={submitting}
                 >
                   {submitting ? (
@@ -240,7 +240,7 @@ export const RegistrationForm: React.FC = () => {
                   type="button" 
                   variant="outline" 
                   size="lg" 
-                  className="flex-1 py-5 rounded-2xl text-[#1F3A5F]/50 font-black uppercase tracking-widest text-[10px] border-2 border-[#F4F6F8] transition-all" 
+                  className="flex-1 py-4 sm:py-5 rounded-2xl text-[#1F3A5F]/50 font-black uppercase tracking-widest text-[10px] border-2 border-[#F4F6F8] transition-all" 
                   onClick={() => navigate(-1)}
                 >
                   Cancel
@@ -259,11 +259,11 @@ export const RegistrationForm: React.FC = () => {
           </div>
 
           {/* High-Contrast Reservation Summary */}
-          <div className="w-full lg:w-[400px] shrink-0 sticky top-10">
-            <Card className="bg-white border-2 border-[#F4F6F8] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] rounded-[2.5rem] overflow-hidden p-0">
-              <div className="p-8 lg:p-10 space-y-10">
+          <div className="w-full lg:w-[400px] shrink-0 lg:sticky lg:top-10">
+            <Card className="bg-white border-2 border-[#F4F6F8] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden p-0">
+              <div className="p-6 sm:p-8 lg:p-10 space-y-8 sm:space-y-10">
                 <div className="flex items-center justify-between border-b border-[#F4F6F8] pb-6">
-                  <h3 className="font-black text-[11px] text-[#2F80ED] uppercase tracking-[0.4em] flex items-center gap-3">
+                  <h3 className="font-black text-[10px] sm:text-[11px] text-[#2F80ED] uppercase tracking-[0.4em] flex items-center gap-3">
                     <ICONS.Calendar className="w-4 h-4" />
                     Reservation Summary
                   </h3>
@@ -271,11 +271,11 @@ export const RegistrationForm: React.FC = () => {
                 
                 <div className="space-y-10">
                   {/* Line Items */}
-                  <div className="space-y-8">
+                  <div className="space-y-6 sm:space-y-8">
                     {selectedItems.map((item, idx) => (
                       <div key={idx} className="flex justify-between items-start group">
                         <div className="flex-1 pr-6">
-                          <p className="font-black text-[#1F3A5F] text-base uppercase tracking-tight leading-tight mb-2 group-hover:text-[#2F80ED] transition-colors">
+                          <p className="font-black text-[#1F3A5F] text-[13px] sm:text-base uppercase tracking-tight leading-tight mb-2 group-hover:text-[#2F80ED] transition-colors">
                             {item.ticket.name}
                           </p>
                           <div className="flex items-center gap-2.5">
@@ -286,7 +286,7 @@ export const RegistrationForm: React.FC = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <span className="text-lg font-black text-[#1F3A5F] tracking-tighter block">
+                          <span className="text-base sm:text-lg font-black text-[#1F3A5F] tracking-tighter block">
                             PHP {(item.ticket.priceAmount * item.qty).toLocaleString()}
                           </span>
                           <span className="text-[9px] text-[#1F3A5F]/40 font-black uppercase tracking-widest block mt-0.5">
@@ -298,10 +298,10 @@ export const RegistrationForm: React.FC = () => {
                   </div>
                   
                   {/* Fee Breakdown */}
-                  <div className="pt-8 border-t border-[#F4F6F8] space-y-4">
+                  <div className="pt-6 sm:pt-8 border-t border-[#F4F6F8] space-y-4">
                     <div className="flex justify-between items-center text-[#1F3A5F]/50">
                       <span className="text-[9px] font-black uppercase tracking-[0.2em]">Platform Subtotal</span>
-                      <span className="text-[11px] font-black tracking-widest">PHP {grandTotal.toLocaleString()}</span>
+                      <span className="text-[10px] sm:text-[11px] font-black tracking-widest">PHP {grandTotal.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-[9px] font-black text-[#1F3A5F]/50 uppercase tracking-[0.2em]">HitPay Service Fee</span>
@@ -312,17 +312,17 @@ export const RegistrationForm: React.FC = () => {
                   </div>
 
                   {/* Grand Total Footer */}
-                  <div className="pt-8 border-t-2 border-[#F4F6F8]">
+                  <div className="pt-6 sm:pt-8 border-t-2 border-[#F4F6F8]">
                     <div className="flex justify-between items-end">
                       <div className="space-y-1.5">
                         <span className="text-[10px] font-black text-[#2F80ED] uppercase tracking-[0.4em] block">Grand Total</span>
-                        <span className="text-4xl font-black text-[#1F3A5F] tracking-tighter block leading-none">
+                        <span className="text-3xl sm:text-4xl font-black text-[#1F3A5F] tracking-tighter block leading-none">
                           {grandTotal === 0 ? 'FREE' : `PHP ${grandTotal.toLocaleString()}`}
                         </span>
                       </div>
                       <div className="pb-1">
-                        <div className="w-12 h-12 bg-[#F4F6F8] text-[#2F80ED] rounded-xl flex items-center justify-center border border-[#F4F6F8] shadow-sm">
-                           <ICONS.CheckCircle className="w-6 h-6" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#F4F6F8] text-[#2F80ED] rounded-xl flex items-center justify-center border border-[#F4F6F8] shadow-sm">
+                           <ICONS.CheckCircle className="w-5 h-5 sm:w-6 sm:h-6" />
                         </div>
                       </div>
                     </div>
@@ -330,7 +330,7 @@ export const RegistrationForm: React.FC = () => {
                 </div>
 
                 {/* Delivery Information */}
-                <div className="mt-2 pt-8 border-t border-[#F4F6F8]">
+                <div className="mt-2 pt-6 sm:pt-8 border-t border-[#F4F6F8]">
                    <div className="flex items-center gap-4 bg-[#F4F6F8] p-4 rounded-2xl border border-[#F4F6F8] group transition-all">
                       <div className="p-2.5 bg-white text-[#2F80ED] rounded-lg shadow-sm group-hover:scale-105 transition-transform border border-[#F4F6F8]">
                         <ICONS.CreditCard className="w-5 h-5" />
@@ -344,7 +344,7 @@ export const RegistrationForm: React.FC = () => {
               </div>
             </Card>
             
-            <div className="mt-8 px-10 text-center">
+            <div className="mt-6 sm:mt-8 px-2 sm:px-10 text-center">
               <p className="text-[9px] text-[#1F3A5F]/40 font-bold leading-relaxed uppercase tracking-[0.2em]">
                 Enterprise Shield • Secure Checkout
               </p>

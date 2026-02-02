@@ -46,7 +46,10 @@ export async function createInviteAndSend(req, res) {
     const { error: inviteError } = await db.from('invites').insert({ email, token, role, expiresAt });
     if (inviteError) return res.status(500).json({ error: inviteError.message });
 
-    const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
+    const frontendUrl = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
+    if (!frontendUrl) {
+      return res.status(500).json({ error: 'FRONTEND_URL is not set' });
+    }
     const inviteLink = `${frontendUrl}/#/accept-invite?token=${token}`;
 
     const webhookRes = await sendMakeNotification({

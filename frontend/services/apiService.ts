@@ -18,7 +18,7 @@ const initializeData = () => {
 
 initializeData();
 
-const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 export const apiService = {
   
@@ -82,10 +82,9 @@ export const apiService = {
     return payload;
   },
 
-  // GET /api/payments/status?sessionId=... 
-  // We use Order ID as session ID for simplicity in mock
-  getOrderStatus: async (orderId: string): Promise<Order | null> => {
-    const res = await fetch(`${API_BASE}/api/orders/${encodeURIComponent(orderId)}`, {
+  // GET /api/payments/status?sessionId=...
+  getPaymentStatus: async (orderId: string): Promise<Order | null> => {
+    const res = await fetch(`${API_BASE}/api/payments/status?sessionId=${encodeURIComponent(orderId)}`, {
       credentials: 'include'
     });
     if (res.status === 404) return null;
@@ -259,13 +258,68 @@ export const apiService = {
     return res.json();
   },
 
-  getRecentTransactions: async () => {
-    const res = await fetch(`${API_BASE}/api/analytics/transactions`, {
+  getRecentTransactions: async (page = 1, limit = 10) => {
+    const res = await fetch(`${API_BASE}/api/analytics/transactions?page=${page}&limit=${limit}`, {
       credentials: 'include'
     });
     if (!res.ok) {
       const text = await res.text().catch(() => '');
       throw new Error(text || `Failed to load transactions: ${res.status}`);
+    }
+    return res.json();
+  },
+
+  getRecentOrders: async (page = 1, limit = 10) => {
+    const res = await fetch(`${API_BASE}/api/analytics/orders?page=${page}&limit=${limit}`, {
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || `Failed to load orders: ${res.status}`);
+    }
+    return res.json();
+  },
+
+  getAuditLogs: async (page = 1, limit = 10) => {
+    const res = await fetch(`${API_BASE}/api/analytics/audit-logs?page=${page}&limit=${limit}`, {
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || `Failed to load audit logs: ${res.status}`);
+    }
+    return res.json();
+  },
+
+  getTransactionDetail: async (orderId: string) => {
+    const res = await fetch(`${API_BASE}/api/analytics/transactions/${encodeURIComponent(orderId)}`, {
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || `Failed to load transaction: ${res.status}`);
+    }
+    return res.json();
+  },
+
+  getOrderDetail: async (orderId: string) => {
+    const res = await fetch(`${API_BASE}/api/analytics/orders/${encodeURIComponent(orderId)}`, {
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || `Failed to load order: ${res.status}`);
+    }
+    return res.json();
+  },
+
+  getAuditLogDetail: async (auditLogId: string) => {
+    const res = await fetch(`${API_BASE}/api/analytics/audit-logs/${encodeURIComponent(auditLogId)}`, {
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || `Failed to load audit log: ${res.status}`);
     }
     return res.json();
   },

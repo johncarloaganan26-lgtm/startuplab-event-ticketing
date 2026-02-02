@@ -1,4 +1,5 @@
 import supabase from '../database/db.js';
+import { logAudit } from '../utils/auditLogger.js';
 
 export const listTickets = async (req, res) => {
   try {
@@ -277,6 +278,26 @@ export const checkInTicket = async (req, res) => {
       .select('*')
       .maybeSingle();
     if (updErr) return res.status(500).json({ error: updErr.message });
+
+    console.log('[CheckIn] Ticket used', {
+      ticketId: ticket.ticketId,
+      ticketCode: ticket.ticketCode,
+      eventId: ticket.eventId,
+      orderId: ticket.orderId,
+      usedAt: now
+    });
+
+    await logAudit({
+      actionType: 'TICKET_CHECKIN',
+      orderId: ticket.orderId,
+      ticketId: ticket.ticketId,
+      details: {
+        ticketCode: ticket.ticketCode,
+        eventId: ticket.eventId,
+        usedAt: now
+      },
+      req
+    });
 
     // fetch attendee info
     const { data: attendee, error: attErr } = await supabase

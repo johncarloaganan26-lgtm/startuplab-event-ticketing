@@ -5,6 +5,8 @@ import { ICONS } from '../../constants';
 import { UserRole } from '../../types';
 import { apiService } from '../../services/apiService';
 
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 // Refined granular permissions for staff as per developer brief
 type PermissionCategory = 'view_events' | 'edit_events' | 'manual_checkin';
 
@@ -25,8 +27,7 @@ export const SettingsView: React.FC = () => {
   
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   React.useEffect(() => {
-    const API = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:5000';
-    fetch(`${API}/api/users/all`, { credentials: 'include' })
+    fetch(`${API_BASE}/api/users/all`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         const mapped = Array.isArray(data)
@@ -89,8 +90,7 @@ export const SettingsView: React.FC = () => {
 
   const handleInviteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const API = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:5000';
-    const res = await fetch(`${API}/api/invite/create-and-send`, {
+    const res = await fetch(`${API_BASE}/api/invite/create-and-send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -319,7 +319,7 @@ export const SettingsView: React.FC = () => {
                     <div>
                       <p className="text-[10px] font-black text-[#1F3A5F]/50 uppercase tracking-widest mb-4">Callback URL</p>
                       <div className="bg-white px-5 py-4 rounded-xl border border-[#F4F6F8] text-[11px] font-mono text-[#1F3A5F]/60 break-all leading-relaxed shadow-sm">
-                        https://api.startuplab.co/v1/payments/hitpay/callback
+                        {import.meta.env.VITE_HITPAY_CALLBACK_URL}
                       </div>
                     </div>
                   </div>

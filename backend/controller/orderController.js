@@ -5,6 +5,15 @@
 import supabase from '../database/db.js';
 import { randomUUID } from 'crypto';
 import { sendMakeNotification } from '../utils/makeWebhook.js';
+import { logAudit } from '../utils/auditLogger.js';
+
+const getReservationTtlMs = () => {
+  const raw = process.env.RESERVATION_TTL_MINUTES;
+  if (!raw) return 15 * 60 * 1000;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) return 15 * 60 * 1000;
+  return parsed * 60 * 1000;
+};
 /**
  * POST /api/orders
  * Body: { eventId, buyerName, buyerEmail, items: [{ ticketTypeId, quantity, price }], totalAmount, currency }
@@ -78,6 +87,7 @@ export const createOrder = async (req, res) => {
 
     // 2) Create order
     const isFree = totalAmount === 0;
+    const expiresAt = isFree ? null : new Date(Date.now() + getReservationTtlMs()).toISOString();
     const { data: orderData, error: orderErr } = await supabase
       .from('orders')
       .insert({
@@ -88,7 +98,8 @@ export const createOrder = async (req, res) => {
         totalAmount,
         currency,
         metadata: company ? { company } : null,
-        status: isFree ? 'PAID' : 'PENDING_PAYMENT'
+        status: isFree ? 'PAID' : 'PENDING_PAYMENT',
+        expiresAt
       })
       .select('*')
       .single();
@@ -97,6 +108,29 @@ export const createOrder = async (req, res) => {
       return res.status(500).json({ error: orderErr.message });
     }
     orderId = orderData.orderId;
+
+    console.log('[Orders] Created', {
+      orderId,
+      eventId,
+      totalAmount,
+      currency,
+      status: orderData.status,
+      expiresAt
+    });
+
+    await logAudit({
+      actionType: 'ORDER_CREATED',
+      orderId,
+      details: {
+        eventId,
+        totalAmount,
+        currency,
+        status: orderData.status,
+        expiresAt,
+        isFree
+      },
+      req
+    });
 
     // 3) Create order items
     for (const item of items) {
@@ -141,7 +175,7 @@ export const createOrder = async (req, res) => {
           }
 
           const ticketCode = randomUUID();
-          const { error: ticketErr } = await supabase
+          const { data: ticketData, error: ticketErr } = await supabase
             .from('tickets')
             .insert({
               eventId,
@@ -151,14 +185,30 @@ export const createOrder = async (req, res) => {
               ticketCode,
               qrPayload: ticketCode,
               status: 'ISSUED'
-            });
+            })
+            .select('ticketId')
+            .maybeSingle();
           if (ticketErr) {
             await cleanupOrder();
             return res.status(500).json({ error: ticketErr.message });
           }
+          await logAudit({
+            actionType: 'TICKET_ISSUED',
+            orderId,
+            ticketId: ticketData?.ticketId || null,
+            details: {
+              ticketTypeId,
+              source: 'FREE_ORDER'
+            },
+            req
+          });
           issuedTickets.push({ ticketCode, qrPayload: ticketCode, status: 'ISSUED' });
         }
       }
+    }
+
+    if (isFree && issuedTickets.length) {
+      console.log('[Tickets] Issued for free order', { orderId, count: issuedTickets.length });
     }
 
     // Notify Make.com for free orders (one webhook per ticket)
