@@ -176,11 +176,27 @@ const computeHmac = (message, digest = 'hex') => {
   return crypto.createHmac('sha256', HITPAY_SALT).update(message).digest(digest)
 }
 
+const safeDecode = (value) => {
+  try {
+    return decodeURIComponent(String(value).replace(/\+/g, '%20'))
+  } catch (err) {
+    return String(value)
+  }
+}
+
+const safeEncode = (value) => {
+  try {
+    return encodeURIComponent(String(value))
+  } catch (err) {
+    return String(value)
+  }
+}
+
 const computeLegacyHmac = (payloadObj) => {
   const entries = Object.entries(payloadObj)
-    .filter(([k]) => k !== 'hmac' && payloadObj[k] !== undefined && payloadObj[k] !== null)
+    .filter(([k, v]) => k !== 'hmac' && v !== undefined && v !== null && v !== '')
     .sort(([a], [b]) => a.localeCompare(b))
-  const message = entries.map(([k, v]) => `${k}:${v}`).join('|')
+  const message = entries.map(([k, v]) => `${k}${v}`).join('')
   return computeHmac(message, 'hex')
 }
 
@@ -191,14 +207,47 @@ const computeRawSignature = (rawBody) => {
 const buildLegacyHmacCandidates = ({ payload, rawBody }) => {
   const candidates = []
   if (rawBody && rawBody.length) {
-    const rawParts = String(rawBody)
+    const rawString = String(rawBody)
+    candidates.push(rawString)
+    const rawParts = rawString
       .split('&')
       .map((part) => part.trim())
       .filter(Boolean)
     const withoutHmac = rawParts
       .filter((part) => !part.toLowerCase().startsWith('hmac='))
       .join('&')
-    if (withoutHmac) candidates.push(withoutHmac)
+    if (withoutHmac) {
+      candidates.push(withoutHmac)
+      const decodedWithoutHmac = safeDecode(withoutHmac)
+      if (decodedWithoutHmac && decodedWithoutHmac !== withoutHmac) {
+        candidates.push(decodedWithoutHmac)
+      }
+      const plusNormalized = withoutHmac.replace(/\+/g, '%20')
+      const decodedPlusNormalized = safeDecode(plusNormalized)
+      if (
+        decodedPlusNormalized &&
+        decodedPlusNormalized !== withoutHmac &&
+        decodedPlusNormalized !== decodedWithoutHmac
+      ) {
+        candidates.push(decodedPlusNormalized)
+      }
+    }
+
+    const params = new URLSearchParams(rawString)
+    if (params.has('hmac')) params.delete('hmac')
+    const keys = Array.from(new Set(Array.from(params.keys()))).sort((a, b) =>
+      a.localeCompare(b)
+    )
+    const sortedPairs = []
+    for (const key of keys) {
+      const values = params.getAll(key)
+      if (!values.length) values.push('')
+      for (const value of values) {
+        sortedPairs.push(`${safeEncode(key)}=${safeEncode(value)}`)
+      }
+    }
+    const sortedQuery = sortedPairs.join('&')
+    if (sortedQuery) candidates.push(sortedQuery)
   }
 
   const entries = Object.entries(payload || {})
@@ -207,9 +256,15 @@ const buildLegacyHmacCandidates = ({ payload, rawBody }) => {
 
   if (entries.length) {
     const keyValueMessage = entries.map(([key, value]) => `${key}=${value}`).join('&')
+    const keyValueEncoded = entries
+      .map(([key, value]) => `${safeEncode(key)}=${safeEncode(value)}`)
+      .join('&')
     const pipeMessage = entries.map(([key, value]) => `${key}:${value}`).join('|')
+    const concatMessage = entries.map(([key, value]) => `${key}${value}`).join('')
     if (keyValueMessage) candidates.push(keyValueMessage)
+    if (keyValueEncoded && keyValueEncoded !== keyValueMessage) candidates.push(keyValueEncoded)
     if (pipeMessage) candidates.push(pipeMessage)
+    if (concatMessage) candidates.push(concatMessage)
   }
 
   return Array.from(new Set(candidates))
@@ -256,6 +311,20 @@ export const hitpayWebhook = async (req, res) => {
   }
 
   try {
+    console.log('[Webhook Debug] Request received', {
+      hasRawBody: Boolean(req.rawBody),
+      rawBodyLength: req.rawBody?.length || 0,
+      rawBodyPreview: req.rawBody?.substring(0, 100) || null,
+      bodyKeys: Object.keys(req.body || {}),
+      headers: {
+        contentType: req.headers['content-type'],
+        signature:
+          req.headers['hitpay-signature'] ||
+          req.headers['x-hitpay-signature'] ||
+          req.headers['x-signature'] ||
+          null
+      }
+    })
     if (!ensureEnv(res)) return
     const payload = req.body || {}
     const rawBody = typeof req.rawBody === 'string' ? req.rawBody : ''
@@ -313,16 +382,27 @@ export const hitpayWebhook = async (req, res) => {
       })
     } else if (legacyHmac) {
       const legacyCandidates = buildLegacyHmacCandidates({ payload, rawBody })
-      const matchesLegacyHex = legacyCandidates.some((candidate) =>
-        computeHmac(candidate, 'hex').toLowerCase() === legacyHmac.toLowerCase()
+      const legacyCandidateDigests = legacyCandidates.map((candidate) => {
+        const hex = computeHmac(candidate, 'hex')
+        const base64 = computeHmac(candidate, 'base64')
+        return { candidate, hex, base64 }
+      })
+      const matchesLegacyHex = legacyCandidateDigests.some((entry) =>
+        entry.hex.toLowerCase() === legacyHmac.toLowerCase()
       )
-      const matchesLegacyBase64 = legacyCandidates.some((candidate) =>
-        computeHmac(candidate, 'base64') === legacyHmac
-      )
+      const matchesLegacyBase64 = legacyCandidateDigests.some((entry) => entry.base64 === legacyHmac)
+      const legacyCandidatesInfo = legacyCandidateDigests.map((entry) => ({
+        length: entry.candidate.length,
+        hexPrefix: entry.hex.slice(0, 8),
+        hexSuffix: entry.hex.slice(-8),
+        base64Prefix: entry.base64.slice(0, 8),
+        base64Suffix: entry.base64.slice(-8)
+      }))
       if (!matchesLegacyHex && !matchesLegacyBase64) {
         console.error('[Webhook] Legacy signature mismatch', {
           ...signatureDebug,
           legacyCandidatesLengths: legacyCandidates.map((candidate) => candidate.length),
+          legacyCandidatesInfo,
           matchesLegacyHex,
           matchesLegacyBase64
         })
@@ -331,6 +411,7 @@ export const hitpayWebhook = async (req, res) => {
       console.log('[Webhook] Legacy signature verified', {
         ...signatureDebug,
         legacyCandidatesLengths: legacyCandidates.map((candidate) => candidate.length),
+        legacyCandidatesInfo,
         matchesLegacyHex,
         matchesLegacyBase64
       })

@@ -53,6 +53,41 @@ app.use(helmet());
 app.use(morgan("dev"));
 
 app.use(cookieParser());
+app.use(
+  "/api/payments/hitpay/webhook",
+  express.raw({
+    type: ["application/json", "application/x-www-form-urlencoded", "*/*"],
+    limit: "1mb",
+  }),
+  (req, res, next) => {
+    if (Buffer.isBuffer(req.body)) {
+      req.rawBody = req.body.toString("utf8");
+      const contentType = req.headers["content-type"] || "";
+
+      try {
+        if (contentType.includes("application/json")) {
+          req.body = req.rawBody ? JSON.parse(req.rawBody) : {};
+        } else if (contentType.includes("application/x-www-form-urlencoded")) {
+          req.body = Object.fromEntries(new URLSearchParams(req.rawBody));
+        } else {
+          try {
+            req.body = req.rawBody ? JSON.parse(req.rawBody) : {};
+          } catch {
+            try {
+              req.body = Object.fromEntries(new URLSearchParams(req.rawBody));
+            } catch {
+              req.body = {};
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Webhook body parsing error:", err);
+        req.body = {};
+      }
+    }
+    next();
+  }
+);
 app.use(express.json({ verify: rawBodySaver }));
 app.use(express.urlencoded({ extended: false, verify: rawBodySaver }));
 
