@@ -89,7 +89,7 @@ export const createHitpayCheckoutSession = async (req, res) => {
       .from('paymentTransactions')
       .insert({
         orderId: order.orderId,
-        gateway: 'HITPAY',
+        gateway: { name: 'HITPAY' },
         hitpayReferenceId,
         amount: order.totalAmount,
         currency: order.currency,
@@ -428,20 +428,65 @@ export const hitpayWebhook = async (req, res) => {
 
     const externalId = deriveWebhookExternalId({ payload, eventData, rawBody, eventType })
     const receivedAt = new Date().toISOString()
-    const payloadForStorage = payload ? JSON.parse(JSON.stringify(payload)) : null
+
+    // Debug: Log raw payload
+    console.log('[Debug] Raw payload:', {
+      payload,
+      payloadType: typeof payload,
+      payloadKeys: Object.keys(payload || {}),
+      payloadStringified: JSON.stringify(payload)
+    })
+
+    // Safely prepare all JSONB fields
+    const gatewayData = { name: 'HITPAY' }
+
+    console.log('[Debug] Gateway data:', {
+      gatewayData,
+      gatewayStringified: JSON.stringify(gatewayData)
+    })
+
+    const payloadData = payload && typeof payload === 'object'
+      ? Object.fromEntries(
+          Object.entries(payload).filter(([k, v]) => v !== undefined)
+        )
+      : {}
+
+    console.log('[Debug] Cleaned payload data:', {
+      payloadData,
+      payloadDataKeys: Object.keys(payloadData),
+      payloadDataStringified: JSON.stringify(payloadData)
+    })
+
+    console.log('[Debug] About to insert into Supabase:', {
+      gateway: gatewayData,
+      eventType: eventType || null,
+      externalId,
+      payload: payloadData,
+      receivedAt,
+      processingStatus: 'RECEIVED'
+    })
+
     const { data: webhookEvent, error: webhookErr } = await supabase
       .from('webhookEvents')
       .insert({
-        gateway: { name: 'HITPAY' },
+        gateway: gatewayData,
         eventType: eventType || null,
         externalId,
-        payload: payloadForStorage,
+        payload: payloadData,
         receivedAt,
         processingStatus: 'RECEIVED'
       })
       .select('webhookEventsId, processingStatus')
       .single()
     if (webhookErr) {
+      console.error('[Debug] Supabase insert error:', {
+        error: webhookErr,
+        code: webhookErr.code,
+        message: webhookErr.message,
+        details: webhookErr.details,
+        hint: webhookErr.hint
+      })
+
       if (webhookErr.code === '23505') {
         const { data: existing, error: existingErr } = await supabase
           .from('webhookEvents')
@@ -518,12 +563,13 @@ export const hitpayWebhook = async (req, res) => {
       .from('paymentTransactions')
       .select('paymentTransactionId, orderId, gateway, amount, currency, hitpayReferenceId')
       .eq('hitpayReferenceId', hitpayReferenceId)
-      .eq('gateway', 'HITPAY')
+      .contains('gateway', { name: 'HITPAY' })
       .maybeSingle()
     if (txErr) return respondWithError(500, txErr.message)
     if (!tx) return respondWithError(404, 'Payment transaction not found')
     if (!tx.hitpayReferenceId) return respondWithError(400, 'Missing hitpay_reference_id on transaction')
-    if (tx.gateway !== 'HITPAY') return respondWithError(400, 'Invalid payment gateway')
+    const gatewayName = typeof tx.gateway === 'string' ? tx.gateway : tx.gateway?.name
+    if (gatewayName !== 'HITPAY') return respondWithError(400, 'Invalid payment gateway')
     const resolvedTx = tx
 
     // helper: fetch order + items
@@ -577,7 +623,7 @@ export const hitpayWebhook = async (req, res) => {
 
     await supabase
       .from('paymentTransactions')
-      .update({ status: newStatus, rawPayload: payload })
+      .update({ status: newStatus, rawPayload: payloadForStorage })
       .eq('paymentTransactionId', resolvedTx.paymentTransactionId)
 
     if (newStatus === 'SUCCEEDED') {
