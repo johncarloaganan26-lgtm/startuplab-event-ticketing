@@ -228,7 +228,13 @@ export const hitpayWebhook = async (req, res) => {
     if (!ensureEnv(res)) return
     const payload = req.body || {}
     const rawBody = req.rawBody || ''
-    const signatureHeader = req.headers['hitpay-signature']
+    const signatureHeaderRaw =
+      req.headers['hitpay-signature'] ||
+      req.headers['x-hitpay-signature'] ||
+      req.headers['x-signature']
+    const signatureHeader = Array.isArray(signatureHeaderRaw)
+      ? signatureHeaderRaw[0]
+      : signatureHeaderRaw
     const legacyHmac = payload.hmac || req.query?.hmac
 
     if (signatureHeader) {
