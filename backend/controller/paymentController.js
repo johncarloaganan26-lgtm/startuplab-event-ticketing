@@ -238,8 +238,11 @@ export const hitpayWebhook = async (req, res) => {
     const legacyHmac = payload.hmac || req.query?.hmac
 
     if (signatureHeader) {
-      const calculated = computeRawSignature(rawBody)
-      if (calculated !== signatureHeader) {
+      // Normalize: strip 'sha256=' prefix, lower-case for comparison
+      const normalizeSig = sig => String(sig || '').replace(/^sha256=/i, '').toLowerCase();
+      const calculated = normalizeSig(computeRawSignature(rawBody));
+      const received = normalizeSig(signatureHeader);
+      if (calculated !== received) {
         return res.status(401).json({ error: 'Invalid signature' })
       }
     } else if (legacyHmac) {
