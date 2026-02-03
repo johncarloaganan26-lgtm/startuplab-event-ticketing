@@ -129,10 +129,15 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   };
 
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = React.useState(true);
   return (
     <div className="min-h-screen flex bg-[#F4F6F8]">
       {/* Sidebar for desktop */}
-      <aside className="w-72 bg-white border-r border-[#F4F6F8] hidden lg:flex flex-col">
+      <aside
+        className={`w-72 bg-white border-r border-[#F4F6F8] hidden lg:flex flex-col fixed inset-y-0 left-0 z-30 transition-transform duration-300 overflow-y-auto ${
+          desktopSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
 
         <div className="p-8">
           <Link to="/" className="text-lg">
@@ -174,7 +179,11 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col min-w-0">
+      <main
+        className={`flex-1 flex flex-col min-w-0 transition-[padding] duration-300 ${
+          desktopSidebarOpen ? 'lg:pl-72' : 'lg:pl-0'
+        }`}
+      >
         <header className="h-16 bg-white/80 backdrop-blur-md border-b border-[#F4F6F8] px-4 sm:px-8 flex items-center justify-between lg:justify-end sticky top-0 z-20">
           <div className="flex items-center gap-3 lg:hidden">
             <button
@@ -187,6 +196,16 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             <Branding className="text-xs" />
           </div>
           <div className="flex items-center gap-6">
+            <button
+              className="hidden lg:inline-flex p-2 rounded-lg bg-[#F4F6F8] text-[#2F80ED] focus:outline-none focus:ring-2 focus:ring-[#2F80ED]/40"
+              onClick={() => setDesktopSidebarOpen((prev) => !prev)}
+              aria-label={desktopSidebarOpen ? 'Collapse navigation' : 'Expand navigation'}
+              aria-pressed={desktopSidebarOpen}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
              <div className="hidden md:flex flex-col items-end">
                <span className="text-[8px] font-black text-[#1F3A5F]/50 uppercase tracking-widest">System Status</span>
                <span className="text-[9px] font-bold text-[#2F80ED] flex items-center gap-1.5">
