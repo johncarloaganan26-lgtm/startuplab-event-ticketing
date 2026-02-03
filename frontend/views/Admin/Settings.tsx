@@ -462,7 +462,7 @@ export const SettingsView: React.FC = () => {
         )}
       </div>
 
-      <Modal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} title="Invite Staff Personnel">
+      <Modal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} title="Invite Staff Personnel" size="lg">
         <form onSubmit={handleInviteSubmit} className="space-y-10 px-2">
   <div className="space-y-6">
     <Input label="Personnel Name" placeholder="e.g. Jordan Miller" required className="w-full py-5 px-6 rounded-2xl bg-[#F4F6F8] border-[#F4F6F8] text-base" value={inviteData.name} onChange={(e: any) => setInviteData({...inviteData, name: e.target.value})} />

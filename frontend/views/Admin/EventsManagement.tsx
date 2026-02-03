@@ -448,6 +448,7 @@ export const EventsManagement: React.FC = () => {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         title={isEditMode ? 'Modify Session' : 'Launch New Session'}
+        size="lg"
       >
         <div className="space-y-12">
           {/* HIGH-FIDELITY LIVE PREVIEW SECTION */}
@@ -603,10 +604,11 @@ export const EventsManagement: React.FC = () => {
         isOpen={isTicketModalOpen}
         onClose={() => setIsTicketModalOpen(false)}
         title="Ticket Inventory Config"
+        size="lg"
       >
-        <TicketManager 
-          event={selectedEvent} 
-          onSave={handleSaveTickets} 
+        <TicketManager
+          event={selectedEvent}
+          onSave={handleSaveTickets}
           submitting={submitting}
           setNotification={setNotification}
         />
@@ -746,7 +748,7 @@ const TicketManager: React.FC<TicketManagerProps> = ({ event, onSave, submitting
 
   return (
     <div className="space-y-8">
-      <div className="bg-[#F4F6F8] p-6 rounded-2xl border border-[#F4F6F8]">
+      <div className="bg-white p-6 rounded-3xl border border-[#F4F6F8] shadow-sm">
         <h4 className="text-[10px] font-black text-[#1F3A5F]/50 uppercase tracking-[0.3em] mb-4">Add Ticket Tier</h4>
         <div className="space-y-4">
           <Input 

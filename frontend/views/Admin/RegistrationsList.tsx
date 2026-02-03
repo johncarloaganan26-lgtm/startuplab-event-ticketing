@@ -248,6 +248,7 @@ export const RegistrationsList: React.FC = () => {
         isOpen={Boolean(selectedReg)}
         onClose={() => setSelectedReg(null)}
         title="Attendee Details"
+        size="xl"
       >
         {selectedReg && (
           <div className="space-y-10 px-1">
@@ -256,14 +257,14 @@ export const RegistrationsList: React.FC = () => {
                 <div className="space-y-2">
                   <h3 className="text-[11px] font-black text-[#1F3A5F]/50 uppercase tracking-[0.3em] mb-2">Identity</h3>
                   <div className="bg-[#F4F6F8] rounded-xl p-5 grid grid-cols-1 gap-4">
-  <div className="flex items-center gap-3 min-w-0">
-    <span className="w-10 h-10 rounded-xl bg-[#2F80ED] text-white text-lg font-black flex items-center justify-center shrink-0">{selectedReg.attendeeName?.charAt(0)}</span>
-    <span className="font-black text-[#1F3A5F] text-lg truncate min-w-0">{selectedReg.attendeeName}</span>
-  </div>
-  <div className="text-[13px] text-[#1F3A5F]/70 font-bold break-words truncate min-w-0" title={selectedReg.attendeeEmail}>{selectedReg.attendeeEmail}</div>
-  {selectedReg.attendeePhone && <div className="text-[13px] text-[#1F3A5F]/70 font-bold break-words truncate min-w-0">{selectedReg.attendeePhone}</div>}
-  {selectedReg.attendeeCompany && <div className="text-[13px] text-[#1F3A5F]/70 font-bold break-words truncate min-w-0">{selectedReg.attendeeCompany}</div>}
-</div>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="w-10 h-10 rounded-xl bg-[#2F80ED] text-white text-lg font-black flex items-center justify-center shrink-0">{selectedReg.attendeeName?.charAt(0)}</span>
+                      <span className="font-black text-[#1F3A5F] text-lg truncate min-w-0">{selectedReg.attendeeName}</span>
+                    </div>
+                    <div className="text-[13px] text-[#1F3A5F]/70 font-bold break-words truncate min-w-0" title={selectedReg.attendeeEmail}>{selectedReg.attendeeEmail}</div>
+                    {selectedReg.attendeePhone && <div className="text-[13px] text-[#1F3A5F]/70 font-bold break-words truncate min-w-0">{selectedReg.attendeePhone}</div>}
+                    {selectedReg.attendeeCompany && <div className="text-[13px] text-[#1F3A5F]/70 font-bold break-words truncate min-w-0">{selectedReg.attendeeCompany}</div>}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-[11px] font-black text-[#1F3A5F]/50 uppercase tracking-[0.3em] mb-2">Ticket & Order</h3>

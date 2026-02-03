@@ -120,42 +120,42 @@ export const EventDetails: React.FC = () => {
 
             {/* Event Profile */}
             <div>
-              <h1 className="text-5xl lg:text-6xl font-black text-[#1F3A5F] tracking-tighter mb-6 leading-tight">
+              <h1 className="text-4xl lg:text-5xl font-black text-[#1F3A5F] tracking-tighter mb-5 leading-tight">
                 {event.eventName}
               </h1>
               <div className="flex flex-wrap gap-4 mb-12">
-                <div className="flex items-center text-[#1F3A5F]/80 bg-white px-6 py-3 rounded-2xl border border-[#F4F6F8] text-[13px] font-black shadow-sm">
+                <div className="flex items-center text-[#1F3A5F]/80 bg-white px-4 py-2 rounded-2xl border border-[#F4F6F8] text-[12px] font-black shadow-sm">
                   <ICONS.Calendar className="w-4 h-4 mr-3 text-[#2F80ED]" />
                   {formatRange(event.startAt, event.endAt, event.timezone)}
                 </div>
-                <div className="flex items-center text-[#1F3A5F]/80 bg-white px-6 py-3 rounded-2xl border border-[#F4F6F8] text-[13px] font-black shadow-sm">
+                <div className="flex items-center text-[#1F3A5F]/80 bg-white px-4 py-2 rounded-2xl border border-[#F4F6F8] text-[12px] font-black shadow-sm">
                   <ICONS.MapPin className="w-4 h-4 mr-3 text-[#56CCF2]" />
                   {event.locationText}
                 </div>
-                <div className="flex items-center text-[#1F3A5F]/80 bg-white px-4 py-2 rounded-2xl border border-[#F4F6F8] text-[12px] font-black shadow-sm">
+                <div className="flex items-center text-[#1F3A5F]/80 bg-white px-3 py-1.5 rounded-2xl border border-[#F4F6F8] text-[11px] font-black shadow-sm">
                   {event.locationType}
                 </div>
-                <div className="flex items-center text-[#1F3A5F]/80 bg-white px-4 py-2 rounded-2xl border border-[#F4F6F8] text-[12px] font-black shadow-sm">
+                <div className="flex items-center text-[#1F3A5F]/80 bg-white px-3 py-1.5 rounded-2xl border border-[#F4F6F8] text-[11px] font-black shadow-sm">
                   STATUS: {event.status}
                 </div>
-                <div className="flex items-center text-[#1F3A5F]/80 bg-white px-4 py-2 rounded-2xl border border-[#F4F6F8] text-[12px] font-black shadow-sm">
+                <div className="flex items-center text-[#1F3A5F]/80 bg-white px-3 py-1.5 rounded-2xl border border-[#F4F6F8] text-[11px] font-black shadow-sm">
                   CAPACITY: {event.capacityTotal}
                 </div>
                 {event.timezone && (
-                  <div className="flex items-center text-[#1F3A5F]/80 bg-white px-4 py-2 rounded-2xl border border-[#F4F6F8] text-[12px] font-black shadow-sm">
+                  <div className="flex items-center text-[#1F3A5F]/80 bg-white px-3 py-1.5 rounded-2xl border border-[#F4F6F8] text-[11px] font-black shadow-sm">
                     TZ: {event.timezone}
                   </div>
                 )}
                 {regState && (
-                  <div className="flex items-center text-[#1F3A5F]/80 bg-white px-4 py-2 rounded-2xl border border-[#F4F6F8] text-[12px] font-black shadow-sm">
+                  <div className="flex items-center text-[#1F3A5F]/80 bg-white px-3 py-1.5 rounded-2xl border border-[#F4F6F8] text-[11px] font-black shadow-sm">
                     {regState}
                   </div>
                 )}
               </div>
 
-              <div className="p-10 bg-white rounded-[2.5rem] border border-[#F4F6F8] shadow-sm">
+              <div className="p-8 bg-white rounded-[2rem] border border-[#F4F6F8] shadow-sm">
                 <h3 className="text-[10px] font-black text-[#1F3A5F]/50 uppercase tracking-[0.4em] mb-6">EVENT OVERVIEW</h3>
-                <p className="text-[#1F3A5F]/70 leading-relaxed text-lg font-medium whitespace-pre-wrap">
+                <p className="text-[#1F3A5F]/70 leading-relaxed text-base font-medium whitespace-pre-wrap">
                   {event.description}
                 </p>
               </div>
@@ -163,13 +163,13 @@ export const EventDetails: React.FC = () => {
           </div>
 
           {/* Secure Access Sidebar */}
-          <div className="w-full lg:w-[420px] shrink-0">
-            <Card className="p-10 sticky top-10 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.08)] border-none ring-1 ring-[#F4F6F8] rounded-[3rem] bg-white">
-              <h2 className="text-2xl font-black text-[#1F3A5F] mb-10 tracking-tight">
+          <div className="w-full lg:w-[380px] shrink-0">
+            <Card className="p-8 sticky top-10 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.08)] border-none ring-1 ring-[#F4F6F8] rounded-[2.5rem] bg-white">
+              <h2 className="text-xl font-black text-[#1F3A5F] mb-8 tracking-tight">
                 Secure Access
               </h2>
               
-              <div className="space-y-6 mb-12">
+              <div className="space-y-5 mb-10">
                 {event.ticketTypes.map(ticket => {
                   const qty = quantities[ticket.ticketTypeId] || 0;
                   const available = ticket.quantityTotal - ticket.quantitySold;
@@ -178,7 +178,7 @@ export const EventDetails: React.FC = () => {
                   return (
                     <div 
                       key={ticket.ticketTypeId}
-                      className={`p-8 rounded-[2rem] border-2 transition-all duration-500 ${
+                      className={`p-6 rounded-[1.75rem] border-2 transition-all duration-500 ${
                         qty > 0 ? 'border-[#2F80ED] bg-[#F4F6F8]' : 'border-[#F4F6F8] bg-white hover:border-[#2F80ED]/40'
                       }`}
                     >
@@ -188,7 +188,7 @@ export const EventDetails: React.FC = () => {
                           {isSoldOut ? 'SOLD OUT' : 'AVAILABLE'}
                         </span>
                       </div>
-                      <div className="text-2xl font-black text-[#1F3A5F] mb-8 tracking-tighter">
+                      <div className="text-xl font-black text-[#1F3A5F] mb-6 tracking-tighter">
                         {ticket.priceAmount === 0 ? 'FREE' : `PHP ${ticket.priceAmount.toLocaleString()}.00`}
                       </div>
                       
@@ -198,17 +198,17 @@ export const EventDetails: React.FC = () => {
                           <button 
                             onClick={() => updateQuantity(ticket.ticketTypeId, -1, available)}
                             disabled={qty === 0}
-                            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${
+                            className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all ${
                               qty > 0 ? 'hover:bg-[#F4F6F8] text-[#1F3A5F] border border-[#F4F6F8]' : 'text-[#1F3A5F]/20 cursor-not-allowed'
                             }`}
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M20 12H4"/></svg>
                           </button>
-                          <span className="font-black text-xl text-[#1F3A5F] w-4 text-center">{qty}</span>
+                          <span className="font-black text-lg text-[#1F3A5F] w-4 text-center">{qty}</span>
                           <button 
                             onClick={() => updateQuantity(ticket.ticketTypeId, 1, available)}
                             disabled={isSoldOut || qty >= available}
-                            className={`w-10 h-10 flex items-center justify-center rounded-xl text-white transition-all shadow-lg shadow-[#2F80ED]/20 ${
+                            className={`w-9 h-9 flex items-center justify-center rounded-xl text-white transition-all shadow-lg shadow-[#2F80ED]/20 ${
                               isSoldOut || qty >= available ? 'bg-[#F4F6F8] text-[#1F3A5F]/40 cursor-not-allowed' : 'bg-[#1F3A5F] hover:bg-[#2F80ED]'
                             }`}
                           >
@@ -223,7 +223,8 @@ export const EventDetails: React.FC = () => {
 
               <div className="space-y-6">
                 <Button 
-                  className="w-full py-6 rounded-[1.5rem] shadow-2xl shadow-[#2F80ED]/20 font-black text-xl transition-all hover:scale-[1.02] bg-[#2F80ED] text-white" 
+                  size="lg"
+                  className="w-full py-4 rounded-[1.25rem] shadow-lg shadow-[#2F80ED]/15 bg-[#2F80ED] text-white" 
                   disabled={totalQuantity === 0}
                   onClick={handleRegister}
                 >

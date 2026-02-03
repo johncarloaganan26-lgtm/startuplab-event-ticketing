@@ -184,18 +184,9 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           desktopSidebarOpen ? 'lg:pl-72' : 'lg:pl-0'
         }`}
       >
-        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-[#F4F6F8] px-4 sm:px-8 flex items-center justify-between lg:justify-end sticky top-0 z-20">
-          <div className="flex items-center gap-3 lg:hidden">
-            <button
-              className="p-2 rounded-lg bg-[#F4F6F8] text-[#2F80ED] focus:outline-none focus:ring-2 focus:ring-[#2F80ED]/40"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Open navigation"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
-            </button>
-            <Branding className="text-xs" />
-          </div>
-          <div className="flex items-center gap-6">
+        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-[#F4F6F8] px-4 sm:px-8 flex items-center justify-between lg:justify-between sticky top-0 z-20">
+          <div className="flex items-center gap-3">
+            {/* Desktop sidebar hamburger (now left) */}
             <button
               className="hidden lg:inline-flex p-2 rounded-lg bg-[#F4F6F8] text-[#2F80ED] focus:outline-none focus:ring-2 focus:ring-[#2F80ED]/40"
               onClick={() => setDesktopSidebarOpen((prev) => !prev)}
@@ -206,6 +197,17 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
+            {/* Mobile hamburger */}
+            <button
+              className="p-2 rounded-lg bg-[#F4F6F8] text-[#2F80ED] focus:outline-none focus:ring-2 focus:ring-[#2F80ED]/40 lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open navigation"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <Branding className="text-xs" />
+          </div>
+          <div className="flex items-center gap-6">
              <div className="hidden md:flex flex-col items-end">
                <span className="text-[8px] font-black text-[#1F3A5F]/50 uppercase tracking-widest">System Status</span>
                <span className="text-[9px] font-bold text-[#2F80ED] flex items-center gap-1.5">

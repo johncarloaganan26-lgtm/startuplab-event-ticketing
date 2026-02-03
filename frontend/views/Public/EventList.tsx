@@ -46,11 +46,11 @@ const EventCard: React.FC<{ event: Event }> = ({ event }) => {
   
   return (
     <Card 
-      className="flex flex-col h-full group cursor-pointer border-none shadow-[0_10px_40px_-10px_rgba(0,0,0,0.06)] hover:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.12)] transition-all duration-700 rounded-[2rem] overflow-hidden bg-white"
+      className="flex flex-col h-full group cursor-pointer border-none shadow-[0_10px_40px_-10px_rgba(0,0,0,0.06)] hover:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.12)] transition-all duration-700 rounded-[1.5rem] overflow-hidden bg-white"
       onClick={() => navigate(`/events/${event.slug}`)}
     >
       {/* Image Section */}
-      <div className="relative h-60 overflow-hidden">
+      <div className="relative h-52 overflow-hidden">
         <img 
           src={getImageUrl(event.imageUrl)}
           alt={event.eventName} 
@@ -70,14 +70,14 @@ const EventCard: React.FC<{ event: Event }> = ({ event }) => {
         </div>
 
         <div className="absolute bottom-6 left-8 right-8">
-           <h4 className="text-white text-xl font-black tracking-tight leading-tight line-clamp-2 drop-shadow-sm">
-             {event.eventName}
-           </h4>
+           <h4 className="text-white text-lg font-black tracking-tight leading-tight line-clamp-2 drop-shadow-sm">
+            {event.eventName}
+          </h4>
         </div>
       </div>
 
       {/* Content Section */}
-      <div className="p-8 flex-1 flex flex-col">
+      <div className="p-6 flex-1 flex flex-col">
         <div className="flex items-center justify-between mb-5">
            <div className="text-[10px] font-bold text-[#1F3A5F]/60 uppercase tracking-[0.15em] flex items-center gap-1.5">
             <span className="w-1 h-1 bg-[#56CCF2] rounded-full"></span>
@@ -85,7 +85,7 @@ const EventCard: React.FC<{ event: Event }> = ({ event }) => {
            </div>
         </div>
         
-        <p className="text-[#1F3A5F]/70 text-[14px] font-medium line-clamp-2 mb-8 leading-relaxed opacity-90">
+        <p className="text-[#1F3A5F]/70 text-[13px] font-medium line-clamp-2 mb-6 leading-relaxed opacity-90">
           {event.description}
         </p>
         
@@ -107,15 +107,15 @@ const EventCard: React.FC<{ event: Event }> = ({ event }) => {
         </div>
 
         {/* Pricing Area */}
-        <div className="flex items-center justify-between pt-6 mt-auto border-t border-[#F4F6F8]">
+        <div className="flex items-center justify-between pt-5 mt-auto border-t border-[#F4F6F8]">
           <div>
             <span className="text-[9px] text-[#1F3A5F]/40 uppercase tracking-[0.3em] font-black block mb-1">STARTING FROM</span>
-            <p className="text-2xl font-black text-[#1F3A5F] tracking-tighter">
+            <p className="text-xl font-black text-[#1F3A5F] tracking-tighter">
               {minPrice === 0 ? <span className="text-[#2F80ED]">FREE</span> : `PHP ${minPrice.toLocaleString()}`}
             </p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-[#2F80ED] text-white flex items-center justify-center transition-all hover:bg-[#1F3A5F] shadow-[0_10px_25px_-5px_rgba(47,128,237,0.35)] hover:shadow-[0_15px_30px_-5px_rgba(31,58,95,0.25)] hover:scale-105 active:scale-95">
-            <ICONS.ChevronRight className="w-6 h-6" strokeWidth={3} />
+          <div className="w-10 h-10 rounded-xl bg-[#2F80ED] text-white flex items-center justify-center transition-all hover:bg-[#1F3A5F] shadow-[0_10px_25px_-5px_rgba(47,128,237,0.35)] hover:shadow-[0_15px_30px_-5px_rgba(31,58,95,0.25)] hover:scale-105 active:scale-95">
+            <ICONS.ChevronRight className="w-5 h-5" strokeWidth={3} />
           </div>
         </div>
       </div>
@@ -185,7 +185,7 @@ export const EventList: React.FC = () => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8 lg:py-12 animate-in fade-in duration-1000">
+    <div className="max-w-7xl mx-auto px-6 py-6 lg:py-10 animate-in fade-in duration-1000">
       {/* Landing Experience Hero Section */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 gap-12">
         <div className="max-w-3xl">
@@ -193,28 +193,28 @@ export const EventList: React.FC = () => {
              <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
              ACTIVE REGISTRATION PORTAL
           </div>
-          <h1 className="text-6xl lg:text-[5.5rem] font-black text-[#1F3A5F] tracking-tighter leading-[0.85] mb-6">
+          <h1 className="text-4xl lg:text-5xl font-black text-[#1F3A5F] tracking-tighter leading-tight mb-5">
             Curated Industry <br />
             <span className="text-[#2F80ED] italic">Excellence</span>
           </h1>
-          <p className="text-[#1F3A5F]/70 text-base lg:text-lg font-medium leading-relaxed max-w-lg">
+          <p className="text-[#1F3A5F]/70 text-sm lg:text-base font-medium leading-relaxed max-w-lg">
             Access world-class summits, masterclasses, and executive networking sessions curated for innovators.
           </p>
         </div>
         
-        <div className="w-full lg:w-[420px] shrink-0 lg:pb-2">
+        <div className="w-full lg:w-[360px] shrink-0 lg:pb-2">
            <div className="relative group">
-             <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-[#56CCF2] group-focus-within:text-[#2F80ED] transition-colors">
-               <ICONS.Search className="h-5 w-5" strokeWidth={3} />
+             <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-[#56CCF2] group-focus-within:text-[#2F80ED] transition-colors">
+               <ICONS.Search className="h-4 w-4" strokeWidth={3} />
              </div>
              <input 
               type="text" 
               placeholder="Search active sessions..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-14 pr-14 py-5 bg-white border border-[#F4F6F8] rounded-[2rem] text-[15px] font-bold shadow-[0_15px_40px_-10px_rgba(31,58,95,0.08)] transition-all focus:outline-none focus:ring-8 focus:ring-[#2F80ED]/15 focus:border-[#2F80ED] placeholder:text-[#1F3A5F]/40 placeholder:font-black placeholder:uppercase placeholder:tracking-widest placeholder:text-[11px]"
+              className="block w-full pl-12 pr-12 py-3.5 bg-white border border-[#F4F6F8] rounded-[1.5rem] text-[13px] font-bold shadow-[0_12px_30px_-12px_rgba(31,58,95,0.08)] transition-all focus:outline-none focus:ring-4 focus:ring-[#2F80ED]/15 focus:border-[#2F80ED] placeholder:text-[#1F3A5F]/40 placeholder:font-black placeholder:uppercase placeholder:tracking-widest placeholder:text-[10px]"
              />
-             <div className="absolute inset-y-0 right-0 pr-6 flex items-center text-[#2F80ED]/70">
+             <div className="absolute inset-y-0 right-0 pr-5 flex items-center text-[#2F80ED]/70">
                {(isFetching || searchTerm.trim() !== debouncedSearch) && (
                  <div className="w-4 h-4 border-2 border-[#2F80ED]/60 border-t-transparent rounded-full animate-spin" />
                )}
@@ -224,7 +224,7 @@ export const EventList: React.FC = () => {
       </div>
 
       {/* Grid Display */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
         {paginatedEvents.map((event, idx) => (
           <div key={event.eventId} className="animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-both" style={{ animationDelay: `${(idx % (pagination.limit || 6)) * 100}ms` }}>
             <EventCard event={event} />
@@ -255,14 +255,14 @@ export const EventList: React.FC = () => {
       
       {/* Empty State */}
       {events.length === 0 && (
-        <div className="py-32 px-12 text-center bg-white rounded-[3rem] border border-[#F4F6F8] shadow-sm">
-          <div className="w-20 h-20 bg-[#F4F6F8] rounded-full flex items-center justify-center mx-auto mb-6">
-            <ICONS.Search className="w-10 h-10 text-[#56CCF2]/60" />
+        <div className="py-20 px-8 text-center bg-white rounded-[2.5rem] border border-[#F4F6F8] shadow-sm">
+          <div className="w-14 h-14 bg-[#F4F6F8] rounded-full flex items-center justify-center mx-auto mb-6">
+            <ICONS.Search className="w-7 h-7 text-[#56CCF2]/60" />
           </div>
-          <h3 className="text-3xl font-black text-[#1F3A5F] tracking-tighter mb-4">No active sessions found</h3>
+          <h3 className="text-2xl font-black text-[#1F3A5F] tracking-tighter mb-4">No active sessions found</h3>
           <Button 
             variant="outline" 
-            className="px-12 py-4 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] border-2 border-[#2F80ED]/30 transition-all hover:bg-[#F4F6F8]"
+            className="px-8 py-3 rounded-xl font-black uppercase tracking-[0.3em] text-[9px] border-2 border-[#2F80ED]/30 transition-all hover:bg-[#F4F6F8]"
             onClick={() => setSearchTerm('')}
           >
             Clear Filters

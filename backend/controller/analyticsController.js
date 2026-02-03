@@ -219,8 +219,26 @@ export const getRecentTransactions = async (req, res) => {
       .range(from, to);
     if (error) return res.status(500).json({ error: error.message });
     const total = typeof count === 'number' ? count : 0;
+    const items = data || [];
+    const eventIds = Array.from(new Set(items.map(item => item.eventId).filter(Boolean)));
+    let eventMap = new Map();
+
+    if (eventIds.length) {
+      const { data: eventRows, error: eventErr } = await supabase
+        .from('events')
+        .select('eventId, eventName')
+        .in('eventId', eventIds);
+      if (eventErr) return res.status(500).json({ error: eventErr.message });
+      eventMap = new Map((eventRows || []).map(row => [row.eventId, row.eventName]));
+    }
+
+    const enrichedItems = items.map(item => ({
+      ...item,
+      eventName: eventMap.get(item.eventId) || null
+    }));
+
     return res.json({
-      items: data || [],
+      items: enrichedItems,
       pagination: buildPagination(page, limit, total)
     });
   } catch (err) {
@@ -264,6 +282,34 @@ export const getAuditLogDetail = async (req, res) => {
     if (logErr) return res.status(500).json({ error: logErr.message });
     if (!log) return res.status(404).json({ error: 'Audit log not found' });
 
+    let actor = null;
+    if (log.actorUserId) {
+      let actorResp = await supabase
+        .from('users')
+        .select('userId, name, email, role')
+        .eq('userId', log.actorUserId)
+        .maybeSingle();
+      actor = actorResp.data;
+
+      if ((!actor && !actorResp.error) || (actorResp.error && actorResp.error.message?.includes('column "userId"'))) {
+        const fallbackResp = await supabase
+          .from('users')
+          .select('id, name, email, role')
+          .eq('id', log.actorUserId)
+          .maybeSingle();
+        actor = fallbackResp.data;
+      }
+
+      if (actor) {
+        actor = {
+          userId: actor.userId || actor.id,
+          name: actor.name,
+          email: actor.email,
+          role: actor.role
+        };
+      }
+    }
+
     const [orderDetails, ticketDetails, webhookResp, paymentResp] = await Promise.all([
       log.orderId ? loadOrderDetails(log.orderId) : Promise.resolve(null),
       log.ticketId ? loadTicketDetails(log.ticketId) : Promise.resolve(null),
@@ -288,6 +334,7 @@ export const getAuditLogDetail = async (req, res) => {
 
     return res.json({
       log,
+      actor,
       orderDetails: orderDetails || null,
       ticketDetails: ticketDetails || null,
       webhookEvent: webhookResp?.data || null,
@@ -308,8 +355,25 @@ export const getRecentOrders = async (req, res) => {
       .range(from, to);
     if (error) return res.status(500).json({ error: error.message });
     const total = typeof count === 'number' ? count : 0;
+    const items = data || [];
+    const eventIds = Array.from(new Set(items.map(item => item.eventId).filter(Boolean)));
+    let eventMap = new Map();
+
+    if (eventIds.length) {
+      const { data: eventRows, error: eventErr } = await supabase
+        .from('events')
+        .select('eventId, eventName')
+        .in('eventId', eventIds);
+      if (eventErr) return res.status(500).json({ error: eventErr.message });
+      eventMap = new Map((eventRows || []).map(row => [row.eventId, row.eventName]));
+    }
+
+    const enrichedItems = items.map(item => ({
+      ...item,
+      eventName: eventMap.get(item.eventId) || null
+    }));
     return res.json({
-      items: data || [],
+      items: enrichedItems,
       pagination: buildPagination(page, limit, total)
     });
   } catch (err) {

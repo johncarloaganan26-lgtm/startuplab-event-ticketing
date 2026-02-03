@@ -50,20 +50,20 @@ export const Button: React.FC<{
   type = 'button',
   onClick 
 }) => {
-  const base = 'inline-flex items-center justify-center font-medium transition-all duration-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+  const base = 'inline-flex items-center justify-center font-black uppercase tracking-widest rounded-[1.5rem] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm';
   
   const variants = {
-    primary: 'bg-[#2F80ED] text-white hover:bg-[#1F3A5F] focus:ring-[#2F80ED]',
-    secondary: 'bg-[#1F3A5F] text-white hover:bg-[#2F80ED] focus:ring-[#1F3A5F]',
-    outline: 'border border-[#2F80ED]/30 text-[#1F3A5F] bg-white hover:bg-[#F4F6F8] focus:ring-[#2F80ED]',
-    ghost: 'text-[#1F3A5F]/70 hover:bg-[#F4F6F8] focus:ring-[#56CCF2]',
-    danger: 'bg-[#1F3A5F] text-white hover:bg-[#2F80ED] focus:ring-[#1F3A5F]'
+    primary: 'bg-[#2F80ED] text-white hover:bg-[#1F3A5F] active:bg-[#1F3A5F] focus:ring-[#2F80ED] shadow-lg shadow-[#2F80ED]/10',
+    secondary: 'bg-[#1F3A5F] text-white hover:bg-[#2F80ED] active:bg-[#2F80ED] focus:ring-[#1F3A5F] shadow-lg shadow-[#1F3A5F]/10',
+    outline: 'border-2 border-[#2F80ED]/30 text-[#1F3A5F] bg-white hover:bg-[#F4F6F8] active:bg-[#F4F6F8]/80 focus:ring-[#2F80ED] shadow',
+    ghost: 'text-[#1F3A5F]/70 hover:bg-[#F4F6F8] active:bg-[#F4F6F8]/80 focus:ring-[#56CCF2]',
+    danger: 'bg-[#EB5757] text-white hover:bg-[#B71C1C] active:bg-[#B71C1C] focus:ring-[#EB5757] shadow-lg shadow-[#EB5757]/10'
   };
 
   const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg'
+    sm: 'px-4 py-2 text-[11px]',
+    md: 'px-6 py-3 text-[13px]',
+    lg: 'px-8 py-4 text-base',
   };
 
   return (
@@ -97,32 +97,82 @@ export const Modal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  subtitle?: string;
   children: React.ReactNode;
-}> = ({ isOpen, onClose, title, children }) => {
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  footer?: React.ReactNode;
+  showClose?: boolean;
+  closeOnBackdrop?: boolean;
+  className?: string;
+  contentClassName?: string;
+}> = ({
+  isOpen,
+  onClose,
+  title,
+  subtitle,
+  children,
+  size = 'md',
+  footer,
+  showClose = true,
+  closeOnBackdrop = true,
+  className = '',
+  contentClassName = ''
+}) => {
   if (!isOpen) return null;
+
+  const sizes = {
+    sm: 'max-w-md',
+    md: 'max-w-xl',
+    lg: 'max-w-3xl',
+    xl: 'max-w-4xl'
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-[#1F3A5F]/70 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
+        className="fixed inset-0 z-[90] bg-[#1F3A5F]/70 backdrop-blur-sm transition-opacity"
+        onClick={closeOnBackdrop ? onClose : undefined}
       />
       
       {/* Content */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-300">
-        <div className="px-6 py-4 border-b border-[#F4F6F8] flex items-center justify-between sticky top-0 bg-white z-10">
-          <h2 className="text-xl font-bold text-[#1F3A5F]">{title}</h2>
-          <button 
-            onClick={onClose}
-            className="p-2 text-[#1F3A5F]/50 hover:text-[#1F3A5F] hover:bg-[#F4F6F8] rounded-full transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+        className={`relative z-[110] bg-white rounded-3xl shadow-[0_30px_80px_-40px_rgba(31,58,95,0.55)] w-full ${
+          sizes[size]
+        } max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-300 ${className}`}
+      >
+        <div className="px-6 py-5 border-b border-[#F4F6F8] flex items-start justify-between gap-4 sticky top-0 bg-white z-10">
+          <div>
+            <h2 id="modal-title" className="text-lg sm:text-xl font-black text-[#1F3A5F]">
+              {title}
+            </h2>
+            {subtitle && (
+              <p className="mt-1 text-[11px] uppercase tracking-[0.2em] font-bold text-[#1F3A5F]/50">
+                {subtitle}
+              </p>
+            )}
+          </div>
+          {showClose && (
+            <button 
+              onClick={onClose}
+              className="p-2 text-[#1F3A5F]/50 hover:text-[#1F3A5F] hover:bg-[#F4F6F8] rounded-full transition-colors"
+              aria-label="Close modal"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          )}
         </div>
-        <div className="p-6">
+        <div className={`p-6 overflow-y-auto max-h-[70vh] ${contentClassName}`}>
           {children}
         </div>
+        {footer && (
+          <div className="px-6 py-5 border-t border-[#F4F6F8] bg-white">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

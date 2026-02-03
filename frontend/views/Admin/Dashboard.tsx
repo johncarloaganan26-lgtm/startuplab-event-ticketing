@@ -10,6 +10,7 @@ import QRCode from 'react-qr-code';
 type Tx = {
   orderId: string;
   eventId?: string;
+  eventName?: string;
   buyerName?: string;
   totalAmount?: number;
   currency?: string;
@@ -20,6 +21,7 @@ type Tx = {
 type OrderSummary = {
   orderId: string;
   eventId?: string;
+  eventName?: string;
   buyerName?: string;
   buyerEmail?: string;
   totalAmount?: number;
@@ -58,6 +60,7 @@ type TicketDetailResponse = {
 
 type AuditLogDetailResponse = {
   log: Record<string, any>;
+  actor?: Record<string, any> | null;
   orderDetails?: OrderDetailResponse | null;
   ticketDetails?: TicketDetailResponse | null;
   webhookEvent?: Record<string, any> | null;
@@ -338,6 +341,8 @@ export const AdminDashboard: React.FC = () => {
 
     const { order, event, orderItems = [], attendees = [], tickets = [], payments = [] } = details;
     const company = order?.metadata && typeof order.metadata === 'object' ? order.metadata.company : null;
+    const eventLabel = event?.eventName || 'Event details unavailable';
+    const eventIdLabel = event?.eventId || order?.eventId || null;
 
     return (
       <div className="space-y-6">
@@ -371,7 +376,10 @@ export const AdminDashboard: React.FC = () => {
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#1F3A5F]/50">Event</p>
           <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <p className="text-sm font-bold text-[#1F3A5F]">{event?.eventName || order?.eventId || '—'}</p>
+              <p className="text-sm font-bold text-[#1F3A5F]">{eventLabel}</p>
+              {eventIdLabel && (
+                <p className="text-[11px] text-[#1F3A5F]/50">ID: {eventIdLabel}</p>
+              )}
               <p className="text-xs text-[#1F3A5F]/60">{event?.locationText || '—'}</p>
             </div>
             <div className="text-xs text-[#1F3A5F]/60 space-y-1">
@@ -506,7 +514,11 @@ export const AdminDashboard: React.FC = () => {
             <p className="text-sm font-bold text-[#1F3A5F]">{ticketType?.name || 'Ticket'}</p>
             <p className="text-xs text-[#1F3A5F]/60">Code: {ticket?.ticketCode || '—'}</p>
             <p className="text-xs text-[#1F3A5F]/60">Event: {event?.eventName || '—'}</p>
-            <p className="text-xs text-[#1F3A5F]/60">Order: {order?.orderId || '—'}</p>
+            <p className="text-xs text-[#1F3A5F]/60">
+              Order: {order?.orderId
+                ? `#${order.orderId}${order?.buyerName || order?.buyerEmail ? ` • ${order?.buyerName || order?.buyerEmail}` : ''}`
+                : '—'}
+            </p>
             <div className="text-xs text-[#1F3A5F]/60 flex items-center gap-2">
               <span>Payment: {order?.status || '—'}</span>
               {renderStatusBadge(order?.status)}
@@ -544,7 +556,29 @@ export const AdminDashboard: React.FC = () => {
       return <div className="text-sm text-[#1F3A5F]/50">Audit log details unavailable.</div>;
     }
 
-    const { log, orderDetails, ticketDetails, webhookEvent, paymentTransaction } = details;
+    const { log, actor, orderDetails, ticketDetails, webhookEvent, paymentTransaction } = details;
+    const actorLabel = actor?.name
+      ? `${actor.name}${actor.email ? ` (${actor.email})` : ''}`
+      : log.actorUserId || '—';
+    const orderBuyer = orderDetails?.order?.buyerName || orderDetails?.order?.buyerEmail;
+    const orderLabel = orderDetails?.order?.orderId
+      ? `#${orderDetails.order.orderId}${orderBuyer ? ` • ${orderBuyer}` : ''}`
+      : log.orderId || '—';
+    const ticketOwner = ticketDetails?.attendee?.name || ticketDetails?.attendee?.email;
+    const ticketLabel = ticketDetails?.ticket?.ticketCode
+      ? `${ticketDetails.ticket.ticketCode}${ticketOwner ? ` • ${ticketOwner}` : ''}`
+      : ticketDetails?.ticket?.ticketId || log.ticketId || '—';
+    const paymentLabel = paymentTransaction?.hitpayReferenceId
+      || paymentTransaction?.paymentTransactionId
+      || log.paymentTransactionId
+      || '—';
+    const webhookLabel = webhookEvent?.externalId
+      || webhookEvent?.webhookEventsId
+      || log.webhookEventsId
+      || '—';
+    const eventContextLabel = orderDetails?.event?.eventName
+      || ticketDetails?.event?.eventName
+      || '—';
 
     return (
       <div className="space-y-8">
@@ -558,11 +592,12 @@ export const AdminDashboard: React.FC = () => {
           </div>
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-[#1F3A5F]/60">
             <div>Audit ID: {log.auditLogId}</div>
-            <div>Actor: {log.actorUserId || '—'}</div>
-            <div>Order ID: {log.orderId || '—'}</div>
-            <div>Ticket ID: {log.ticketId || '—'}</div>
-            <div>Payment Tx: {log.paymentTransactionId || '—'}</div>
-            <div>Webhook Event: {log.webhookEventsId || '—'}</div>
+            <div>Actor: {actorLabel}</div>
+            <div>Order: {orderLabel}</div>
+            <div>Event: {eventContextLabel}</div>
+            <div>Ticket: {ticketLabel}</div>
+            <div>Payment: {paymentLabel}</div>
+            <div>Webhook: {webhookLabel}</div>
             <div>Created: {formatDate(log.createdAt)}</div>
           </div>
         </div>
@@ -742,7 +777,7 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-[#1F3A5F] truncate">{tx.buyerName || 'Paid Registration'}</p>
-                    <p className="text-xs text-[#1F3A5F]/60 truncate">{tx.eventId || 'Event'} • {tx.created_at ? new Date(tx.created_at).toLocaleString() : ''}</p>
+                    <p className="text-xs text-[#1F3A5F]/60 truncate">{tx.eventName || 'Event'} • {tx.created_at ? new Date(tx.created_at).toLocaleString() : ''}</p>
                     <span className={`inline-flex text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded mt-2 ${tx.status === 'PAID' ? 'bg-[#56CCF2]/20 text-[#2F80ED]' : 'bg-[#F4F6F8] text-[#1F3A5F]/60'}`}>
                       {tx.status || 'PENDING'}
                     </span>
@@ -784,7 +819,7 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-[#1F3A5F] truncate">{order.buyerName || order.buyerEmail || 'Order'}</p>
-                    <p className="text-xs text-[#1F3A5F]/60 truncate">Order #{order.orderId?.slice(0, 8)} • {order.created_at ? new Date(order.created_at).toLocaleString() : ''}</p>
+                    <p className="text-xs text-[#1F3A5F]/60 truncate">{order.eventName || 'Event'} • Order #{order.orderId?.slice(0, 8)} • {order.created_at ? new Date(order.created_at).toLocaleString() : ''}</p>
                     <span className={`inline-flex text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded mt-2 ${order.status === 'PAID' ? 'bg-[#56CCF2]/20 text-[#2F80ED]' : 'bg-[#F4F6F8] text-[#1F3A5F]/60'}`}>
                       {order.status || 'PENDING'}
                     </span>
@@ -818,7 +853,15 @@ export const AdminDashboard: React.FC = () => {
           ) : (
             <div className="space-y-4 max-h-[420px] overflow-y-auto pr-1" onScroll={handleAuditScroll}>
               {auditLogs.map((log) => {
-                const targetId = log.orderId || log.ticketId || log.paymentTransactionId || log.webhookEventsId || '—';
+                const targetLabel = log.orderId
+                  ? `Order #${log.orderId.slice(0, 8)}`
+                  : log.ticketId
+                    ? `Ticket #${log.ticketId.slice(0, 8)}`
+                    : log.paymentTransactionId
+                      ? `Payment #${log.paymentTransactionId.slice(0, 8)}`
+                      : log.webhookEventsId
+                        ? `Webhook #${log.webhookEventsId.slice(0, 8)}`
+                        : '—';
                 return (
                   <div
                     key={log.auditLogId}
@@ -830,7 +873,7 @@ export const AdminDashboard: React.FC = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-[#1F3A5F] truncate">{log.actionType}</p>
-                      <p className="text-xs text-[#1F3A5F]/60 truncate">Target {targetId}</p>
+                      <p className="text-xs text-[#1F3A5F]/60 truncate">Target {targetLabel}</p>
                       <p className="text-[10px] text-[#1F3A5F]/50 mt-2">{log.createdAt ? new Date(log.createdAt).toLocaleString() : ''}</p>
                     </div>
                   </div>
@@ -861,7 +904,7 @@ export const AdminDashboard: React.FC = () => {
         </Card>
       </div>
 
-      <Modal isOpen={detailOpen} onClose={closeDetail} title={detailTitle}>
+      <Modal isOpen={detailOpen} onClose={closeDetail} title={detailTitle} size="lg">
         {renderDetailBody()}
       </Modal>
     </div>
