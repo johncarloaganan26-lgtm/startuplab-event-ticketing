@@ -112,7 +112,7 @@ if (subtotal > 0) {
         navigate(`/payment/status?sessionId=${orderId}`); // Free order also goes to status page for confirmation
       } else {
         // Paid: create HitPay checkout session then redirect
-        const { checkoutUrl, status } = await apiService.createHitpayCheckoutSession(orderId, selectedPayment.hitpayMethod);
+        const { checkoutUrl, status } = await apiService.createHitpayCheckoutSession(orderId);
         if (checkoutUrl && checkoutUrl !== 'null' && checkoutUrl !== 'undefined') {
           window.location.href = checkoutUrl;
         } else {

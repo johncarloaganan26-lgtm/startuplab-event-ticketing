@@ -382,7 +382,8 @@ const menuItems = (
             <div className="fixed inset-0 bg-[#2E2E2F]/70" onClick={() => setSidebarOpen(false)} />
             <aside className="relative w-64 bg-[#F2F2F2] border-r border-[#2E2E2F]/10 flex flex-col h-full z-50">
               <div className="p-8 flex items-center justify-between">
-                                <button
+                <Branding className="text-base" />
+                <button
                   className="min-h-[32px] min-w-[32px] px-2 py-2 rounded-xl bg-[#38BDF2] text-[#F2F2F2] hover:bg-[#2E2E2F] hover:text-[#F2F2F2] transition-colors"
                   onClick={() => setSidebarOpen(false)}
                   aria-label="Close navigation"
@@ -503,7 +504,8 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     <header className="h-20 bg-[#F2F2F2] border-b border-[#2E2E2F]/10 px-8 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto h-full flex items-center justify-between">
         <Link to="/">
-                  </Link>
+          <Branding className="text-xl lg:text-2xl" />
+        </Link>
         <nav className="flex items-center gap-10">
           <Link to="/" className="text-[11px] font-black uppercase tracking-[0.3em] text-[#2E2E2F]/70 hover:text-[#38BDF2] transition-colors hidden sm:block">
             EVENTS
@@ -526,7 +528,6 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             <div className="space-y-4">
               <p className="text-[#2E2E2F]/50 mb-4">Platform</p>
               <Link to="/" className="block text-[#2E2E2F]/70 hover:text-[#38BDF2]">Events List</Link>
-              <Link to="/login" className="block text-[#2E2E2F]/70 hover:text-[#38BDF2]">Admin Login</Link>
             </div>
             <div className="space-y-4">
               <p className="text-[#2E2E2F]/50 mb-4">Legal</p>
