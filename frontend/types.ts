@@ -130,6 +130,7 @@ export interface RegistrationView {
   ticketName: string;
   status: TicketStatus;
   paymentStatus: OrderStatus;
+  orderId: string;
   amountPaid: number;
   currency: string;
   streamingPlatform?: string | null;
