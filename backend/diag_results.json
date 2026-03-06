@@ -1,0 +1,32 @@
+{
+  "users": {
+    "data": {
+      "userId": "597f3a3f-f6a2-44fd-bd37-a06d434242d8",
+      "role": "ADMIN",
+      "email": "johncarloaganan26@gmail.com"
+    },
+    "error": null
+  },
+  "tickets": {
+    "count": 1,
+    "error": null
+  },
+  "orders": {
+    "count": 1,
+    "error": null
+  },
+  "events": {
+    "count": 1,
+    "error": null
+  },
+  "recentTransactions": {
+    "count": 10,
+    "totalCount": 89,
+    "error": null
+  },
+  "recentOrders": {
+    "count": 10,
+    "totalCount": 89,
+    "error": null
+  }
+}

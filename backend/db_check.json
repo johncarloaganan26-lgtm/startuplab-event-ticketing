@@ -1,0 +1,54 @@
+{
+  "events": [
+    {
+      "eventName": "ddddddddd",
+      "createdBy": "600977e6-4fa8-42e1-a1eb-301f0964fa60"
+    },
+    {
+      "eventName": "Test Events",
+      "createdBy": "600977e6-4fa8-42e1-a1eb-301f0964fa60"
+    },
+    {
+      "eventName": "Test Event",
+      "createdBy": "d6e6eeaa-c793-44bd-8698-c42044cb0fb1"
+    },
+    {
+      "eventName": "From Idea to Investor-Ready: Preparing a Whitepaper for Your Startup",
+      "createdBy": "d6e6eeaa-c793-44bd-8698-c42044cb0fb1"
+    },
+    {
+      "eventName": "The Founder’s Playbook: Mastering the 5 Lenses of High-Impact Positioning",
+      "createdBy": "d6e6eeaa-c793-44bd-8698-c42044cb0fb1"
+    },
+    {
+      "eventName": "dddd",
+      "createdBy": "d6e6eeaa-c793-44bd-8698-c42044cb0fb1"
+    },
+    {
+      "eventName": "Startup Bootcamp 101: Your Numbers Tell a Story. Learn to Read It.",
+      "createdBy": "d6e6eeaa-c793-44bd-8698-c42044cb0fb1"
+    }
+  ],
+  "users": [
+    {
+      "userId": "d6e6eeaa-c793-44bd-8698-c42044cb0fb1",
+      "role": "ADMIN",
+      "name": "StartupLab Admin"
+    },
+    {
+      "userId": "df413e5a-f873-4953-8ef5-02fb3bb84246",
+      "role": "ADMIN",
+      "name": "Rovick Romasanta"
+    },
+    {
+      "userId": "597f3a3f-f6a2-44fd-bd37-a06d434242d8",
+      "role": "ADMIN",
+      "name": "John Carlo Aganan"
+    },
+    {
+      "userId": "600977e6-4fa8-42e1-a1eb-301f0964fa60",
+      "role": "ORGANIZER",
+      "name": "Carlo Aganan"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "steps": [
+    {
+      "name": "users.byUserId",
+      "data": {
+        "userId": "597f3a3f-f6a2-44fd-bd37-a06d434242d8",
+        "role": "ADMIN",
+        "email": "johncarloaganan26@gmail.com"
+      },
+      "error": null
+    },
+    {
+      "name": "tickets.query",
+      "count": 35,
+      "error": null,
+      "firstRow": {
+        "ticketId": "5e06880f-f0f6-4dcb-adb8-63d21bedf25c",
+        "status": "ISSUED",
+        "issuedAt": null,
+        "eventId": "88e2b8f7-61af-4825-a75a-7aa50ac81f09"
+      }
+    },
+    {
+      "name": "orders.query",
+      "count": 89,
+      "error": null,
+      "firstRow": {
+        "orderId": "4e93346a-75bf-4a7b-8180-753c9dc0544c",
+        "totalAmount": 0,
+        "status": "PAID",
+        "created_at": "2026-02-06T05:48:35.472052+00:00",
+        "eventId": "88e2b8f7-61af-4825-a75a-7aa50ac81f09"
+      }
+    },
+    {
+      "name": "full_calculation",
+      "result": {
+        "totalRegistrations": 35,
+        "usedCount": 3,
+        "attendanceRate": 8.571428571428571,
+        "totalRevenue": 0,
+        "paidOrdersCount": 87
+      }
+    }
+  ],
+  "isAdmin": true,
+  "effectiveRole": "ADMIN"
+}
