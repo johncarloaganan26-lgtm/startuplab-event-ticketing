@@ -24,24 +24,23 @@ export const getRegistrationsByEvent = async (req, res) => {
     const requesterId = req.user?.id;
     let { data: userProfile, error: profileErr } = await supabase
       .from('users')
-      .select('role')
+      .select('role, employerId')
       .eq('userId', requesterId)
       .maybeSingle();
 
     if (!userProfile && (!profileErr || profileErr.message?.includes('column "userId"'))) {
       const resp = await supabase
         .from('users')
-        .select('role')
-        .eq('id', requesterId)
+        .select('role, employerId')
+        .eq('userId', requesterId)
         .maybeSingle();
       userProfile = resp.data;
     }
 
     const userRole = userProfile?.role;
-    const isAdminOrStaff = userRole === 'ADMIN' || userRole === 'STAFF';
 
-    if (isAdminOrStaff) {
-      // Admins/Staff should only see registrations for events created by Admins or Staff
+    if (userRole === 'ADMIN') {
+      // Admins should only see registrations for events created by Admins or Staff
       const { data: adminUserIds } = await supabase.from('users').select('userId').in('role', ['ADMIN', 'STAFF']);
       const adminIds = (adminUserIds || []).map(u => u.userId);
 
@@ -53,6 +52,28 @@ export const getRegistrationsByEvent = async (req, res) => {
 
       if (!eventRow || !adminIds.includes(eventRow.createdBy)) {
         return res.status(403).json({ error: 'Forbidden: This event does not belong to the administrative domain' });
+      }
+    } else if (userRole === 'STAFF') {
+      let allowedCreatorIds = [requesterId];
+      if (userProfile?.employerId) {
+        allowedCreatorIds.push(userProfile.employerId);
+      }
+      const { data: invitedUsers } = await supabase
+        .from('users')
+        .select('userId')
+        .eq('employerId', requesterId);
+      if (invitedUsers && invitedUsers.length > 0) {
+        allowedCreatorIds = allowedCreatorIds.concat(
+          invitedUsers.map(u => u.userId).filter(Boolean)
+        );
+      }
+      const { data: eventRow } = await supabase
+        .from('events')
+        .select('createdBy')
+        .eq('eventId', eventId)
+        .maybeSingle();
+      if (!eventRow || !allowedCreatorIds.includes(eventRow.createdBy)) {
+        return res.status(403).json({ error: 'Forbidden: You do not have access to this event' });
       }
     } else {
       // Check if user owns the event
@@ -184,25 +205,24 @@ export const getAllRegistrations = async (req, res) => {
     const requesterId = req.user?.id;
     let { data: userProfile, error: profileErr } = await supabase
       .from('users')
-      .select('role')
+      .select('role, employerId')
       .eq('userId', requesterId)
       .maybeSingle();
 
     if (!userProfile && (!profileErr || profileErr.message?.includes('column "userId"'))) {
       const resp = await supabase
         .from('users')
-        .select('role')
-        .eq('id', requesterId)
+        .select('role, employerId')
+        .eq('userId', requesterId)
         .maybeSingle();
       userProfile = resp.data;
     }
 
     const userRole = userProfile?.role;
-    const isAdminOrStaff = userRole === 'ADMIN' || userRole === 'STAFF';
     let filteredEventIds = null;
 
-    if (isAdminOrStaff) {
-      // Admins/Staff only see registrations for events created by Admins/Staff
+    if (userRole === 'ADMIN') {
+      // Admins see registrations for events created by Admins/Staff
       const { data: adminUserIds } = await supabase.from('users').select('userId').in('role', ['ADMIN', 'STAFF']);
       const adminIds = (adminUserIds || []).map(u => u.userId);
 
@@ -211,6 +231,25 @@ export const getAllRegistrations = async (req, res) => {
         .select('eventId')
         .in('createdBy', adminIds);
       filteredEventIds = (adminEvents || []).map(e => e.eventId);
+    } else if (userRole === 'STAFF') {
+      let allowedCreatorIds = [requesterId];
+      if (userProfile?.employerId) {
+        allowedCreatorIds.push(userProfile.employerId);
+      }
+      const { data: invitedUsers } = await supabase
+        .from('users')
+        .select('userId')
+        .eq('employerId', requesterId);
+      if (invitedUsers && invitedUsers.length > 0) {
+        allowedCreatorIds = allowedCreatorIds.concat(
+          invitedUsers.map(u => u.userId).filter(Boolean)
+        );
+      }
+      const { data: staffEvents } = await supabase
+        .from('events')
+        .select('eventId')
+        .in('createdBy', allowedCreatorIds);
+      filteredEventIds = (staffEvents || []).map(e => e.eventId);
     } else {
       // Regular users only see attendees for their own events
       const { data: myEvents } = await supabase
@@ -378,7 +417,7 @@ export const checkInTicket = async (req, res) => {
 
     // Security: Check if user is Admin or Event Owner
     const requesterId = req.user?.id;
-    const { data: profile } = await supabase.from('users').select('role').eq('id', requesterId).maybeSingle();
+    const { data: profile } = await supabase.from('users').select('role').eq('userId', requesterId).maybeSingle();
     const isAdmin = profile?.role === 'ADMIN';
 
     if (!isAdmin) {

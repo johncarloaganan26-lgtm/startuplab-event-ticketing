@@ -16,6 +16,8 @@ import { isMissingColumnError, isMissingRelationError } from './organizerData.js
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_PATH = path.resolve(__dirname, '../templates/notificationEmail.html');
+const TICKET_TEMPLATE_PATH = path.resolve(__dirname, '../templates/OfflineEventTicket.html');
+const ONLINE_TICKET_TEMPLATE_PATH = path.resolve(__dirname, '../templates/OnlineEventInvite.html');
 
 export const NOTIFICATIONS_NOT_INITIALIZED_MESSAGE =
   'Notifications feature is not initialized. Run backend/database/notifications.sql first.';
@@ -158,26 +160,15 @@ export async function getSmtpConfig(organizerId = null, triggerUserId = null, re
     }
 
     if (organizerId && String(recipientUserId) === String(targetUserId)) {
-      debugLog(`🚫 [SMTP] Organizer (${targetUserId}) has NO custom settings. Blocking Admin fallback for owner.`);
+      debugLog(`🚫 [SMTP] Organizer (${targetUserId}) has NO custom settings.`);
       return null;
     }
   }
 
-  // 3. SYSTEM FALLBACK (Superadmin)
-  debugLog('🔍 [SMTP] Fallback to Superadmin settings...');
-  const { data: admins } = await supabase
-    .from('users')
-    .select('userId')
-    .eq('role', 'ADMIN')
-    .order('created_at', { ascending: true });
-
-  if (admins && admins.length > 0) {
-    for (const admin of admins) {
-      const adminConfig = await fetchSmtpFromSettingsTable(admin.userId);
-      if (adminConfig) return adminConfig;
-    }
-  }
-
+  // 3. NO SYSTEM FALLBACK
+  // Per developer request, platform (robiemail) should NOT be used if the organizer
+  // did not set up their own explicit email config.
+  debugLog('🔍 [SMTP] No organizer config found. Refusing to fallback to platform/admin emails.');
   return null;
 }
 
@@ -296,10 +287,40 @@ export async function markAllNotificationsReadForUser(userId) {
 
 async function renderEmailHtml(payload) {
   try {
+    const metadata = payload.metadata || {};
+
+    if (payload.type === 'TICKET_DELIVERY') {
+      const isOnline = String(metadata.locationType || '').toLowerCase() === 'online';
+      const templateToUse = isOnline ? ONLINE_TICKET_TEMPLATE_PATH : TICKET_TEMPLATE_PATH;
+
+      if (!fs.existsSync(templateToUse)) return null;
+      let html = fs.readFileSync(templateToUse, 'utf-8');
+
+      const ticketReplacements = {
+        '1.name': payload.name || 'Attendee',
+        '1.meta.eventName': metadata.eventName || '',
+        '1.meta.eventDescription': metadata.eventDescription || '',
+        '1.meta.eventLocation': metadata.eventLocation || '',
+        '1.meta.eventStartAt': metadata.eventStartAt || '',
+        '1.meta.eventEndAt': metadata.eventEndAt || '',
+        '1.meta.orderId': metadata.orderId || '',
+        '1.meta.streamingPlatform': metadata.streamingPlatform || '',
+        '1.meta.ticket.ticketCode': metadata.ticket?.ticketCode || '',
+        '1.meta.ticket.qrPayload': metadata.ticket?.qrPayload || '',
+        '1.meta.eventImageUrl': metadata.eventImageUrl || 'https://xmjdcbzgdfylbqkjoyyb.supabase.co/storage/v1/object/public/startuplab-business-ticketing/assets/assets/cover-placeholder.png'
+      };
+
+      Object.entries(ticketReplacements).forEach(([key, value]) => {
+        // Need to escape the dots in key for regex as it has literal dots like 1.meta.eventName
+        const regex = new RegExp(`{{${key.replace(/\./g, '\\.')}}}`, 'g');
+        html = html.replace(regex, String(value || ''));
+      });
+      return html;
+    }
+
     if (!fs.existsSync(TEMPLATE_PATH)) return null;
     let html = fs.readFileSync(TEMPLATE_PATH, 'utf-8');
 
-    const metadata = payload.metadata || {};
     const typeLabelMap = {
       EVENT_LIKED: 'NEW LIKE',
       LIKE_CONFIRMATION: 'THANKS',
@@ -450,6 +471,11 @@ export async function notifyUserByPreference({
 
   // DELIVER EMAIL (If enabled and email resolved)
   if (emailEnabled && finalRecipientEmail) {
+    if (organizerId && !smtpConfig) {
+      debugLog('🚫 [Notifications] Request explicitly requires organizer email config (no system config fallback for tickets). Email SKIPPED.');
+      return { inApp: inAppDelivered, email: false };
+    }
+
     const to = finalRecipientEmail;
     const subject = String(emailSubject || title || 'Notification');
     const text = String(emailText || message || '');

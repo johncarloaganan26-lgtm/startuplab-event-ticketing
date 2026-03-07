@@ -58,7 +58,7 @@ const getFilteredEventIds = async (req) => {
     if (isUuid(requesterId)) {
       const byUserId = await supabase
         .from('users')
-        .select('userId, role, email')
+        .select('userId, role, email, employerId')
         .eq('userId', requesterId)
         .maybeSingle();
       if (byUserId.error) {
@@ -73,7 +73,7 @@ const getFilteredEventIds = async (req) => {
     if (!userProfile && requesterEmail) {
       const byEmail = await supabase
         .from('users')
-        .select('userId, role, email')
+        .select('userId, role, email, employerId')
         .eq('email', requesterEmail)
         .maybeSingle();
       if (byEmail.error) {
@@ -84,33 +84,53 @@ const getFilteredEventIds = async (req) => {
     }
 
     const userRole = normalizeRole(userProfile?.role);
-    const isAdminOrStaff = ADMIN_STAFF_ROLES.includes(userRole);
+    const effectiveUserId = userProfile?.userId || (isUuid(requesterId) ? requesterId : null);
 
-    if (isAdminOrStaff) {
-      // Admin/Staff can view global analytics across all events.
-      // `null` means "do not apply eventId filter".
-      return null;
+    if (userRole === 'ADMIN') {
+      // Admins should ONLY see events created by Admins, isolating them from Organizer data
+      const { data: adminUsers } = await supabase.from('users').select('userId').eq('role', 'ADMIN');
+      const adminIds = sanitizeUuidList((adminUsers || []).map(u => u.userId));
+      const { data: adminEvents } = await supabase.from('events').select('eventId').in('createdBy', adminIds);
+      return sanitizeUuidList((adminEvents || []).map(e => e.eventId));
     }
 
-    const effectiveUserId = userProfile?.userId || (isUuid(requesterId) ? requesterId : null);
     if (!effectiveUserId) return [];
 
-    // Regular users only see their own events
+    let allowedCreatorIds = [effectiveUserId];
+
+    if (userRole === 'STAFF') {
+      // Staff sees their own events + their employer's events + their invited organizers' events
+      if (userProfile?.employerId) {
+        allowedCreatorIds.push(userProfile.employerId);
+      }
+      const { data: invitedUsers } = await supabase
+        .from('users')
+        .select('userId')
+        .eq('employerId', effectiveUserId);
+      if (invitedUsers && invitedUsers.length > 0) {
+        allowedCreatorIds = allowedCreatorIds.concat(
+          invitedUsers.map(u => u.userId).filter(Boolean)
+        );
+      }
+    }
+
+    // Regular users (Organizers) and Staff only see events they created or are allowed to see
     const { data: myEvents, error: myEventsErr } = await supabase
       .from('events')
       .select('eventId')
-      .eq('createdBy', effectiveUserId);
+      .in('createdBy', allowedCreatorIds);
+
     if (myEventsErr) {
       logAnalyticsError('getFilteredEventIds.myEvents', myEventsErr, { requesterId, effectiveUserId });
-      // Fail-open to global scope to avoid breaking dashboard on lookup/filter drift.
-      return null;
+      // Fail-open to global scope ONLY for ADMIN, for Staff/Organizer fail closed to empty array
+      return [];
     }
 
     return sanitizeUuidList((myEvents || []).map(e => e.eventId));
   } catch (err) {
     logAnalyticsError('getFilteredEventIds', err, { requesterId: req.user?.id, requesterEmail: req.user?.email });
-    // Fail-open to global scope to keep analytics available.
-    return null;
+    // Fail-secure to empty array instead of exposing global scope
+    return [];
   }
 };
 
@@ -433,7 +453,7 @@ export const getAuditLogDetail = async (req, res) => {
         const fallbackResp = await supabase
           .from('users')
           .select('id, name, email, role')
-          .eq('id', log.actorUserId)
+          .eq('userId', log.actorUserId)
           .maybeSingle();
         actor = fallbackResp.data;
       }
@@ -550,14 +570,31 @@ export const getAuditLogs = async (req, res) => {
     let query = supabase
       .from('auditLogs')
       .select('auditLogId, actionType, orderId, ticketId, paymentTransactionId, webhookEventsId, actorUserId, createdAt', { count: 'exact' });
+    const role = normalizeRole(req.user?.role);
+    const allowedEventIds = filteredEventIds;
 
-    if (filteredEventIds) {
-      // Audit logs don't directly have eventId, we'd need a join or complex filter.
-      // For now, if filteredEventIds is present (not admin), we'll filter by logs where the user is the actor OR it's their event's order
-      // But simpler: just filter by actorUserId if they are not admin, or just don't show generic audit logs.
-      // Actually, if it's a regular user, they probably only want to see THEIR actions?
-      // Re-evaluating: user.id == actorUserId
-      query = query.eq('actorUserId', req.user.id);
+    const { data: eventOrders } = allowedEventIds && allowedEventIds.length > 0
+      ? await supabase.from('orders').select('orderId').in('eventId', allowedEventIds)
+      : { data: [] };
+
+    const orderIds = (eventOrders || []).map(o => o.orderId);
+
+    if (orderIds.length > 0) {
+      if (role === 'ADMIN') {
+        const { data: adminUsers } = await supabase.from('users').select('userId').eq('role', 'ADMIN');
+        const adminIds = (adminUsers || []).map(u => u.userId);
+        query = query.or(`actorUserId.in.(${adminIds.join(',')}),orderId.in.(${orderIds.join(',')})`);
+      } else {
+        query = query.or(`actorUserId.eq.${req.user.id},orderId.in.(${orderIds.join(',')})`);
+      }
+    } else {
+      if (role === 'ADMIN') {
+        const { data: adminUsers } = await supabase.from('users').select('userId').eq('role', 'ADMIN');
+        const adminIds = (adminUsers || []).map(u => u.userId);
+        query = query.filter('actorUserId', 'in', `(${adminIds.join(',')})`);
+      } else {
+        query = query.eq('actorUserId', req.user.id);
+      }
     }
 
     const { data, error, count } = await query

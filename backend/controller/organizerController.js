@@ -261,7 +261,7 @@ export const getMyOrganizer = async (req, res) => {
         userResp = await supabase
           .from('users')
           .select('employerId')
-          .eq('id', authUserId)
+          .eq('userId', authUserId)
           .maybeSingle();
         userRow = userResp.data;
         userErr = userResp.error;
@@ -280,7 +280,7 @@ export const getMyOrganizer = async (req, res) => {
           userResp = await supabase
             .from('users')
             .select('*')
-            .eq('id', authUserId)
+            .eq('userId', authUserId)
             .maybeSingle();
           userRow = userResp.data;
           userErr = userResp.error;

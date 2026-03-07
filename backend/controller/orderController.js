@@ -271,24 +271,22 @@ export const createOrder = async (req, res) => {
             ticket: t
           }
         };
-        console.log('[MakeWebhook] Sending notification payload:', JSON.stringify(notificationPayload, null, 2));
-        sendMakeNotification(notificationPayload).catch(() => { });
+        // LEGACY: The Maker webhook formerly sent tickets via "robiemail". Disabled.
+        console.log('[MakeWebhook] Skipping Send - only using Organizer SMTP:', notificationPayload.type);
+        // sendMakeNotification(notificationPayload).catch(() => { });
 
-        // NEW: Notify Attendee directly via SMTP (respecting Organizer settings)
+        // NEW: Notify Attendee directly via SMTP with ACTUAL TICKET format
         try {
           await notifyUserByPreference({
+            name: buyerName, // Needed for ticket templating
             recipientFallbackEmail: buyerEmail,
             eventId,
             organizerId: event?.organizerId,
-            type: 'FOLLOW_CONFIRMATION', // Use existing templates for 'THANKS' styling
-            title: `You're going to ${event?.eventName || 'the event'}!`,
-            message: `Thank you for registering! Your tickets for "${event?.eventName}" are now available in your "My Tickets" section.`,
+            type: 'TICKET_DELIVERY',
+            title: `Your Ticket Confirmed: ${event?.eventName || 'the event'}!`,
+            message: `Thank you for registering! Your tickets for "${event?.eventName}" are attached below.`,
             metadata: {
-              eventName: event?.eventName,
-              tag: 'THANK YOU',
-              typeIcon: '🎉',
-              actionLabel: 'VIEW MY TICKETS',
-              actionUrl: process.env.FRONTEND_URL ? `${process.env.FRONTEND_URL.replace(/\/$/, '')}/my-tickets` : null,
+              ...notificationPayload.meta // Injects all the make.com properties to match the ticket template variables
             }
           });
         } catch (err) {

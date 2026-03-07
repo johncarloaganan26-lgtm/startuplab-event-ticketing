@@ -700,7 +700,7 @@ export const AdminDashboard: React.FC = () => {
         });
       loadTransactions(1);
       loadOrders(1);
-      if (role === UserRole.ADMIN) {
+      if (role === UserRole.ADMIN || role === UserRole.ORGANIZER) {
         loadAuditLogs(1);
       }
     }
@@ -856,7 +856,7 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {role === UserRole.ADMIN && (
+        {(role === UserRole.ADMIN || role === UserRole.ORGANIZER) && (
           <Card className="p-6">
             <h3 className="font-bold text-lg mb-6 flex items-center text-[#2E2E2F] hover:text-[#2E2E2F]">
               <ICONS.CheckCircle className="w-5 h-5 mr-2 text-[#2E2E2F]" />

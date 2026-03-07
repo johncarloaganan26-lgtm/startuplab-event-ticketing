@@ -6,6 +6,7 @@ import { UserRole } from '../../types';
 import { apiService } from '../../services/apiService';
 import { AdminPaymentSettings } from './AdminPaymentSettings';
 import { SubscriptionPlans } from './SubscriptionPlans';
+import { useUser } from '../../context/UserContext';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -58,7 +59,11 @@ export const SettingsView: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeSubTab, setActiveSubTab] = useState<'directory' | 'permissions'>('directory');
 
-  const TABS = [
+  const { role } = useUser();
+
+  const TABS = role === UserRole.STAFF ? [
+    { id: 'profile', label: 'Profile & Security', description: 'Personal security' }
+  ] : [
     { id: 'team', label: 'Teams & Access', description: 'Internal team management and permissions' },
     { id: 'plans', label: 'Subscription Plans', description: 'Tier configuration' },
     { id: 'email', label: 'Email Configuration', description: 'SMTP server settings' },
@@ -69,7 +74,7 @@ export const SettingsView: React.FC = () => {
   type SettingsTab = 'team' | 'plans' | 'email' | 'payments' | 'profile';
 
   const requestedTab = searchParams.get('tab');
-  const activeTab = (TABS.some((tab) => tab.id === requestedTab) ? requestedTab : 'team') as SettingsTab;
+  const activeTab = (TABS.some((tab) => tab.id === requestedTab) ? requestedTab : (role === UserRole.STAFF ? 'profile' : 'team')) as SettingsTab;
   const setActiveTab = (tab: SettingsTab) => {
     setSearchParams({ tab });
   };

@@ -113,8 +113,25 @@ app.use("/api/plans", planRoutes);
 app.use("/api/admin/events", authMiddleware, adminEventRoutes);
 app.use("/api/admin/plans", authMiddleware, adminPlanRoutes);
 
-startReservationCleanup();
+if (process.env.VERCEL !== "1") {
+  startReservationCleanup();
+}
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.get("/api/cron/cleanup", async (req, res) => {
+  try {
+    const { runReservationCleanup } = await import("./utils/reservationCleanup.js");
+    const result = await runReservationCleanup();
+    res.status(200).json({ success: true, ...result });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
+
+if (process.env.VERCEL !== "1") {
+  const PORT = process.env.BACKEND_PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+export default app;

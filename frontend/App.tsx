@@ -108,6 +108,8 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const navigate = useNavigate();
   const { role, email, name, imageUrl, isAuthenticated, clearUser, setUser, canViewEvents, canEditEvents, canManualCheckIn } = useUser();
   const isStaff = role === UserRole.STAFF;
+  const [organizerSidebarLogoUrl, setOrganizerSidebarLogoUrl] = React.useState('');
+  const [organizerSidebarName, setOrganizerSidebarName] = React.useState('');
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
   const [profileModalOpen, setProfileModalOpen] = React.useState(false);
   const [nameInput, setNameInput] = React.useState('');
@@ -158,6 +160,32 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   React.useEffect(() => {
     if (profileModalOpen) fetchProfile();
   }, [profileModalOpen]);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    const loadOrganizerSidebarBrand = async () => {
+      if (role !== UserRole.STAFF) {
+        if (isMounted) {
+          setOrganizerSidebarLogoUrl('');
+          setOrganizerSidebarName('');
+        }
+        return;
+      }
+      try {
+        const organizer = await apiService.getMyOrganizer();
+        if (!isMounted) return;
+        setOrganizerSidebarLogoUrl(organizer?.profileImageUrl || '');
+        setOrganizerSidebarName((organizer?.organizerName || '').trim());
+      } catch {
+        if (isMounted) {
+          setOrganizerSidebarLogoUrl('');
+          setOrganizerSidebarName('');
+        }
+      }
+    };
+    loadOrganizerSidebarBrand();
+    return () => { isMounted = false; };
+  }, [role, location.pathname]);
 
   React.useEffect(() => {
     return () => {
@@ -277,7 +305,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   useEffect(() => {
     if (!isAuthenticated) return;
     if (!role) return;
-    const staffAllowed = ['/events', '/attendees', '/checkin'];
+    const staffAllowed = ['/events', '/attendees', '/checkin', '/settings'];
     const adminAllowed = ['/dashboard', '/events', '/attendees', '/checkin', '/settings'];
     const userAllowed = ['/user-home', '/my-events', '/user-settings', '/organizer-settings', '/account-settings', '/user/attendees', '/user/checkin', '/dashboard'];
 
@@ -378,14 +406,28 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         className={`bg-[#F2F2F2] border-r border-[#2E2E2F]/10 hidden md:flex flex-col fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-72' : 'w-20'
           }`}
       >
-        <div className={`h-20 flex items-center justify-center transition-all duration-300 border-b border-[#2E2E2F]/5 ${desktopSidebarOpen ? 'px-6' : 'px-2'}`}>
+        <div className={`min-h-[120px] py-4 flex items-center justify-center transition-all duration-300 border-b border-[#2E2E2F]/5 ${desktopSidebarOpen ? 'px-6' : 'px-2'}`}>
           <Link to="/dashboard" className="flex items-center justify-center w-full group transition-all duration-500 transform hover:scale-[1.05] active:scale-[0.95] relative">
             <div className="absolute inset-0 bg-[#38BDF2]/5 rounded-2xl opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500" />
-            {desktopSidebarOpen ? (
+            {isStaff ? (
+              organizerSidebarLogoUrl ? (
+                <img
+                  src={organizerSidebarLogoUrl}
+                  alt={organizerSidebarName || 'Organizer logo'}
+                  className={`object-contain transition-all duration-700 drop-shadow-2xl group-hover:brightness-110 relative z-10 ${desktopSidebarOpen ? 'h-[120px] w-full max-w-[280px]' : 'h-14 w-14'}`}
+                />
+              ) : (
+                <img
+                  src="https://xmjdcbzgdfylbqkjoyyb.supabase.co/storage/v1/object/public/startuplab-business-ticketing/assets/assets/image%20(1).svg"
+                  alt="StartupLab Logo"
+                  className={`object-contain transition-all duration-700 drop-shadow-2xl group-hover:brightness-110 relative z-10 ${desktopSidebarOpen ? 'h-[120px] w-full max-w-[280px]' : 'h-14 w-14'}`}
+                />
+              )
+            ) : desktopSidebarOpen ? (
               <img
                 src="https://xmjdcbzgdfylbqkjoyyb.supabase.co/storage/v1/object/public/startuplab-business-ticketing/assets/assets/image%20(1).svg"
                 alt="StartupLab Business Center Logo"
-                className="h-[76px] w-full max-w-[260px] object-contain animate-in fade-in zoom-in duration-700 drop-shadow-2xl group-hover:brightness-110 transition-all relative z-10"
+                className="h-[120px] w-full max-w-[280px] object-contain animate-in fade-in zoom-in duration-700 drop-shadow-2xl group-hover:brightness-110 transition-all relative z-10"
               />
             ) : (
               <img
@@ -512,46 +554,50 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                       <p className="text-xs font-semibold text-[#2E2E2F] truncate">{displayName}</p>
                       <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#2E2E2F]/45 mt-1">{roleLabel}</p>
                     </div>
-                    <button
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
-                      onClick={() => {
-                        navigate('/settings?tab=team');
-                        setUserMenuOpen(false);
-                      }}
-                    >
-                      <ICONS.Users className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                      <span>Teams & Access</span>
-                    </button>
-                    <button
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
-                      onClick={() => {
-                        navigate('/settings?tab=plans');
-                        setUserMenuOpen(false);
-                      }}
-                    >
-                      <ICONS.Layout className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                      <span>Subscription Plans</span>
-                    </button>
-                    <button
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
-                      onClick={() => {
-                        navigate('/settings?tab=email');
-                        setUserMenuOpen(false);
-                      }}
-                    >
-                      <ICONS.Mail className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                      <span>Email Setup</span>
-                    </button>
-                    <button
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
-                      onClick={() => {
-                        navigate('/settings?tab=payments');
-                        setUserMenuOpen(false);
-                      }}
-                    >
-                      <ICONS.CreditCard className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                      <span>Payment Gateway</span>
-                    </button>
+                    {role !== UserRole.STAFF && (
+                      <>
+                        <button
+                          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
+                          onClick={() => {
+                            navigate('/settings?tab=team');
+                            setUserMenuOpen(false);
+                          }}
+                        >
+                          <ICONS.Users className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                          <span>Teams & Access</span>
+                        </button>
+                        <button
+                          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
+                          onClick={() => {
+                            navigate('/settings?tab=plans');
+                            setUserMenuOpen(false);
+                          }}
+                        >
+                          <ICONS.Layout className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                          <span>Subscription Plans</span>
+                        </button>
+                        <button
+                          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
+                          onClick={() => {
+                            navigate('/settings?tab=email');
+                            setUserMenuOpen(false);
+                          }}
+                        >
+                          <ICONS.Mail className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                          <span>Email Setup</span>
+                        </button>
+                        <button
+                          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
+                          onClick={() => {
+                            navigate('/settings?tab=payments');
+                            setUserMenuOpen(false);
+                          }}
+                        >
+                          <ICONS.CreditCard className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                          <span>Payment Gateway</span>
+                        </button>
+                      </>
+                    )}
                     <button
                       className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
                       onClick={() => {
@@ -1386,7 +1432,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     let isMounted = true;
 
     const loadOrganizerSidebarBrand = async () => {
-      if (role !== UserRole.ORGANIZER) {
+      if (role !== UserRole.ORGANIZER && role !== UserRole.STAFF) {
         if (isMounted) {
           setOrganizerSidebarLogoUrl('');
           setOrganizerSidebarName('');
@@ -1465,20 +1511,20 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
         className={`bg-[#F2F2F2] border-r border-[#2E2E2F]/10 hidden md:flex flex-col fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-72' : 'w-20'
           }`}
       >
-        <div className={`h-20 flex items-center justify-center transition-all duration-300 border-b border-[#2E2E2F]/5 ${desktopSidebarOpen ? 'px-6' : 'px-2'}`}>
+        <div className={`min-h-[120px] py-4 flex items-center justify-center transition-all duration-300 border-b border-[#2E2E2F]/5 ${desktopSidebarOpen ? 'px-6' : 'px-2'}`}>
           <Link to="/user-home" className="flex items-center justify-center w-full group transition-all duration-500 transform hover:scale-[1.05] active:scale-[0.95] relative">
             <div className="absolute inset-0 bg-[#38BDF2]/5 rounded-2xl opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500" />
             {hasOrganizerSidebarLogo ? (
               <img
                 src={organizerSidebarLogoUrl}
                 alt={organizerSidebarLogoAlt}
-                className={`object-contain transition-all duration-700 drop-shadow-2xl group-hover:brightness-110 relative z-10 ${desktopSidebarOpen ? 'h-[76px] w-full max-w-[260px]' : 'h-14 w-14'}`}
+                className={`object-contain transition-all duration-700 drop-shadow-2xl group-hover:brightness-110 relative z-10 ${desktopSidebarOpen ? 'h-[120px] w-full max-w-[280px]' : 'h-14 w-14'}`}
               />
             ) : (
               <img
                 src="https://xmjdcbzgdfylbqkjoyyb.supabase.co/storage/v1/object/public/startuplab-business-ticketing/assets/assets/image%20(1).svg"
                 alt="StartupLab Logo"
-                className={`object-contain transition-all duration-700 drop-shadow-2xl group-hover:brightness-110 relative z-10 ${desktopSidebarOpen ? 'h-[76px] w-full max-w-[260px]' : 'h-14 w-14'}`}
+                className={`object-contain transition-all duration-700 drop-shadow-2xl group-hover:brightness-110 relative z-10 ${desktopSidebarOpen ? 'h-[120px] w-full max-w-[280px]' : 'h-14 w-14'}`}
               />
             )}
           </Link>
@@ -1845,7 +1891,7 @@ const App: React.FC = () => (
       <Route path="/events" element={<RequireRoleRoute allow={[UserRole.ADMIN, UserRole.STAFF]}><PortalLayout><EventsManagement /></PortalLayout></RequireRoleRoute>} />
       <Route path="/attendees" element={<RequireRoleRoute allow={[UserRole.ADMIN, UserRole.STAFF]}><PortalLayout><RegistrationsList /></PortalLayout></RequireRoleRoute>} />
       <Route path="/checkin" element={<RequireRoleRoute allow={[UserRole.ADMIN, UserRole.STAFF]}><PortalLayout><CheckIn /></PortalLayout></RequireRoleRoute>} />
-      <Route path="/settings" element={<RequireRoleRoute allow={[UserRole.ADMIN]}><PortalLayout><SettingsView /></PortalLayout></RequireRoleRoute>} />
+      <Route path="/settings" element={<RequireRoleRoute allow={[UserRole.ADMIN, UserRole.STAFF]}><PortalLayout><SettingsView /></PortalLayout></RequireRoleRoute>} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

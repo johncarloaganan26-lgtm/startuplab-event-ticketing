@@ -48,7 +48,7 @@ export const updateUserAvatar = async (req, res) => {
       const resp = await db
         .from('users')
         .update({ imageUrl })
-        .eq('id', userId)
+        .eq('userId', userId)
         .select('id, name, email, role, imageUrl')
         .maybeSingle();
       data = resp.data; error = resp.error;
@@ -90,7 +90,7 @@ export const updateUserName = async (req, res) => {
       const resp = await db
         .from('users')
         .update({ name })
-        .eq('id', userId)
+        .eq('userId', userId)
         .select('id, name, email, role, imageUrl')
         .maybeSingle();
       data = resp.data; error = resp.error;
@@ -180,7 +180,7 @@ export const whoAmI = async (req, res) => {
       resp = await db
         .from('users')
         .select("*")
-        .eq('id', userId)
+        .eq('userId', userId)
         .maybeSingle();
       data = resp.data; error = resp.error;
     }
@@ -221,7 +221,7 @@ export const getAllUsers = async (req, res) => {
         let resp = await db.from('users').select('role').eq('userId', requesterId).maybeSingle();
         roleRow = resp.data;
         if (!roleRow || resp.error) {
-          resp = await db.from('users').select('role').eq('id', requesterId).maybeSingle();
+          resp = await db.from('users').select('role').eq('userId', requesterId).maybeSingle();
           roleRow = resp.data;
         }
       }
@@ -232,16 +232,16 @@ export const getAllUsers = async (req, res) => {
       requesterRole = normalizeRole(roleRow?.role || '');
     }
 
-    if (requesterRole !== 'ADMIN' && requesterRole !== 'ORGANIZER') {
+    if (requesterRole !== 'ADMIN' && requesterRole !== 'ORGANIZER' && requesterRole !== 'STAFF') {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
     // Scope rules:
-    // - ORGANIZER: only their own invited team (employerId = organizer auth id)
+    // - ORGANIZER or STAFF: only their own invited team/organizers (employerId = requester auth id)
     // - ADMIN (teamOnly=true): only admin's own scoped team
     // - ADMIN (default): exclude members of other organizations for privacy
     const shouldScopeToRequesterTeam =
-      requesterRole === 'ORGANIZER' || (requesterRole === 'ADMIN' && teamOnlyRequested);
+      requesterRole === 'ORGANIZER' || requesterRole === 'STAFF' || (requesterRole === 'ADMIN' && teamOnlyRequested);
 
     console.log('[getAllUsers] requesterId:', requesterId, 'requesterRole:', requesterRole, 'teamOnly:', teamOnlyRequested);
 
@@ -322,7 +322,7 @@ export const updatePermissions = async (req, res) => {
         const byUserId = await db.from('users').select('role').eq('userId', requesterId).maybeSingle();
         roleRow = byUserId.data;
         if (!roleRow || byUserId.error) {
-          const byId = await db.from('users').select('role').eq('id', requesterId).maybeSingle();
+          const byId = await db.from('users').select('role').eq('userId', requesterId).maybeSingle();
           roleRow = byId.data;
         }
       }
@@ -333,7 +333,7 @@ export const updatePermissions = async (req, res) => {
       requesterRole = normalizeRole(roleRow?.role || '');
     }
 
-    if (requesterRole !== 'ADMIN' && requesterRole !== 'ORGANIZER') {
+    if (requesterRole !== 'ADMIN' && requesterRole !== 'ORGANIZER' && requesterRole !== 'STAFF') {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
@@ -356,7 +356,7 @@ export const updatePermissions = async (req, res) => {
       targetResp = await db
         .from('users')
         .select('id, role, employerId')
-        .eq('id', id)
+        .eq('userId', id)
         .maybeSingle();
       target = targetResp.data;
       targetError = targetResp.error;
@@ -367,7 +367,7 @@ export const updatePermissions = async (req, res) => {
       target = targetResp.data;
       targetError = targetResp.error;
       if ((!target && !targetError) || (targetError && targetError.message?.includes('column "userId"'))) {
-        targetResp = await db.from('users').select('*').eq('id', id).maybeSingle();
+        targetResp = await db.from('users').select('*').eq('userId', id).maybeSingle();
         target = targetResp.data;
         targetError = targetResp.error;
       }
@@ -379,12 +379,12 @@ export const updatePermissions = async (req, res) => {
     const targetEmployerId = target.employerId || target.employerid || null;
     const targetRole = normalizeRole(target.role);
 
-    if (requesterRole === 'ORGANIZER') {
+    if (requesterRole === 'ORGANIZER' || requesterRole === 'STAFF') {
       if (!targetEmployerId || String(targetEmployerId) !== String(requesterId || '')) {
         return res.status(403).json({ error: 'Forbidden: team scope mismatch' });
       }
-      if (targetRole !== 'STAFF') {
-        return res.status(403).json({ error: 'Forbidden: only staff permissions can be changed' });
+      if (targetRole !== 'STAFF' && targetRole !== 'ORGANIZER') {
+        return res.status(403).json({ error: 'Forbidden: you cannot manage this role' });
       }
     }
 
@@ -405,7 +405,7 @@ export const updatePermissions = async (req, res) => {
       const resp = await db
         .from('users')
         .update({ canviewevents: canViewEvents, caneditevents: canEditEvents, canmanualcheckin: canManualCheckIn })
-        .eq('id', id)
+        .eq('userId', id)
         .select('id, name, email, role, canviewevents, caneditevents, canmanualcheckin')
         .maybeSingle();
       data = resp.data; error = resp.error;

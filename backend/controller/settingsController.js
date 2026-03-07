@@ -160,7 +160,7 @@ export async function updateHitPaySettings(req, res) {
 
         // Ensure only admin can save scope=admin
         if (scope === 'admin') {
-            let { data: userRecord } = await supabase.from('users').select('role').eq('id', userId).maybeSingle();
+            let { data: userRecord } = await supabase.from('users').select('role').eq('userId', userId).maybeSingle();
 
             // Fallback to userId column if id didn't return a record
             if (!userRecord) {

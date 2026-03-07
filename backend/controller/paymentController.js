@@ -49,9 +49,9 @@ export const getHitpayCredentials = async (orderId) => {
 
   // Fallback to platform-level Admin credentials if no owner is found (e.g. platform subscriptions)
   if (!ownerUserId) {
-    const { data: admin } = await supabase.from('users').select('id').eq('role', 'ADMIN').limit(1).maybeSingle();
-    if (admin?.id) {
-      ownerUserId = admin.id;
+    const { data: admin } = await supabase.from('users').select('userId').eq('role', 'ADMIN').limit(1).maybeSingle();
+    if (admin?.userId) {
+      ownerUserId = admin.userId;
     }
   }
 
@@ -846,46 +846,53 @@ export const hitpayWebhook = async (req, res) => {
               .select('eventName, description, startAt, endAt, locationText, locationType, imageUrl, streamingPlatform, organizerId')
               .eq('eventId', order.eventId)
               .maybeSingle()
-            sendMakeNotification({
-              type: 'ticket',
-              email: order.buyerEmail,
-              name: order.buyerName,
-              meta: {
-                eventId: order.eventId,
-                orderId: order.orderId,
-                eventName: event?.eventName || '',
-                eventDescription: event?.description || '',
-                eventStartAt: event?.startAt ? new Date(event.startAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : '',
-                eventEndAt: event?.endAt ? new Date(event.endAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : '',
-                eventLocation: event?.locationText || '',
-                locationType: event?.locationType || '',
-                eventImageUrl: event?.imageUrl || '',
-                streamingPlatform: event?.streamingPlatform || '',
-                ticket: { ticketCode, qrPayload: ticketCode, status: 'ISSUED' }
-              }
-            }).catch(() => { })
+            // LEGACY: The following Make webhook formerly sent tickets via "robiemail". 
+            // It has been disabled so ONLY the organizer's SMTP config is used.
+            // sendMakeNotification({
+            //   type: 'ticket',
+            //   email: order.buyerEmail,
+            //   name: order.buyerName,
+            //   meta: {
+            //     eventId: order.eventId,
+            //     orderId: order.orderId,
+            //     eventName: event?.eventName || '',
+            //     eventDescription: event?.description || '',
+            //     eventStartAt: event?.startAt ? new Date(event.startAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : '',
+            //     eventEndAt: event?.endAt ? new Date(event.endAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : '',
+            //     eventLocation: event?.locationText || '',
+            //     locationType: event?.locationType || '',
+            //     eventImageUrl: event?.imageUrl || '',
+            //     streamingPlatform: event?.streamingPlatform || '',
+            //     ticket: { ticketCode, qrPayload: ticketCode, status: 'ISSUED' }
+            //   }
+            // }).catch(() => { })
 
-            // Send direct "Thank You" email once per attendee email
-            if (i === 0) { // Send only for the first ticket to avoid spamming for multiple tickets in one order
-              try {
-                await notifyUserByPreference({
-                  recipientFallbackEmail: order.buyerEmail,
+            // Send direct "Thank You" email and exact Ticket Delivery for EACH purchased ticket
+            try {
+              await notifyUserByPreference({
+                name: order.buyerName,
+                recipientFallbackEmail: order.buyerEmail,
+                eventId: order.eventId,
+                organizerId: event?.organizerId,
+                type: 'TICKET_DELIVERY',
+                title: `Your Ticket Confirmed: ${event?.eventName || 'the event'}!`,
+                message: `Thank you for your order! Your tickets for "${event?.eventName}" are attached below.`,
+                metadata: {
                   eventId: order.eventId,
-                  organizerId: event?.organizerId,
-                  type: 'FOLLOW_CONFIRMATION',
-                  title: `Thanks for your purchase!`,
-                  message: `Thank you for your order! Your tickets for "${event?.eventName}" are now ready. You can access them anytime in your "My Tickets" section.`,
-                  metadata: {
-                    eventName: event?.eventName,
-                    tag: 'THANK YOU',
-                    typeIcon: '🎟️',
-                    actionLabel: 'VIEW MY TICKETS',
-                    actionUrl: process.env.FRONTEND_URL ? `${process.env.FRONTEND_URL.replace(/\/$/, '')}/my-tickets` : null,
-                  }
-                });
-              } catch (err) {
-                console.error('[Payments] Attendee notification failed:', err.message);
-              }
+                  orderId: order.orderId,
+                  eventName: event?.eventName || '',
+                  eventDescription: event?.description || '',
+                  eventStartAt: event?.startAt ? new Date(event.startAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : '',
+                  eventEndAt: event?.endAt ? new Date(event.endAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : '',
+                  eventLocation: event?.locationText || '',
+                  locationType: event?.locationType || '',
+                  eventImageUrl: event?.imageUrl || '',
+                  streamingPlatform: event?.streamingPlatform || '',
+                  ticket: { ticketCode, qrPayload: ticketCode, status: 'ISSUED' }
+                }
+              });
+            } catch (err) {
+              console.error('[Payments] Attendee notification failed:', err.message);
             }
           }
         }

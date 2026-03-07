@@ -122,18 +122,38 @@ export const listAdminEvents = async (req, res) => {
   try {
     const search = (req.query?.search || '').toString().trim();
 
-    // 1) Build set of admin/staff creator IDs from users table
+    // 1) Build set of allowed creator IDs based on requester role
     const { data: userRows, error: userErr } = await supabase
       .from('users')
-      .select('userId, role');
+      .select('userId, role, employerId');
     if (userErr) return res.status(500).json({ error: userErr.message });
 
-    const adminRoleIds = new Set(
-      (userRows || [])
-        .filter((u) => ADMIN_ROLES.includes(String(u.role || '').toUpperCase()))
-        .map((u) => u.userId)
-        .filter(Boolean)
-    );
+    const requesterId = req.user?.id;
+    const requester = userRows.find((u) => String(u.userId) === String(requesterId));
+    const requesterRole = String(requester?.role || req.user?.role || '').toUpperCase();
+
+    const allowedCreatorIds = new Set();
+
+    if (requesterRole === 'STAFF') {
+      // Staff sees their own events, events from their employer, and events from organizers they invited
+      allowedCreatorIds.add(requesterId);
+      if (requester?.employerId) {
+        allowedCreatorIds.add(String(requester.employerId));
+      }
+      for (const u of userRows) {
+        const empId = String(u.employerId || '');
+        if (empId === String(requesterId)) {
+          allowedCreatorIds.add(String(u.userId));
+        }
+      }
+    } else {
+      // Default Admin behavior: see all ADMIN and STAFF events
+      for (const u of userRows) {
+        if (ADMIN_ROLES.includes(String(u.role || '').toUpperCase())) {
+          allowedCreatorIds.add(String(u.userId || u.id));
+        }
+      }
+    }
 
     // 2) Query events and then enforce creator-role filtering in code
     let query = supabase
@@ -148,7 +168,7 @@ export const listAdminEvents = async (req, res) => {
     const { data: events, error } = await query;
     if (error) return res.status(500).json({ error: error.message });
 
-    const filtered = (events || []).filter((event) => adminRoleIds.has(event.createdBy));
+    const filtered = (events || []).filter((event) => allowedCreatorIds.has(String(event.createdBy)));
     return res.json(filtered);
   } catch (err) {
     return res.status(500).json({ error: err?.message || 'Unexpected error' });
