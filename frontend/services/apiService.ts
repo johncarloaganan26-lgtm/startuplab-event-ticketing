@@ -500,7 +500,10 @@ export const apiService = {
       credentials: 'include',
       body: JSON.stringify(eventData)
     });
-    if (!res.ok) throw new Error(`Failed to create user event: ${res.status}`);
+    if (!res.ok) {
+      const errorPayload = await res.json().catch(() => ({}));
+      throw new Error(errorPayload?.error || `Failed to create user event: ${res.status}`);
+    }
     const data = await res.json();
     return { ...data, ticketTypes: data?.ticketTypes || eventData.ticketTypes || [] } as Event;
   },
@@ -512,7 +515,10 @@ export const apiService = {
       credentials: 'include',
       body: JSON.stringify(eventData)
     });
-    if (!res.ok) throw new Error(`Failed to update user event: ${res.status}`);
+    if (!res.ok) {
+      const errorPayload = await res.json().catch(() => ({}));
+      throw new Error(errorPayload?.error || `Failed to update user event: ${res.status}`);
+    }
     const data = await res.json();
     return { ...data, ticketTypes: data?.ticketTypes || eventData.ticketTypes || [] } as Event;
   },

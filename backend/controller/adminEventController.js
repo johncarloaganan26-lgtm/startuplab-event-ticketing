@@ -1,7 +1,7 @@
 import supabase from '../database/db.js';
 import crypto from 'crypto';
 import path from 'path';
-import { getOrCreateOrganizerForUser } from '../utils/organizerData.js';
+import { getOrCreateOrganizerForUser, getOrganizerByOwnerUserId } from '../utils/organizerData.js';
 
 const STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'startuplab-business-ticketing';
 const ADMIN_ROLES = ['ADMIN', 'STAFF'];
@@ -20,7 +20,7 @@ function slugify(text = '') {
 async function ensureEventOwnership(eventId, userId) {
   const { data: event, error } = await supabase
     .from('events')
-    .select('eventId, createdBy')
+    .select('eventId, createdBy, status')
     .eq('eventId', eventId)
     .maybeSingle();
 
@@ -28,6 +28,94 @@ async function ensureEventOwnership(eventId, userId) {
   if (!event) return { status: 404, message: 'Event not found' };
   if (event.createdBy !== userId) return { status: 403, message: 'Forbidden' };
   return { status: 200, event };
+}
+
+function toUpperStatus(value) {
+  return String(value || '').trim().toUpperCase();
+}
+
+async function resolveOrganizerReadinessForUser(userId) {
+  try {
+    const organizer = await getOrganizerByOwnerUserId(userId);
+    if (!organizer?.organizerId) {
+      return {
+        ok: false,
+        status: 409,
+        error: 'Complete your organization profile before creating events.',
+        code: 'ORG_PROFILE_REQUIRED',
+      };
+    }
+
+    const organizerName = String(organizer.organizerName || '').trim();
+    if (!organizerName) {
+      return {
+        ok: false,
+        status: 409,
+        error: 'Organization profile is incomplete. Add an organization name before creating events.',
+        code: 'ORG_PROFILE_INCOMPLETE',
+      };
+    }
+
+    return { ok: true, organizer };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 500,
+      error: error?.message || 'Failed to resolve organizer profile',
+      code: 'ORG_PROFILE_LOOKUP_FAILED',
+    };
+  }
+}
+
+async function hasTicketTypesConfigured(eventId) {
+  const { data, error } = await supabase
+    .from('ticketTypes')
+    .select('ticketTypeId')
+    .eq('eventId', eventId)
+    .limit(1);
+
+  if (error) {
+    throw error;
+  }
+  return Array.isArray(data) && data.length > 0;
+}
+
+async function resolvePersonalProfileReadiness(userId) {
+  const lookupByColumn = async (columnName) => (
+    supabase
+      .from('users')
+      .select('name')
+      .eq(columnName, userId)
+      .maybeSingle()
+  );
+
+  let { data, error } = await lookupByColumn('userId');
+  if ((!data && !error) || (error && String(error?.message || '').includes('column "userId"'))) {
+    const fallback = await lookupByColumn('id');
+    data = fallback.data;
+    error = fallback.error;
+  }
+
+  if (error) {
+    return {
+      ok: false,
+      status: 500,
+      error: error.message || 'Failed to resolve account profile',
+      code: 'USER_PROFILE_LOOKUP_FAILED',
+    };
+  }
+
+  const profileName = String(data?.name || '').trim();
+  if (!profileName) {
+    return {
+      ok: false,
+      status: 409,
+      error: 'Complete your personal profile before creating events.',
+      code: 'USER_PROFILE_REQUIRED',
+    };
+  }
+
+  return { ok: true };
 }
 
 export const listAdminEvents = async (req, res) => {
@@ -93,6 +181,28 @@ export const listUserEvents = async (req, res) => {
 };
 
 export const createUserEvent = async (req, res) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+
+  const profileCheck = await resolvePersonalProfileReadiness(userId);
+  if (!profileCheck.ok) {
+    return res.status(profileCheck.status).json({ error: profileCheck.error, code: profileCheck.code });
+  }
+
+  const organizerCheck = await resolveOrganizerReadinessForUser(userId);
+  if (!organizerCheck.ok) {
+    return res.status(organizerCheck.status).json({ error: organizerCheck.error, code: organizerCheck.code });
+  }
+
+  const requestedStatus = toUpperStatus(req.body?.status);
+  if (requestedStatus === 'PUBLISHED') {
+    return res.status(422).json({
+      error: 'Create the event as Draft first. Add at least one ticket before publishing.',
+      code: 'TICKET_REQUIRED_BEFORE_PUBLISH',
+    });
+  }
+
+  req.enforceExistingOrganizer = true;
   return createEvent(req, res);
 };
 
@@ -106,6 +216,29 @@ export const updateUserEvent = async (req, res) => {
     if (ownership.status !== 200) {
       if (ownership.error) return res.status(500).json({ error: ownership.error.message });
       return res.status(ownership.status).json({ error: ownership.message });
+    }
+
+    const requestedStatus = toUpperStatus(req.body?.status);
+    const currentStatus = toUpperStatus(ownership.event?.status);
+    const isPublishTransition = requestedStatus === 'PUBLISHED' && currentStatus !== 'PUBLISHED';
+
+    if (isPublishTransition) {
+      const organizerCheck = await resolveOrganizerReadinessForUser(userId);
+      if (!organizerCheck.ok) {
+        return res.status(organizerCheck.status).json({ error: organizerCheck.error, code: organizerCheck.code });
+      }
+
+      try {
+        const hasTickets = await hasTicketTypesConfigured(id);
+        if (!hasTickets) {
+          return res.status(422).json({
+            error: 'Add at least one ticket type before publishing this event.',
+            code: 'TICKET_REQUIRED_BEFORE_PUBLISH',
+          });
+        }
+      } catch (ticketError) {
+        return res.status(500).json({ error: ticketError?.message || 'Failed to verify ticket setup' });
+      }
     }
 
     return updateEvent(req, res);
@@ -234,9 +367,18 @@ export const createEvent = async (req, res) => {
     if (!eventName) return res.status(400).json({ error: 'eventName is required' });
 
     let organizerId = null;
+    const enforceExistingOrganizer = req.enforceExistingOrganizer === true;
     if (req.user?.id) {
       try {
-        const organizer = await getOrCreateOrganizerForUser(req.user.id);
+        const organizer = enforceExistingOrganizer
+          ? await getOrganizerByOwnerUserId(req.user.id)
+          : await getOrCreateOrganizerForUser(req.user.id);
+        if (enforceExistingOrganizer && !organizer?.organizerId) {
+          return res.status(409).json({
+            error: 'Complete your organization profile before creating events.',
+            code: 'ORG_PROFILE_REQUIRED',
+          });
+        }
         organizerId = organizer?.organizerId || null;
       } catch (organizerError) {
         return res.status(500).json({ error: organizerError?.message || 'Failed to resolve organizer profile' });

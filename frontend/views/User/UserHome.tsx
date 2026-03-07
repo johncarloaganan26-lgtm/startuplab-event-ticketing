@@ -186,17 +186,14 @@ export const UserHome: React.FC = () => {
                 {/* Create First Event Card */}
                 <div
                     className="group relative bg-[#F2F2F2] border-2 border-[#2E2E2F]/5 rounded-[2.5rem] p-8 flex flex-col items-start transition-all duration-300 hover:border-[#38BDF2] hover:shadow-[0_20px_40px_-20px_rgba(56,189,242,0.3)] hover:-translate-y-1"
-                    onClick={() => {
-                        setFormData(initialFormData);
-                        setIsModalOpen(true);
-                    }}
+                    onClick={() => navigate('/my-events?openModal=true')}
                 >
                     <div className="w-14 h-14 rounded-2xl bg-[#38BDF2] text-white flex items-center justify-center mb-8 shadow-lg shadow-[#38BDF2]/30 group-hover:scale-110 transition-transform">
                         <ICONS.Plus className="w-8 h-8 stroke-[3]" />
                     </div>
                     <h2 className="text-2xl font-black text-[#2E2E2F] tracking-tight mb-3">Create First Event</h2>
                     <p className="text-[#2E2E2F]/60 font-medium leading-relaxed mb-8 flex-1">
-                        Start from scratch with our professional event builder. Configure ticket types, venue details, and more.
+                        Follow the organizer workflow: complete profile, set organization profile, save draft, then add tickets before publishing.
                     </p>
                     <div className="flex items-center gap-2 text-[10px] font-black text-[#38BDF2] uppercase tracking-[0.2em]">
                         Get Started <ICONS.ChevronRight className="w-4 h-4" />

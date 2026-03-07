@@ -6,6 +6,7 @@ import { Event, TicketType, EventStatus, RegistrationView, OrganizerProfile } fr
 import { Card, Badge, Button, Modal, Input, PageLoader } from '../../components/Shared';
 import { OnsiteLocationAssistant } from '../../components/OnsiteLocationAssistant';
 import { ICONS } from '../../constants';
+import { useUser } from '../../context/UserContext';
 
 const getImageUrl = (img: any): string => {
     if (!img) return 'https://via.placeholder.com/800x400';
@@ -13,7 +14,54 @@ const getImageUrl = (img: any): string => {
     return img.url || img.path || img.publicUrl || 'https://via.placeholder.com/800x400';
 };
 
+const BRAND_LOGO_URL = 'https://xmjdcbzgdfylbqkjoyyb.supabase.co/storage/v1/object/public/startuplab-business-ticketing/assets/assets/image%20(1).svg';
+
+const CommentNoticeIcon: React.FC<any> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H7l-4 3v-5.5A8.5 8.5 0 1 1 21 11.5z" />
+    </svg>
+);
+
+const EyeIcon: React.FC<any> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+        <circle cx="12" cy="12" r="3" />
+    </svg>
+);
+
+const MobilePreviewIcon: React.FC<any> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <rect x="7" y="2" width="10" height="20" rx="2" />
+        <line x1="11" y1="18" x2="13" y2="18" />
+    </svg>
+);
+
+const DesktopPreviewIcon: React.FC<any> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <rect x="3" y="4" width="18" height="12" rx="2" />
+        <line x1="12" y1="16" x2="12" y2="20" />
+        <line x1="8" y1="20" x2="16" y2="20" />
+    </svg>
+);
+
+type EventSetupStep = 1 | 2 | 3 | 4;
+
+const EVENT_SETUP_STEPS: Array<{ id: EventSetupStep; title: string; subtitle: string }> = [
+    { id: 1, title: 'Identity', subtitle: 'Name, story, key visual' },
+    { id: 2, title: 'Schedule', subtitle: 'Date, time, location' },
+    { id: 3, title: 'Registration', subtitle: 'Capacity and windows' },
+    { id: 4, title: 'Publish', subtitle: 'Ticket check and visibility' },
+];
+
+const EVENT_SETUP_STEP_DETAIL: Record<EventSetupStep, string> = {
+    1: 'Build event page and describe what attendees can expect.',
+    2: 'Set venue or online link, schedule, and timezone.',
+    3: 'Save as draft and continue directly to ticket setup.',
+    4: 'Choose final event status after ticket configuration.',
+};
+
 export const UserEvents: React.FC = () => {
+    const { name } = useUser();
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
     const [isFetching, setIsFetching] = useState(false);
@@ -37,9 +85,18 @@ export const UserEvents: React.FC = () => {
     const [organizerProfile, setOrganizerProfile] = useState<OrganizerProfile | null>(null);
     const [organizerLoading, setOrganizerLoading] = useState(true);
     const [deleteConfirm, setDeleteConfirm] = useState<Event | null>(null);
+    const [wizardStep, setWizardStep] = useState<EventSetupStep>(1);
+    const [initialEventStatus, setInitialEventStatus] = useState<EventStatus>('DRAFT');
+    const [activeEventTicketCount, setActiveEventTicketCount] = useState(0);
+    const [ticketReadinessLoading, setTicketReadinessLoading] = useState(false);
+    const [resumeStatusAfterTicketSetup, setResumeStatusAfterTicketSetup] = useState(false);
+    const [isWorkflowNoticeOpen, setIsWorkflowNoticeOpen] = useState(false);
+    const [isPreviewMode, setIsPreviewMode] = useState(false);
+    const [previewDevice, setPreviewDevice] = useState<'mobile' | 'desktop'>('mobile');
+    const [finalStatusDecision, setFinalStatusDecision] = useState<EventStatus | ''>('');
 
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const initialFormData = {
         eventName: '',
@@ -53,7 +110,7 @@ export const UserEvents: React.FC = () => {
         location: '',
         capacityTotal: 100,
         imageUrl: 'https://images.unsplash.com/photo-1540575861501-7ad0582373f3?auto=format&fit=crop&q=80&w=800',
-        status: 'PUBLISHED' as EventStatus,
+        status: 'DRAFT' as EventStatus,
         regOpenDate: new Date().toISOString().split('T')[0],
         regCloseDate: '',
         regCloseTime: '',
@@ -62,6 +119,40 @@ export const UserEvents: React.FC = () => {
     };
 
     const [formData, setFormData] = useState(initialFormData);
+    const isPersonalProfileReady = !!name?.trim();
+    const isOrganizerProfileReady = !!organizerProfile?.organizerId && !!organizerProfile?.organizerName?.trim();
+    const canStartCreation = isPersonalProfileReady && isOrganizerProfileReady;
+    const canPublishByTicketRule = initialEventStatus === 'PUBLISHED' || activeEventTicketCount > 0;
+    const hasExistingEvents = events.length > 0;
+    const hasPublishedEvent = events.some((event) => event.status === 'PUBLISHED');
+    const workflowCompletedCount = [
+        isPersonalProfileReady,
+        isOrganizerProfileReady,
+        hasExistingEvents,
+        hasPublishedEvent,
+    ].filter(Boolean).length;
+    const activeStepMeta = EVENT_SETUP_STEPS.find((step) => step.id === wizardStep) || EVENT_SETUP_STEPS[0];
+    const previewDateLabel = (() => {
+        if (!formData.eventDate) return 'Date and time not set';
+        const date = new Date(`${formData.eventDate}T${formData.eventTime || '09:00'}`);
+        if (Number.isNaN(date.getTime())) return 'Date and time not set';
+        return date.toLocaleString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+        });
+    })();
+    const hasPreviewPhysicalLocation = (formData.locationType === 'ONSITE' || formData.locationType === 'HYBRID') && !!formData.location.trim();
+    const previewMapEmbedUrl = hasPreviewPhysicalLocation
+        ? `https://maps.google.com/maps?q=${encodeURIComponent(formData.location.trim())}&z=15&output=embed`
+        : '';
+    const previewOpenMapUrl = hasPreviewPhysicalLocation
+        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formData.location.trim())}`
+        : '';
+    const organizerPreviewInitial = (organizerProfile?.organizerName || 'O').charAt(0).toUpperCase();
 
     const fetchEvents = async (searchValue = debouncedSearch) => {
         const requestId = ++requestIdRef.current;
@@ -82,10 +173,78 @@ export const UserEvents: React.FC = () => {
         }
     };
 
+    const loadEventTicketReadiness = async (eventId: string) => {
+        setTicketReadinessLoading(true);
+        try {
+            const ticketTypes = await apiService.getTicketTypes(eventId);
+            setActiveEventTicketCount(ticketTypes.length);
+            setFormData((prev) => ({ ...prev, ticketTypes }));
+        } catch {
+            setActiveEventTicketCount(0);
+            setNotification({ message: 'Unable to verify ticket setup for this event.', type: 'error' });
+        } finally {
+            setTicketReadinessLoading(false);
+        }
+    };
+
+    const handleCloseEventModal = () => {
+        setIsModalOpen(false);
+        setWizardStep(1);
+        setInitialEventStatus('DRAFT');
+        setActiveEventTicketCount(0);
+        setTicketReadinessLoading(false);
+        setResumeStatusAfterTicketSetup(false);
+        setIsPreviewMode(false);
+        setPreviewDevice('mobile');
+        setFinalStatusDecision('');
+    };
+
+    const validateStepBeforeAdvance = (step: EventSetupStep): string | null => {
+        if (step === 1 && !formData.eventName.trim()) {
+            return 'Step 1: Event name is required.';
+        }
+        if (step === 2) {
+            if (!formData.eventDate) return 'Step 2: Event date is required.';
+            if (!formData.location.trim()) return 'Step 2: Event location or access link is required.';
+        }
+        return null;
+    };
+
+    const handleNextWizardStep = () => {
+        const errorMessage = validateStepBeforeAdvance(wizardStep);
+        if (errorMessage) {
+            setNotification({ message: errorMessage, type: 'error' });
+            return;
+        }
+        if (wizardStep === 3 && !isEditMode) {
+            void saveDraftAndContinueToTickets();
+            return;
+        }
+        setWizardStep((prev) => (prev < 4 ? ((prev + 1) as EventSetupStep) : prev));
+    };
+
     const handleOpenCreate = () => {
+        if (!isPersonalProfileReady) {
+            setNotification({ message: 'Complete your account profile first before creating events.', type: 'error' });
+            navigate('/user-settings?tab=account');
+            return;
+        }
+        if (!isOrganizerProfileReady) {
+            setNotification({ message: 'Set up your organization profile first before creating events.', type: 'error' });
+            navigate('/user-settings?tab=organizer');
+            return;
+        }
+
         setFormData(initialFormData);
         setCurrentEventId(null);
         setIsEditMode(false);
+        setInitialEventStatus('DRAFT');
+        setActiveEventTicketCount(0);
+        setResumeStatusAfterTicketSetup(false);
+        setWizardStep(1);
+        setIsPreviewMode(false);
+        setPreviewDevice('mobile');
+        setFinalStatusDecision('');
         setIsModalOpen(true);
     };
 
@@ -97,8 +256,13 @@ export const UserEvents: React.FC = () => {
     useEffect(() => { fetchEvents(debouncedSearch); }, [debouncedSearch]);
 
     useEffect(() => {
-        if (searchParams.get('openModal') === 'true') handleOpenCreate();
-    }, [searchParams]);
+        if (searchParams.get('openModal') !== 'true') return;
+        if (organizerLoading) return;
+        handleOpenCreate();
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.delete('openModal');
+        setSearchParams(nextParams, { replace: true });
+    }, [searchParams, setSearchParams, organizerLoading, canStartCreation]);
 
     useEffect(() => {
         if (notification) {
@@ -188,8 +352,15 @@ export const UserEvents: React.FC = () => {
             streamingPlatform: event.streamingPlatform || '',
             ticketTypes: event.ticketTypes
         });
+        setInitialEventStatus(event.status || 'DRAFT');
         setCurrentEventId(event.eventId);
         setIsEditMode(true);
+        setResumeStatusAfterTicketSetup(false);
+        setWizardStep(1);
+        setIsPreviewMode(false);
+        setPreviewDevice('mobile');
+        setFinalStatusDecision('');
+        void loadEventTicketReadiness(event.eventId);
         setIsModalOpen(true);
     };
 
@@ -227,6 +398,21 @@ export const UserEvents: React.FC = () => {
             }
             const ticketTypes = await apiService.getTicketTypes(selectedEvent.eventId);
             setSelectedEvent(ev => ev ? { ...ev, ticketTypes } : ev);
+            if (currentEventId && selectedEvent.eventId === currentEventId) {
+                setActiveEventTicketCount(ticketTypes.length);
+                setFormData((prev) => ({ ...prev, ticketTypes }));
+            }
+
+            if (resumeStatusAfterTicketSetup) {
+                setResumeStatusAfterTicketSetup(false);
+                setWizardStep(4);
+                setIsTicketModalOpen(false);
+                setIsModalOpen(true);
+                setNotification({ message: 'Tickets saved. Final step: set the event status.', type: 'success' });
+                fetchEvents();
+                return;
+            }
+
             setNotification({ message: 'Ticket inventory updated.', type: 'success' });
             setIsTicketModalOpen(false);
             fetchEvents();
@@ -266,30 +452,106 @@ export const UserEvents: React.FC = () => {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const buildEventPayload = (statusOverride?: EventStatus) => {
+        const mergeDateTime = (date: string, time: string) => {
+            if (!date) return null;
+            return `${date}T${time || '09:00'}:00`;
+        };
+
+        return {
+            eventName: formData.eventName,
+            description: formData.description,
+            startAt: mergeDateTime(formData.eventDate, formData.eventTime),
+            endAt: formData.endDate ? mergeDateTime(formData.endDate, formData.endTime) : null,
+            timezone: formData.timezone,
+            locationType: formData.locationType,
+            locationText: formData.location,
+            capacityTotal: formData.capacityTotal,
+            imageUrl: formData.imageUrl,
+            status: statusOverride || formData.status,
+            regOpenAt: formData.regOpenDate ? mergeDateTime(formData.regOpenDate, '00:00') : null,
+            regCloseAt: formData.regCloseDate ? mergeDateTime(formData.regCloseDate, formData.regCloseTime || '23:59') : null,
+            streamingPlatform: formData.streamingPlatform,
+            organizerId: organizerProfile?.organizerId || null
+        };
+    };
+
+    const saveDraftAndContinueToTickets = async () => {
         setSubmitting(true);
         try {
-            const mergeDateTime = (date: string, time: string) => {
-                if (!date) return null;
-                return `${date}T${time || '09:00'}:00`;
-            };
-            const payload = {
-                eventName: formData.eventName,
-                description: formData.description,
-                startAt: mergeDateTime(formData.eventDate, formData.eventTime),
-                endAt: formData.endDate ? mergeDateTime(formData.endDate, formData.endTime) : null,
-                timezone: formData.timezone,
-                locationType: formData.locationType,
-                locationText: formData.location,
-                capacityTotal: formData.capacityTotal,
-                imageUrl: formData.imageUrl,
-                status: formData.status,
-                regOpenAt: formData.regOpenDate || null,
-                regCloseAt: formData.regCloseDate || null,
-                streamingPlatform: formData.streamingPlatform,
-                organizerId: organizerProfile?.organizerId || null
-            };
+            const draftPayload = buildEventPayload('DRAFT');
+            let savedEvent: Event;
+
+            if (isEditMode && currentEventId) {
+                savedEvent = await apiService.updateUserEvent(currentEventId, draftPayload);
+            } else {
+                savedEvent = await apiService.createUserEvent(draftPayload);
+            }
+
+            setIsEditMode(true);
+            setCurrentEventId(savedEvent.eventId);
+            setInitialEventStatus(savedEvent.status || 'DRAFT');
+            setFormData((prev) => ({
+                ...prev,
+                status: savedEvent.status || 'DRAFT',
+                ticketTypes: savedEvent.ticketTypes || prev.ticketTypes
+            }));
+
+            const eventForTickets = { ...savedEvent, ticketTypes: savedEvent.ticketTypes || [] };
+            setSelectedEvent(eventForTickets);
+            setResumeStatusAfterTicketSetup(true);
+            setWizardStep(4);
+            setIsPreviewMode(false);
+            setFinalStatusDecision('');
+            setIsModalOpen(false);
+            setIsTicketModalOpen(true);
+            setNotification({ message: 'Draft saved. Continue by setting up tickets.', type: 'success' });
+            fetchEvents();
+        } catch (error: any) {
+            setNotification({ message: error?.message || 'Failed to save draft before ticket setup.', type: 'error' });
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleCloseTicketModal = () => {
+        setIsTicketModalOpen(false);
+        if (!resumeStatusAfterTicketSetup) return;
+        setResumeStatusAfterTicketSetup(false);
+        setIsModalOpen(true);
+        setWizardStep(3);
+        setIsPreviewMode(false);
+        setNotification({ message: 'Ticket setup cancelled. Complete tickets to continue to Event Status.', type: 'error' });
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.eventName.trim()) {
+            setWizardStep(1);
+            setNotification({ message: 'Event name is required.', type: 'error' });
+            return;
+        }
+        if (!formData.eventDate || !formData.location.trim()) {
+            setWizardStep(2);
+            setNotification({ message: 'Set the event schedule and location before saving.', type: 'error' });
+            return;
+        }
+        if (!finalStatusDecision) {
+            setWizardStep(4);
+            setNotification({ message: 'Step 4: choose if this event should stay Draft or be Published.', type: 'error' });
+            return;
+        }
+
+        const isPublishingTransition = formData.status === 'PUBLISHED' && initialEventStatus !== 'PUBLISHED';
+        if (isPublishingTransition && !canPublishByTicketRule) {
+            setWizardStep(4);
+            setNotification({ message: 'Add at least one ticket type before publishing this event.', type: 'error' });
+            return;
+        }
+
+        setSubmitting(true);
+        try {
+            const payload = buildEventPayload();
             if (isEditMode && currentEventId) {
                 await apiService.updateUserEvent(currentEventId, payload);
                 setNotification({ message: 'Event updated successfully.', type: 'success' });
@@ -297,10 +559,10 @@ export const UserEvents: React.FC = () => {
                 await apiService.createUserEvent(payload);
                 setNotification({ message: 'Event created successfully!', type: 'success' });
             }
-            setIsModalOpen(false);
+            handleCloseEventModal();
             fetchEvents();
-        } catch {
-            setNotification({ message: 'Failed to save event.', type: 'error' });
+        } catch (error: any) {
+            setNotification({ message: error?.message || 'Failed to save event.', type: 'error' });
         } finally {
             setSubmitting(false);
         }
@@ -325,10 +587,22 @@ export const UserEvents: React.FC = () => {
                         <p className="font-bold text-sm tracking-tight">{notification.message}</p>
                     </Card>
                 </div>
-            )}            {/* Header section replicated from Admin */}
+            )}
+
+            {/* Header section replicated from Admin */}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 px-2 mb-8 pt-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-[#2E2E2F] tracking-tight">Events</h1>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-3xl font-bold text-[#2E2E2F] tracking-tight">Events</h1>
+                        <button
+                            type="button"
+                            onClick={() => setIsWorkflowNoticeOpen(true)}
+                            title="Show Organizer Event Workflow guide"
+                            className="h-[38px] w-[38px] shrink-0 rounded-xl border border-[#2E2E2F]/20 bg-[#F2F2F2] text-[#2E2E2F]/70 hover:text-[#2E2E2F] hover:border-[#38BDF2]/40 hover:bg-[#38BDF2]/10 transition-colors flex items-center justify-center"
+                        >
+                            <CommentNoticeIcon className="w-4 h-4" />
+                        </button>
+                    </div>
                     <p className="text-[#2E2E2F]/70 font-medium text-sm mt-1">Configure and manage your session lifecycle.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-end gap-3 w-full lg:w-auto">
@@ -372,7 +646,8 @@ export const UserEvents: React.FC = () => {
 
                     <Button
                         onClick={handleOpenCreate}
-                        className="rounded-xl px-6 py-3 bg-[#38BDF2] text-[#F2F2F2] hover:text-[#F2F2F2] font-bold transition-colors"
+                        className="rounded-xl px-6 py-3 bg-[#38BDF2] text-[#F2F2F2] hover:text-[#F2F2F2] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={!canStartCreation || organizerLoading}
                     >
                         <span className="flex items-center gap-2 font-bold text-sm">
                             <ICONS.Calendar className="w-4 h-4" />
@@ -541,63 +816,153 @@ export const UserEvents: React.FC = () => {
                 </div>
             )}
 
+            <Modal
+                isOpen={isWorkflowNoticeOpen}
+                onClose={() => setIsWorkflowNoticeOpen(false)}
+                title="Organizer Event Workflow"
+                subtitle="Step-by-step publishing guide"
+            >
+                <div className="space-y-5">
+                    <div className="text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide">
+                        {workflowCompletedCount} / 4 Completed
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3">
+                        <div className={`rounded-2xl border px-4 py-4 ${isPersonalProfileReady ? 'border-[#38BDF2]/40 bg-[#38BDF2]/10' : 'border-[#2E2E2F]/10 bg-[#F2F2F2]'}`}>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/45">Step 1</p>
+                            <p className="text-sm font-bold text-[#2E2E2F] mt-2">Complete Profile</p>
+                            <p className="text-[11px] text-[#2E2E2F]/60 mt-1">Set your account name in Account settings.</p>
+                        </div>
+
+                        <div className={`rounded-2xl border px-4 py-4 ${isOrganizerProfileReady ? 'border-[#38BDF2]/40 bg-[#38BDF2]/10' : 'border-[#2E2E2F]/10 bg-[#F2F2F2]'}`}>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/45">Step 2</p>
+                            <p className="text-sm font-bold text-[#2E2E2F] mt-2">Set Org Profile</p>
+                            <p className="text-[11px] text-[#2E2E2F]/60 mt-1">Configure organizer name and branding details.</p>
+                        </div>
+
+                        <div className={`rounded-2xl border px-4 py-4 ${hasExistingEvents ? 'border-[#38BDF2]/40 bg-[#38BDF2]/10' : 'border-[#2E2E2F]/10 bg-[#F2F2F2]'}`}>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/45">Step 3</p>
+                            <p className="text-sm font-bold text-[#2E2E2F] mt-2">Create Draft</p>
+                            <p className="text-[11px] text-[#2E2E2F]/60 mt-1">Build your event details and save as draft.</p>
+                        </div>
+
+                        <div className={`rounded-2xl border px-4 py-4 ${hasPublishedEvent ? 'border-[#38BDF2]/40 bg-[#38BDF2]/10' : 'border-[#2E2E2F]/10 bg-[#F2F2F2]'}`}>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/45">Step 4</p>
+                            <p className="text-sm font-bold text-[#2E2E2F] mt-2">Tickets then Publish</p>
+                            <p className="text-[11px] text-[#2E2E2F]/60 mt-1">Add at least one ticket type before going live.</p>
+                        </div>
+                    </div>
+                </div>
+            </Modal>
+
             {/* ─── Create/Edit Event Modal (SAME as Admin side) ─── */}
             <Modal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                title={isEditMode ? 'Edit Event' : 'Add New Event'}
-                size="lg"
+                onClose={handleCloseEventModal}
+                title={isEditMode ? 'Edit Event' : 'Create Event'}
+                size="xl"
+                className="max-w-[96vw]"
             >
-                <div className="space-y-12">
-                    {/* LIVE PREVIEW */}
-                    <div className="bg-[#F2F2F2] rounded-[2.5rem] p-4">
-                        <div className="space-y-8">
-                            <div className="space-y-4">
-                                <h1 className="text-4xl md:text-5xl font-black text-[#2E2E2F] tracking-tight leading-tight">
-                                    {formData.eventName || 'Untitled Session'}
+                <div
+                    className={`grid grid-cols-1 gap-6 ${
+                        previewDevice === 'desktop'
+                            ? 'xl:grid-cols-[300px_minmax(0,1fr)_540px]'
+                            : 'xl:grid-cols-[300px_minmax(0,1fr)_380px]'
+                    }`}
+                >
+                    <div className="space-y-5 xl:sticky xl:top-0 self-start xl:max-h-[calc(70vh-1rem)] xl:overflow-y-auto xl:pr-1">
+                        {/* Sidebar summary */}
+                        <div className="bg-[#F2F2F2] rounded-[2rem] border border-[#2E2E2F]/10 overflow-hidden">
+                            <div className="h-16 bg-gradient-to-r from-[#BAF3FF] via-[#67E8F9] to-[#38BDF2]" />
+                            <div className="p-4 space-y-4">
+                                <h1 className="text-3xl font-black text-[#2E2E2F] tracking-tight leading-tight">
+                                    {formData.eventName || 'Event Title'}
                                 </h1>
                                 <div className="flex flex-wrap items-center gap-3">
                                     <div className={`px-4 py-1.5 rounded-xl text-[10px] font-semibold uppercase tracking-wide border ${formData.status === 'PUBLISHED' ? 'bg-[#38BDF2]/20 border-[#38BDF2]/40 text-[#2E2E2F]' : 'bg-[#F2F2F2] border-[#2E2E2F]/20 text-[#2E2E2F]/60'}`}>
                                         {formData.status}
                                     </div>
                                 </div>
-                                <div className="flex flex-wrap gap-4 pt-2">
-                                    <div className="flex items-center gap-3 bg-[#F2F2F2] px-5 py-3 rounded-2xl border border-[#2E2E2F]/20">
+                                <div className="space-y-3 pt-1">
+                                    <div className="flex items-center gap-3 bg-[#F2F2F2] px-4 py-3 rounded-2xl border border-[#2E2E2F]/20">
                                         <div className="w-8 h-8 bg-[#38BDF2]/10 text-[#2E2E2F] rounded-lg flex items-center justify-center">
                                             <ICONS.Calendar className="w-4 h-4" strokeWidth={2.5} />
                                         </div>
-                                        <span className="text-[13px] font-semibold text-[#2E2E2F] uppercase tracking-tight">
-                                            {formData.eventDate ? new Date(`${formData.eventDate}T${formData.eventTime}`).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Set Date & Time'}
+                                        <span className="text-[13px] font-semibold text-[#2E2E2F] tracking-tight">
+                                            {previewDateLabel}
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-3 bg-[#F2F2F2] px-5 py-3 rounded-2xl border border-[#2E2E2F]/20">
+                                    <div className="flex items-center gap-3 bg-[#F2F2F2] px-4 py-3 rounded-2xl border border-[#2E2E2F]/20">
                                         <div className="w-8 h-8 bg-[#38BDF2]/10 text-[#2E2E2F] rounded-lg flex items-center justify-center">
                                             <ICONS.MapPin className="w-4 h-4" strokeWidth={2.5} />
                                         </div>
-                                        <span className="text-[13px] font-semibold text-[#2E2E2F] uppercase tracking-tight truncate max-w-[200px]">
+                                        <span className="text-[13px] font-semibold text-[#2E2E2F] tracking-tight truncate max-w-[210px]">
                                             {formData.location || 'Set Venue / Connection'}
                                         </span>
                                     </div>
                                 </div>
                             </div>
-                            <div className="p-8 bg-[#F2F2F2] rounded-[2rem] border border-[#2E2E2F]/20">
-                                <h4 className="text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide mb-4">Event Overview</h4>
-                                <p className="text-[#2E2E2F]/70 text-[15px] font-medium leading-relaxed line-clamp-4">
-                                    {formData.description || 'Provide an executive summary of this event session...'}
-                                </p>
+                        </div>
+                        {/* Sidebar steps */}
+                        <div className="bg-[#F2F2F2] rounded-[2rem] border border-[#2E2E2F]/10 overflow-hidden">
+                            <div className="px-5 py-3 border-b border-[#2E2E2F]/10">
+                                <p className="text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide">Steps</p>
                             </div>
+                            {EVENT_SETUP_STEPS.map((step) => {
+                                const isActive = wizardStep === step.id;
+                                const isDone = wizardStep > step.id;
+                                const canJumpToStep = step.id <= wizardStep;
+                                return (
+                                    <button
+                                        key={step.id}
+                                        type="button"
+                                        onClick={() => {
+                                            if (!canJumpToStep) return;
+                                            setWizardStep(step.id);
+                                            setIsPreviewMode(false);
+                                        }}
+                                        disabled={!canJumpToStep}
+                                        className={`w-full text-left px-5 py-4 border-b border-[#2E2E2F]/10 last:border-b-0 transition-colors ${canJumpToStep ? 'hover:bg-[#38BDF2]/5' : 'opacity-45 cursor-not-allowed'} ${isActive ? 'bg-[#38BDF2]/10' : ''}`}
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <span className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${isActive || isDone ? 'border-[#2563EB]' : 'border-[#2E2E2F]/20'}`}>
+                                                {(isActive || isDone) && <span className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />}
+                                            </span>
+                                            <div>
+                                                <p className="text-[18px] leading-none font-bold text-[#2E2E2F]">{step.title}</p>
+                                                <p className="mt-2 text-[13px] leading-5 text-[#2E2E2F]/70">{EVENT_SETUP_STEP_DETAIL[step.id]}</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
-                    {/* FORM (Same as Admin) */}
-                    <form onSubmit={handleSubmit} className="space-y-10 px-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="md:col-span-2">
-                                <label className="block text-[11px] font-medium text-[#2E2E2F]/60 uppercase tracking-wide mb-3 ml-1">Event Details</label>
-                                <div className="mb-4">
-                                    <label className="block text-[11px] font-medium text-[#2E2E2F]/60 uppercase tracking-wide mb-2 ml-1">
-                                        Organizer Name
-                                    </label>
+                    <div className="space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <h3 className="text-2xl font-black text-[#2E2E2F] tracking-tight">{activeStepMeta.title}</h3>
+                                <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#2E2E2F]/55 mt-1">{activeStepMeta.subtitle}</p>
+                            </div>
+                            <div className="flex items-center gap-2 xl:hidden">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsPreviewMode((prev) => !prev)}
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#2E2E2F]/20 bg-[#F2F2F2] text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/35 transition-colors text-[13px] font-bold"
+                                >
+                                    <EyeIcon className="w-4 h-4" />
+                                    {isPreviewMode ? 'Hide Preview' : 'Show Preview'}
+                                </button>
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-8 px-1">
+
+                        {wizardStep === 1 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
+                                <div className="md:col-span-2">
+                                    <label className="block text-[11px] font-medium text-[#2E2E2F]/60 uppercase tracking-wide mb-2 ml-1">Organizer Name</label>
                                     <select
                                         value={organizerProfile?.organizerId || ''}
                                         disabled
@@ -609,61 +974,56 @@ export const UserEvents: React.FC = () => {
                                             <option value="">No organizer profile set</option>
                                         )}
                                     </select>
-                                    {!organizerProfile?.organizerId && (
-                                        <p className="text-[11px] text-[#2E2E2F]/60 mt-2">
-                                            Optional: set organizer profile in Organizer Settings.
-                                        </p>
-                                    )}
                                 </div>
-                                <div className="flex gap-4">
-                                    <div className="flex-1">
-                                        <Input placeholder="Session Name" value={formData.eventName} onChange={(e: any) => setFormData({ ...formData, eventName: e.target.value })} />
+
+                                <div className="md:col-span-2">
+                                    <Input
+                                        label="Event Name"
+                                        placeholder="e.g. Founder Growth Summit 2026"
+                                        value={formData.eventName}
+                                        onChange={(e: any) => setFormData({ ...formData, eventName: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-[11px] font-medium text-[#2E2E2F]/60 uppercase tracking-wide mb-2 ml-1">Description</label>
+                                    <textarea
+                                        className="w-full px-5 py-4 bg-[#F2F2F2] border border-[#2E2E2F]/20 rounded-[1.5rem] text-sm min-h-[130px] focus:ring-2 focus:ring-[#38BDF2]/30 focus:border-[#38BDF2] transition-colors outline-none"
+                                        value={formData.description}
+                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <div className="flex flex-col gap-2 mb-1 px-1">
+                                        <label className="text-[11px] font-medium text-[#2E2E2F]/60 uppercase tracking-wide">Visual Media</label>
+                                        <div
+                                            className="relative group w-full h-44 rounded-[1.5rem] border-2 border-dashed border-[#2E2E2F]/30 bg-[#F2F2F2] flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#38BDF2] hover:bg-[#38BDF2]/10 transition-colors"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        >
+                                            {formData.imageUrl ? (
+                                                <img src={getImageUrl(formData.imageUrl)} alt="Preview" className="w-full h-full object-cover rounded-[1.5rem]" />
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center w-full h-full">
+                                                    <svg className="w-10 h-10 text-[#2E2E2F]/40 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="2.5" /><path d="M21 15l-5-5L5 21" /></svg>
+                                                    <span className="text-[12px] font-medium text-[#2E2E2F]/60 uppercase tracking-wide">Upload Event Image</span>
+                                                </div>
+                                            )}
+                                            <div className="absolute bottom-3 right-3 bg-[#F2F2F2] border border-[#2E2E2F]/20 rounded-lg px-3 py-1 text-[11px] font-semibold text-[#2E2E2F] uppercase tracking-wide group-hover:bg-[#38BDF2] group-hover:text-[#F2F2F2] transition-colors pointer-events-none">Browse</div>
+                                        </div>
+                                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
                                     </div>
-                                    <select
-                                        className="px-4 py-3 bg-[#F2F2F2] border border-[#2E2E2F]/20 rounded-xl text-[11px] font-medium uppercase tracking-wide outline-none focus:ring-2 focus:ring-[#38BDF2]/30 focus:border-[#38BDF2]"
-                                        value={formData.status}
-                                        onChange={(e) => setFormData({ ...formData, status: e.target.value as EventStatus })}
-                                    >
-                                        <option value="PUBLISHED">Live / Published</option>
-                                        <option value="DRAFT">Draft / Private</option>
-                                        <option value="CLOSED">Closed</option>
-                                    </select>
                                 </div>
                             </div>
+                        )}
 
-                            <div className="md:col-span-2">
-                                <label className="block text-[11px] font-medium text-[#2E2E2F]/60 uppercase tracking-wide mb-3 ml-1">Description</label>
-                                <textarea
-                                    className="w-full px-5 py-4 bg-[#F2F2F2] border border-[#2E2E2F]/20 rounded-[1.5rem] text-sm min-h-[120px] focus:ring-2 focus:ring-[#38BDF2]/30 focus:border-[#38BDF2] transition-colors outline-none"
-                                    value={formData.description}
-                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                />
-                            </div>
+                        {wizardStep === 2 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
+                                <Input label="Session Date" type="date" value={formData.eventDate} onChange={(e: any) => setFormData({ ...formData, eventDate: e.target.value })} />
+                                <Input label="Start Time" type="time" value={formData.eventTime} onChange={(e: any) => setFormData({ ...formData, eventTime: e.target.value })} />
+                                <Input label="End Date" type="date" value={formData.endDate} onChange={(e: any) => setFormData({ ...formData, endDate: e.target.value })} />
+                                <Input label="End Time" type="time" value={formData.endTime} onChange={(e: any) => setFormData({ ...formData, endTime: e.target.value })} />
 
-                            <div className="md:col-span-2">
-                                <div className="flex flex-col gap-2 mb-3 px-1">
-                                    <label className="text-[11px] font-medium text-[#2E2E2F]/60 uppercase tracking-wide">Visual Media</label>
-                                    <div className="relative group w-full h-40 rounded-[1.5rem] border-2 border-dashed border-[#2E2E2F]/30 bg-[#F2F2F2] flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#38BDF2] hover:bg-[#38BDF2]/10 transition-colors" onClick={() => fileInputRef.current?.click()}>
-                                        {formData.imageUrl ? (
-                                            <img src={getImageUrl(formData.imageUrl)} alt="Preview" className="w-full h-full object-cover rounded-[1.5rem]" />
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center w-full h-full">
-                                                <svg className="w-10 h-10 text-[#2E2E2F]/40 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="2.5" /><path d="M21 15l-5-5L5 21" /></svg>
-                                                <span className="text-[12px] font-medium text-[#2E2E2F]/60 uppercase tracking-wide">Upload Event Image</span>
-                                            </div>
-                                        )}
-                                        <div className="absolute bottom-3 right-3 bg-[#F2F2F2] border border-[#2E2E2F]/20 rounded-lg px-3 py-1 text-[11px] font-semibold text-[#2E2E2F] uppercase tracking-wide group-hover:bg-[#38BDF2] group-hover:text-[#F2F2F2] transition-colors pointer-events-none">Browse</div>
-                                    </div>
-                                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
-                                </div>
-                            </div>
-
-                            <Input label="Session Date" type="date" value={formData.eventDate} onChange={(e: any) => setFormData({ ...formData, eventDate: e.target.value })} />
-                            <Input label="Start Time" type="time" value={formData.eventTime} onChange={(e: any) => setFormData({ ...formData, eventTime: e.target.value })} />
-                            <Input label="End Date" type="date" value={formData.endDate} onChange={(e: any) => setFormData({ ...formData, endDate: e.target.value })} />
-                            <Input label="End Time" type="time" value={formData.endTime} onChange={(e: any) => setFormData({ ...formData, endTime: e.target.value })} />
-
-                            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-[11px] font-medium text-[#2E2E2F]/60 uppercase tracking-wide mb-2 ml-1">Location Type</label>
                                     <select
@@ -680,56 +1040,320 @@ export const UserEvents: React.FC = () => {
                                     <label className="block text-[11px] font-medium text-[#2E2E2F]/60 uppercase tracking-wide mb-2 ml-1">Timezone</label>
                                     <Input value={formData.timezone} onChange={(e: any) => setFormData({ ...formData, timezone: e.target.value })} />
                                 </div>
-                            </div>
 
-                            <div className="md:col-span-2">
-                                <Input
-                                    label="Location / Connection Link"
-                                    placeholder="e.g. Global Tech Center"
-                                    value={formData.location}
-                                    onChange={(e: any) => applyLocationValue(e.target.value)}
-                                />
-                            </div>
-
-                            {formData.locationType === 'ONSITE' && (
-                                <div className="md:col-span-2">
-                                    <OnsiteLocationAssistant
-                                        value={formData.location}
-                                        onChange={applyLocationValue}
-                                    />
-                                </div>
-                            )}
-
-                            {(formData.locationType === 'ONLINE' || formData.locationType === 'HYBRID') && (
                                 <div className="md:col-span-2">
                                     <Input
-                                        label="Streaming Platform"
-                                        placeholder="e.g. Google Meet, Zoom"
-                                        value={formData.streamingPlatform}
-                                        onChange={(e: any) => setFormData({ ...formData, streamingPlatform: e.target.value })}
+                                        label="Location / Connection Link"
+                                        placeholder="e.g. Global Tech Center"
+                                        value={formData.location}
+                                        onChange={(e: any) => applyLocationValue(e.target.value)}
                                     />
                                 </div>
-                            )}
-                        </div>
+
+                                {formData.locationType === 'ONSITE' && (
+                                    <div className="md:col-span-2">
+                                        <OnsiteLocationAssistant
+                                            value={formData.location}
+                                            onChange={applyLocationValue}
+                                        />
+                                    </div>
+                                )}
+
+                                {(formData.locationType === 'ONLINE' || formData.locationType === 'HYBRID') && (
+                                    <div className="md:col-span-2">
+                                        <Input
+                                            label="Streaming Platform"
+                                            placeholder="e.g. Google Meet, Zoom"
+                                            value={formData.streamingPlatform}
+                                            onChange={(e: any) => setFormData({ ...formData, streamingPlatform: e.target.value })}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {wizardStep === 3 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
+                                <Input
+                                    label="Capacity Total"
+                                    type="number"
+                                    min={1}
+                                    value={formData.capacityTotal}
+                                    onChange={(e: any) => {
+                                        const nextValue = Math.max(1, parseInt(e.target.value, 10) || 1);
+                                        setFormData({ ...formData, capacityTotal: nextValue });
+                                    }}
+                                />
+                                <Input
+                                    label="Registration Open Date"
+                                    type="date"
+                                    value={formData.regOpenDate}
+                                    onChange={(e: any) => setFormData({ ...formData, regOpenDate: e.target.value })}
+                                />
+                                <Input
+                                    label="Registration Close Date"
+                                    type="date"
+                                    value={formData.regCloseDate}
+                                    onChange={(e: any) => setFormData({ ...formData, regCloseDate: e.target.value })}
+                                />
+                                <Input
+                                    label="Registration Close Time"
+                                    type="time"
+                                    value={formData.regCloseTime}
+                                    onChange={(e: any) => setFormData({ ...formData, regCloseTime: e.target.value })}
+                                />
+
+                                <div className="md:col-span-2 rounded-2xl border border-[#2E2E2F]/15 bg-[#F2F2F2] px-5 py-4">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#2E2E2F]/45">Ticket Setup Rule</p>
+                                    <p className="mt-2 text-sm font-semibold text-[#2E2E2F]">
+                                        Publishing is locked until at least one ticket type is configured.
+                                    </p>
+                                    <p className="mt-1 text-[12px] text-[#2E2E2F]/60">
+                                        Clicking next will save draft and open ticket setup automatically.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {wizardStep === 4 && (
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div className={`rounded-2xl border px-4 py-4 ${isPersonalProfileReady ? 'border-[#38BDF2]/35 bg-[#38BDF2]/10' : 'border-[#2E2E2F]/15 bg-[#F2F2F2]'}`}>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/45">Account Profile</p>
+                                        <p className="mt-2 text-sm font-bold text-[#2E2E2F]">{isPersonalProfileReady ? 'Ready' : 'Incomplete'}</p>
+                                    </div>
+                                    <div className={`rounded-2xl border px-4 py-4 ${isOrganizerProfileReady ? 'border-[#38BDF2]/35 bg-[#38BDF2]/10' : 'border-[#2E2E2F]/15 bg-[#F2F2F2]'}`}>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/45">Organization Profile</p>
+                                        <p className="mt-2 text-sm font-bold text-[#2E2E2F]">{isOrganizerProfileReady ? 'Ready' : 'Incomplete'}</p>
+                                    </div>
+                                    <div className={`rounded-2xl border px-4 py-4 ${canPublishByTicketRule ? 'border-[#38BDF2]/35 bg-[#38BDF2]/10' : 'border-[#2E2E2F]/15 bg-[#F2F2F2]'}`}>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/45">Ticket Setup</p>
+                                        <p className="mt-2 text-sm font-bold text-[#2E2E2F]">
+                                            {ticketReadinessLoading
+                                                ? 'Checking...'
+                                                : isEditMode
+                                                    ? `${activeEventTicketCount} ticket type(s)`
+                                                    : 'Save draft first'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[11px] font-medium text-[#2E2E2F]/60 uppercase tracking-wide mb-2 ml-1">Event Status</label>
+                                    <p className="mb-2 text-[11px] text-[#2E2E2F]/60">
+                                        Current: <span className="font-bold text-[#2E2E2F]">{initialEventStatus}</span> · Choose final status below.
+                                    </p>
+                                    <select
+                                        className="w-full px-4 py-3 bg-[#F2F2F2] border border-[#2E2E2F]/20 rounded-xl text-[11px] font-medium uppercase tracking-wide outline-none focus:ring-2 focus:ring-[#38BDF2]/30 focus:border-[#38BDF2]"
+                                        value={finalStatusDecision}
+                                        onChange={(e) => {
+                                            const nextStatus = e.target.value as EventStatus | '';
+                                            setFinalStatusDecision(nextStatus);
+                                            if (nextStatus) {
+                                                setFormData({ ...formData, status: nextStatus as EventStatus });
+                                            }
+                                        }}
+                                    >
+                                        <option value="">Select final status</option>
+                                        <option value="DRAFT">Draft / Private</option>
+                                        <option value="PUBLISHED" disabled={!canPublishByTicketRule}>
+                                            {canPublishByTicketRule ? 'Live / Published' : 'Live / Published (Add ticket first)'}
+                                        </option>
+                                        {isEditMode && <option value="CLOSED">Closed</option>}
+                                    </select>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="flex gap-4 pt-8 border-t border-[#2E2E2F]/20">
-                            <Button className="flex-1 py-2 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest bg-[#38BDF2] text-[#F2F2F2] hover:bg-[#2E2E2F] hover:text-[#F2F2F2] transition-colors min-h-[32px]" onClick={() => setIsModalOpen(false)}>Cancel</Button>
                             <Button
-                                type="submit"
-                                className="flex-[2] py-2 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest bg-[#38BDF2] text-[#F2F2F2] hover:bg-[#2E2E2F] hover:text-[#F2F2F2] transition-colors min-h-[32px]"
-                                disabled={submitting}
+                                type="button"
+                                className="flex-1 py-2 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest bg-[#F2F2F2] text-[#2E2E2F] border border-[#2E2E2F]/25 hover:bg-[#2E2E2F]/5 transition-colors min-h-[32px]"
+                                onClick={() => {
+                                    if (wizardStep === 1) {
+                                        handleCloseEventModal();
+                                        return;
+                                    }
+                                    setWizardStep((prev) => (prev > 1 ? ((prev - 1) as EventSetupStep) : prev));
+                                }}
                             >
-                                {submitting ? 'Saving...' : (isEditMode ? 'Save Changes' : 'Create Event')}
+                                {wizardStep === 1 ? 'Cancel' : 'Back'}
                             </Button>
+
+                            {wizardStep < 4 ? (
+                                <Button
+                                    type="button"
+                                    className="flex-[2] py-2 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest bg-[#38BDF2] text-[#F2F2F2] hover:bg-[#2E2E2F] hover:text-[#F2F2F2] transition-colors min-h-[32px]"
+                                    onClick={handleNextWizardStep}
+                                    disabled={submitting}
+                                >
+                                    {submitting && wizardStep === 3 && !isEditMode ? 'Saving Draft...' : (wizardStep === 3 && !isEditMode ? 'Continue to Tickets' : 'Next Step')}
+                                </Button>
+                            ) : (
+                                <Button
+                                    type="submit"
+                                    className="flex-[2] py-2 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest bg-[#38BDF2] text-[#F2F2F2] hover:bg-[#2E2E2F] hover:text-[#F2F2F2] transition-colors min-h-[32px]"
+                                    disabled={submitting}
+                                >
+                                    {submitting ? 'Saving...' : 'Apply Event Status'}
+                                </Button>
+                            )}
                         </div>
-                    </form>
+                        </form>
+                    </div>
+
+                    <div className={`${isPreviewMode ? 'block' : 'hidden'} xl:block xl:sticky xl:top-0 self-start space-y-3 xl:max-h-[calc(70vh-1rem)] xl:overflow-y-auto xl:pr-1`}>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <ICONS.ChevronRight className="w-4 h-4 text-[#2E2E2F]/65" />
+                                <h4 className="text-[30px] font-black text-[#2E2E2F] tracking-tight">Preview</h4>
+                            </div>
+                            <div className="inline-flex items-center rounded-xl border border-[#2E2E2F]/15 bg-[#F2F2F2] p-1">
+                                <button
+                                    type="button"
+                                    onClick={() => setPreviewDevice('mobile')}
+                                    className={`w-9 h-9 rounded-lg flex items-center justify-center ${previewDevice === 'mobile' ? 'bg-[#2563EB]/15 text-[#2563EB]' : 'text-[#2E2E2F]/45 hover:text-[#2E2E2F]'}`}
+                                    title="Mobile preview"
+                                >
+                                    <MobilePreviewIcon className="w-4 h-4" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setPreviewDevice('desktop')}
+                                    className={`w-9 h-9 rounded-lg flex items-center justify-center ${previewDevice === 'desktop' ? 'bg-[#2563EB]/15 text-[#2563EB]' : 'text-[#2E2E2F]/45 hover:text-[#2E2E2F]'}`}
+                                    title="Desktop preview"
+                                >
+                                    <DesktopPreviewIcon className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="rounded-[1.5rem] border border-[#2E2E2F]/12 bg-[#F2F2F2] p-4 md:p-5">
+                            <div className={`${previewDevice === 'mobile' ? 'max-w-[360px] mx-auto' : 'max-w-none'}`}>
+                                <div className="rounded-[2.1rem] overflow-hidden border border-[#2E2E2F]/12 bg-[#F2F2F2]">
+                                    <div className="h-14 border-b border-[#2E2E2F]/10 px-5 flex items-center justify-between">
+                                        <img
+                                            src={BRAND_LOGO_URL}
+                                            alt="StartupLab Logo"
+                                            className="h-8 w-auto object-contain"
+                                        />
+                                        <div className="flex items-center gap-3 text-[#2E2E2F]/70">
+                                            <ICONS.Users className="w-4 h-4" />
+                                            <ICONS.MoreHorizontal className="w-4 h-4" />
+                                        </div>
+                                    </div>
+                                    <div className={`p-5 ${previewDevice === 'mobile' ? 'space-y-4' : 'space-y-5'}`}>
+                                        <div className={`${previewDevice === 'mobile' ? 'aspect-[16/10]' : 'aspect-[21/9]'} rounded-2xl overflow-hidden border border-[#2E2E2F]/10`}>
+                                            <img
+                                                src={getImageUrl(formData.imageUrl)}
+                                                alt="Event Preview"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+
+                                        <h2 className="text-4xl font-black text-[#2E2E2F] tracking-tight leading-tight">
+                                            {formData.eventName || 'Event title'}
+                                        </h2>
+
+                                        <div className="space-y-2 text-[#2E2E2F]/70">
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <ICONS.MapPin className="w-4 h-4" />
+                                                <span>{formData.location || 'Venue'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <ICONS.Calendar className="w-4 h-4" />
+                                                <span>{previewDateLabel}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-2 border-t border-[#2E2E2F]/10">
+                                            <h4 className="text-3xl font-black text-[#2E2E2F] tracking-tight mb-2">Overview</h4>
+                                            <p className="text-[16px] leading-7 text-[#2E2E2F]/75">
+                                                {formData.description || 'A short and sweet sentence about your event.'}
+                                            </p>
+                                        </div>
+
+                                        <div className="pt-2 border-t border-[#2E2E2F]/10">
+                                            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#2E2E2F]/55">Organized By</p>
+                                            <div className="mt-3 rounded-2xl border border-[#2E2E2F]/12 bg-[#F2F2F2] p-4 flex items-center gap-3">
+                                                <div className="w-11 h-11 rounded-full overflow-hidden bg-[#2E2E2F]/90 text-[#F2F2F2] text-sm font-bold flex items-center justify-center shrink-0">
+                                                    {organizerProfile?.profileImageUrl ? (
+                                                        <img src={getImageUrl(organizerProfile.profileImageUrl)} alt={organizerProfile.organizerName || 'Organizer'} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        organizerPreviewInitial
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-[15px] font-bold text-[#2E2E2F] truncate">{organizerProfile?.organizerName || 'Organizer name'}</p>
+                                                    <p className="text-[11px] font-semibold text-[#2E2E2F]/55">
+                                                        {`${organizerProfile?.followersCount || 0} follower${(organizerProfile?.followersCount || 0) === 1 ? '' : 's'}`}
+                                                    </p>
+                                                </div>
+                                                <button type="button" className="px-3 py-2 text-[11px] font-bold border border-[#2E2E2F]/20 rounded-lg text-[#2E2E2F]/80">
+                                                    Follow
+                                                </button>
+                                            </div>
+                                            {!!organizerProfile?.eventPageDescription && (
+                                                <p className="mt-3 text-[12px] leading-5 text-[#2E2E2F]/70">
+                                                    {organizerProfile.eventPageDescription}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div className="pt-2 border-t border-[#2E2E2F]/10">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#2E2E2F]/55">Exact Location</p>
+                                                {hasPreviewPhysicalLocation && (
+                                                    <a
+                                                        href={previewOpenMapUrl}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="text-[10px] font-black uppercase tracking-widest text-[#38BDF2] hover:text-[#2E2E2F] transition-colors"
+                                                    >
+                                                        Open in Maps
+                                                    </a>
+                                                )}
+                                            </div>
+                                            <p className="mt-2 text-sm text-[#2E2E2F]/70 font-medium">
+                                                {formData.location || 'Venue not set yet.'}
+                                            </p>
+                                            {hasPreviewPhysicalLocation ? (
+                                                <div className="mt-3 rounded-2xl overflow-hidden border border-[#2E2E2F]/10 bg-[#F2F2F2]">
+                                                    <iframe
+                                                        src={previewMapEmbedUrl}
+                                                        title="Preview event location map"
+                                                        className={`w-full ${previewDevice === 'mobile' ? 'h-44' : 'h-56'}`}
+                                                        loading="lazy"
+                                                        referrerPolicy="no-referrer-when-downgrade"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="mt-3 rounded-2xl border border-[#2E2E2F]/12 bg-[#F2F2F2] px-4 py-3 text-[12px] text-[#2E2E2F]/60">
+                                                    Map preview appears when Location Type is set to Onsite or Hybrid.
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="px-5 py-4 border-t border-[#2E2E2F]/10 bg-[#F2F2F2] flex items-center justify-between gap-3">
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#2E2E2F]/45">From</p>
+                                            <p className="text-lg font-black text-[#2E2E2F]">{activeEventTicketCount > 0 ? 'Ticket-ready' : 'Add tickets'}</p>
+                                        </div>
+                                        <button type="button" className="px-6 py-3 rounded-xl bg-[#2E2E2F]/10 text-[#2E2E2F]/45 text-sm font-black" disabled>
+                                            Get tickets
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </Modal>
 
             {/* Ticket Management Pop-up */}
             <Modal
                 isOpen={isTicketModalOpen}
-                onClose={() => setIsTicketModalOpen(false)}
+                onClose={handleCloseTicketModal}
                 title="Ticket Inventory Config"
                 size="lg"
             >
