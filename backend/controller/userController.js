@@ -1,6 +1,7 @@
 import db from "../database/db.js";
 import crypto from 'crypto';
 import path from 'path';
+import { logAudit } from '../utils/auditLogger.js';
 
 const STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'startuplab-business-ticketing';
 
@@ -413,6 +414,13 @@ export const updatePermissions = async (req, res) => {
 
     if (error) return res.status(500).json({ error: error.message });
     if (!data) return res.status(404).json({ error: 'User not found' });
+
+    await logAudit({
+      actionType: 'USER_PERMISSIONS_UPDATED',
+      details: { targetUserId: id, targetEmail: data?.email, permissions: { canViewEvents, canEditEvents, canManualCheckIn } },
+      req
+    });
+
     return res.json({
       ...data,
       canViewEvents: data.canviewevents,

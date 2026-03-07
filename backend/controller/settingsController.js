@@ -2,6 +2,7 @@
 import supabase from '../database/db.js';
 import { sendSmtpEmail } from '../utils/smtpMailer.js'; // Import existing mailer
 import { encryptString, decryptString, maskString } from '../utils/encryption.js';
+import { logAudit } from '../utils/auditLogger.js';
 
 /**
  * Save or Update SMTP settings for the current user (Organizer or Admin)
@@ -43,6 +44,12 @@ export async function updateSmtpSettings(req, res) {
         if (error) throw error;
 
         return res.json({ message: 'Settings updated successfully' });
+
+    await logAudit({
+      actionType: 'SMTP_SETTINGS_UPDATED',
+      details: { userId: req.user?.id },
+      req
+    });
     } catch (error) {
         console.error('[Settings] Update failed:', error.message);
         return res.status(500).json({ error: 'Failed to update settings' });

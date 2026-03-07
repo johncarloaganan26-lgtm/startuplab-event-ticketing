@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import path from 'path';
 import supabase from '../database/db.js';
+import { logAudit } from '../utils/auditLogger.js';
 import {
   getOrganizerByOwnerUserId,
   getOrganizerWithStatsById,
@@ -204,6 +205,13 @@ export const upsertOrganizer = async (req, res) => {
       if (error) return res.status(500).json({ error: error.message });
 
       const counts = await getEventsHostedCounts([data.organizerId]);
+
+      await logAudit({
+        actionType: 'ORGANIZER_UPDATED',
+        details: { organizerId: data?.organizerId, organizerName: data?.organizerName },
+        req
+      });
+
       return res.json(serializeOrganizerRecord(data, counts.get(data.organizerId) || 0));
     }
 
@@ -219,6 +227,13 @@ export const upsertOrganizer = async (req, res) => {
 
     if (error) return res.status(500).json({ error: error.message });
     const counts = await getEventsHostedCounts([data.organizerId]);
+
+    await logAudit({
+      actionType: 'ORGANIZER_CREATED',
+      details: { organizerId: data?.organizerId, organizerName: data?.organizerName },
+      req
+    });
+
     return res.status(201).json(serializeOrganizerRecord(data, counts.get(data.organizerId) || 0));
   } catch (err) {
     if (isOrganizerTableMissingError(err)) {

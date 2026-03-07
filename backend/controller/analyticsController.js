@@ -564,13 +564,18 @@ export const getRecentOrders = async (req, res) => {
 
 export const getAuditLogs = async (req, res) => {
   try {
+    console.log('[getAuditLogs] req.user:', req.user);
+    console.log('[getAuditLogs] req.user?.role:', req.user?.role);
+    
     const { page, limit, from, to } = resolvePagination(req);
     const filteredEventIds = await getFilteredEventIds(req);
+    console.log('[getAuditLogs] filteredEventIds:', filteredEventIds);
 
     let query = supabase
       .from('auditLogs')
       .select('auditLogId, actionType, orderId, ticketId, paymentTransactionId, webhookEventsId, actorUserId, createdAt', { count: 'exact' });
     const role = normalizeRole(req.user?.role);
+    console.log('[getAuditLogs] normalized role:', role);
     const allowedEventIds = filteredEventIds;
 
     // ADMIN role sees ALL audit logs
@@ -578,6 +583,7 @@ export const getAuditLogs = async (req, res) => {
       const { data, error, count } = await query
         .order('createdAt', { ascending: false })
         .range(from, to);
+      console.log('[getAuditLogs] admin query result:', { data, error, count });
       if (error) return res.status(500).json({ error: error.message });
       const total = typeof count === 'number' ? count : 0;
       return res.json({
@@ -601,6 +607,7 @@ export const getAuditLogs = async (req, res) => {
     const { data, error, count } = await query
       .order('createdAt', { ascending: false })
       .range(from, to);
+    console.log('[getAuditLogs] non-admin query result:', { data, error, count });
     if (error) return res.status(500).json({ error: error.message });
     const total = typeof count === 'number' ? count : 0;
     return res.json({
@@ -608,6 +615,7 @@ export const getAuditLogs = async (req, res) => {
       pagination: buildPagination(page, limit, total)
     });
   } catch (err) {
+    console.error('[getAuditLogs] error:', err);
     return res.status(500).json({ error: err?.message || 'Unexpected error' });
   }
 };
