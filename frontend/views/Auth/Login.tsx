@@ -9,6 +9,34 @@ import { UserRole, normalizeUserRole } from '../../types';
 
 const API = import.meta.env.VITE_API_BASE;
 
+const PasswordInput = ({ value, onChange, placeholder, required }: { value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; placeholder?: string; required?: boolean }) => {
+  const [showPassword, setShowPassword] = useState(false);
+
+  return (
+    <div className="relative">
+      <input
+        type={showPassword ? 'text' : 'password'}
+        placeholder={placeholder || 'Password'}
+        value={value}
+        onChange={onChange}
+        required={required}
+        className="w-full px-4 py-3 bg-[#F2F2F2] border border-[#2E2E2F]/20 rounded-xl text-[#2E2E2F] placeholder-[#2E2E2F]/40 focus:outline-none focus:ring-2 focus:ring-[#38BDF2]/40 focus:border-[#38BDF2] transition-colors font-normal text-[14px] pr-12"
+      />
+      <button
+        type="button"
+        onClick={() => setShowPassword(!showPassword)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#2E2E2F]/50 hover:text-[#2E2E2F] transition-colors p-1"
+      >
+        {showPassword ? (
+          <ICONS.EyeOff className="w-5 h-5" />
+        ) : (
+          <ICONS.Eye className="w-5 h-5" />
+        )}
+      </button>
+    </div>
+  );
+};
+
 
 
 export const LoginPerspective: React.FC = () => {
@@ -94,11 +122,9 @@ export const LoginPerspective: React.FC = () => {
                 required
               />
               <div className="space-y-2">
-                <Input
-                  placeholder="Password"
+                <PasswordInput
                   value={password}
                   onChange={(e: any) => setPassword(e.target.value)}
-                  type="password"
                   required
                 />
                 <div className="flex justify-end pr-1">

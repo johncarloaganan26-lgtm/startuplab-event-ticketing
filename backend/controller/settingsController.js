@@ -187,6 +187,15 @@ export async function updateHitPaySettings(req, res) {
 
         const { enabled, mode, hitpayApiKey, hitpaySalt } = req.body;
 
+        console.log('[HitPay Settings] Received payload:', {
+            enabled,
+            mode,
+            hasApiKey: !!hitpayApiKey,
+            hasSalt: !!hitpaySalt,
+            apiKeyLength: hitpayApiKey?.length || 0,
+            saltLength: hitpaySalt?.length || 0
+        });
+        
         // Base keys mapped to db
         const settings = [
             { user_id: userId, key: 'hitpay_enabled', value: enabled === true ? 'true' : 'false' },
@@ -195,7 +204,9 @@ export async function updateHitPaySettings(req, res) {
 
         // Handle API key: if provided and not empty, save it. If disabled and no new value, delete it.
         if (typeof hitpayApiKey === 'string' && hitpayApiKey.trim() !== '') {
-            settings.push({ user_id: userId, key: 'hitpay_api_key', value: encryptString(hitpayApiKey.trim()) });
+            const encrypted = encryptString(hitpayApiKey.trim());
+            console.log('[HitPay Settings] API Key encrypted:', !!encrypted);
+            settings.push({ user_id: userId, key: 'hitpay_api_key', value: encrypted });
         } else if (enabled !== true) {
             // If disabling, delete the API key
             settings.push({ user_id: userId, key: 'hitpay_api_key', value: null });
@@ -203,7 +214,9 @@ export async function updateHitPaySettings(req, res) {
 
         // Handle salt: if provided and not empty, save it. If disabled and no new value, delete it.
         if (typeof hitpaySalt === 'string' && hitpaySalt.trim() !== '') {
-            settings.push({ user_id: userId, key: 'hitpay_salt', value: encryptString(hitpaySalt.trim()) });
+            const encrypted = encryptString(hitpaySalt.trim());
+            console.log('[HitPay Settings] Salt encrypted:', !!encrypted);
+            settings.push({ user_id: userId, key: 'hitpay_salt', value: encrypted });
         } else if (enabled !== true) {
             // If disabling, delete the salt
             settings.push({ user_id: userId, key: 'hitpay_salt', value: null });
