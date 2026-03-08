@@ -152,7 +152,7 @@ export const whoAmI = async (req, res) => {
     let error = null;
     let resp = await db
       .from('users')
-      .select("userId, name, email, role, imageUrl, canviewevents, caneditevents, canmanualcheckin")
+      .select("userId, name, email, role, imageUrl, canviewevents, caneditevents, canmanualcheckin, canreceivenotifications")
       .eq("userId", userId)
       .maybeSingle();
     data = resp.data; error = resp.error;
@@ -161,7 +161,7 @@ export const whoAmI = async (req, res) => {
     if ((!data && !error) || (error && error.message?.includes('column "userId"'))) {
       resp = await db
         .from('users')
-        .select("id, name, email, role, imageUrl, canviewevents, caneditevents, canmanualcheckin")
+        .select("id, name, email, role, imageUrl, canviewevents, caneditevents, canmanualcheckin, canreceivenotifications")
         .eq("id", userId)
         .maybeSingle();
       data = resp.data; error = resp.error;
@@ -201,6 +201,7 @@ export const whoAmI = async (req, res) => {
       canViewEvents: data.canviewevents === undefined || data.canviewevents === null ? defaultStaff : !!data.canviewevents,
       canEditEvents: data.caneditevents === undefined || data.caneditevents === null ? defaultStaff : !!data.caneditevents,
       canManualCheckIn: data.canmanualcheckin === undefined || data.canmanualcheckin === null ? defaultStaff : !!data.canmanualcheckin,
+      canReceiveNotifications: data.canreceivenotifications === undefined || data.canreceivenotifications === null ? defaultStaff : !!data.canreceivenotifications,
     });
 
   } catch (error) {
@@ -251,7 +252,7 @@ export const getAllUsers = async (req, res) => {
 
     let query = db
       .from("users")
-      .select("userId, id, name, email, role, imageUrl, canviewevents, caneditevents, canmanualcheckin, employerId");
+      .select("userId, id, name, email, role, imageUrl, canviewevents, caneditevents, canmanualcheckin, canreceivenotifications, employerId");
 
     let { data, error } = await query;
     console.log('[getAllUsers] db response data length:', data?.length, 'error:', error);
@@ -304,6 +305,7 @@ export const getAllUsers = async (req, res) => {
       canViewEvents: user.canviewevents,
       canEditEvents: user.caneditevents,
       canManualCheckIn: user.canmanualcheckin,
+      canReceiveNotifications: user.canreceivenotifications,
       employerId: user.employerId || user.employerid || null
     })));
   } catch (error) {
@@ -339,7 +341,7 @@ export const updatePermissions = async (req, res) => {
     }
 
     const { id } = req.params;
-    const { canViewEvents = false, canEditEvents = false, canManualCheckIn = false } = req.body || {};
+    const { canViewEvents = false, canEditEvents = false, canManualCheckIn = false, canReceiveNotifications = false } = req.body || {};
 
     // Resolve target user ownership to enforce privacy boundaries.
     let target = null;
@@ -397,17 +399,27 @@ export const updatePermissions = async (req, res) => {
 
     let { data, error } = await db
       .from('users')
-      .update({ canviewevents: canViewEvents, caneditevents: canEditEvents, canmanualcheckin: canManualCheckIn })
+      .update({
+        canviewevents: canViewEvents,
+        caneditevents: canEditEvents,
+        canmanualcheckin: canManualCheckIn,
+        canreceivenotifications: canReceiveNotifications
+      })
       .eq('userId', id)
-      .select('userId, name, email, role, canviewevents, caneditevents, canmanualcheckin')
+      .select('userId, name, email, role, canviewevents, caneditevents, canmanualcheckin, canreceivenotifications')
       .maybeSingle();
 
     if ((!data && !error) || (error && error.message?.includes('column "userId"'))) {
       const resp = await db
         .from('users')
-        .update({ canviewevents: canViewEvents, caneditevents: canEditEvents, canmanualcheckin: canManualCheckIn })
+        .update({
+          canviewevents: canViewEvents,
+          caneditevents: canEditEvents,
+          canmanualcheckin: canManualCheckIn,
+          canreceivenotifications: canReceiveNotifications
+        })
         .eq('userId', id)
-        .select('id, name, email, role, canviewevents, caneditevents, canmanualcheckin')
+        .select('id, name, email, role, canviewevents, caneditevents, canmanualcheckin, canreceivenotifications')
         .maybeSingle();
       data = resp.data; error = resp.error;
     }
@@ -417,7 +429,7 @@ export const updatePermissions = async (req, res) => {
 
     await logAudit({
       actionType: 'USER_PERMISSIONS_UPDATED',
-      details: { targetUserId: id, targetEmail: data?.email, permissions: { canViewEvents, canEditEvents, canManualCheckIn } },
+      details: { targetUserId: id, targetEmail: data?.email, permissions: { canViewEvents, canEditEvents, canManualCheckIn, canReceiveNotifications } },
       req
     });
 
@@ -426,6 +438,7 @@ export const updatePermissions = async (req, res) => {
       canViewEvents: data.canviewevents,
       canEditEvents: data.caneditevents,
       canManualCheckIn: data.canmanualcheckin,
+      canReceiveNotifications: data.canreceivenotifications,
     });
   } catch (error) {
     return res.status(500).json({ error: error.message });

@@ -100,17 +100,23 @@ export const listEvents = async (req, res) => {
     const location = (req.query.location || '').toString().trim();
     const organizerId = (req.query.organizerId || '').toString().trim();
 
-    // 1) Fetch all events (optionally filter by status)
+    // Advanced filters
+    const category = req.query.category;
+    const price = req.query.price; // 'free' | 'paid'
+    const format = req.query.format; // 'online' | 'in-person'
+    const startDate = req.query.startDate;
+    const endDate = req.query.endDate;
+    const sortBy = req.query.sortBy;
+
+    // 1) Fetch candidate events
     let query = supabase.from('events').select('*');
     if (statuses.length > 0) query = query.in('status', statuses);
     if (organizerId) query = query.eq('organizerId', organizerId);
 
-    // Detailed search filter
     if (search) {
       query = query.or(`eventName.ilike.%${search}%,locationText.ilike.%${search}%,description.ilike.%${search}%`);
     }
 
-    // Explicit location filter
     if (location) {
       if (location === 'Online Events') {
         query = query.in('locationType', ['ONLINE', 'HYBRID']);
@@ -119,57 +125,111 @@ export const listEvents = async (req, res) => {
       }
     }
 
+    if (format === 'online') {
+      query = query.in('locationType', ['ONLINE', 'HYBRID']);
+    } else if (format === 'in-person') {
+      query = query.eq('locationType', 'IN_PERSON');
+    }
+
     const { data: events, error: eventsError } = await query;
     if (eventsError) return res.status(500).json({ error: eventsError.message });
 
-    // 2) Apply registration window filter, rank by likes, then paginate
-    const filteredEvents = (events || []).filter(withinRegistrationWindow);
-    const filteredEventIds = filteredEvents.map((event) => event.eventId).filter(Boolean);
+    // 2) Fetch ticket types for all candidate events (required for price filtering and return)
+    const allEventIds = (events || []).map(e => e.eventId);
+    let allTicketTypes = [];
+    if (allEventIds.length > 0) {
+      const { data: ttData } = await supabase
+        .from('ticketTypes')
+        .select('*')
+        .eq('status', true)
+        .in('eventId', allEventIds);
+      allTicketTypes = ttData || [];
+    }
+    const ttMap = new Map();
+    allTicketTypes.forEach(tt => {
+      const list = ttMap.get(tt.eventId) || [];
+      list.push(tt);
+      ttMap.set(tt.eventId, list);
+    });
+
+    // 3) Apply JS-side filters (Date, Price, Category)
+    let filtered = (events || []).filter(withinRegistrationWindow);
+
+    if (startDate) {
+      const start = new Date(startDate);
+      filtered = filtered.filter(e => new Date(e.startAt) >= start);
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      filtered = filtered.filter(e => new Date(e.startAt) <= end);
+    }
+
+    if (price === 'free' || price === 'paid') {
+      filtered = filtered.filter(e => {
+        const etts = ttMap.get(e.eventId) || [];
+        const minPrice = etts.length ? Math.min(...etts.map(t => t.priceAmount)) : 0;
+        return price === 'free' ? minPrice === 0 : minPrice > 0;
+      });
+    }
+
+    // Category filtering (Keyword based - simplistic replicate of frontend logic)
+    if (category && category !== 'all') {
+      // Replicate some keywords for common categories if needed, or better:
+      // The frontend could pass keywords in search, but search is already used.
+      // For now, we'll just check if the category name itself appears in the event text if it's a specific category.
+      const catLower = category.toLowerCase();
+      filtered = filtered.filter(e => {
+        const source = `${e.eventName} ${e.description} ${e.locationText}`.toLowerCase();
+        // This is a minimal implementation of the frontend's keyword system
+        return source.includes(catLower);
+      });
+    }
+
+    // 4) Rank and Paginate
+    const filteredEventIds = filtered.map(e => e.eventId);
     const allLikeCountMap = await getEventLikeCountsMap(filteredEventIds);
-    const rankedEvents = [...filteredEvents].sort((a, b) => {
+
+    let ranked = [...filtered].sort((a, b) => {
+      if (sortBy === 'date_soon') return new Date(a.startAt).getTime() - new Date(b.startAt).getTime();
+      if (sortBy === 'newest') return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+
       const likeDiff = (allLikeCountMap.get(b.eventId) || 0) - (allLikeCountMap.get(a.eventId) || 0);
       if (likeDiff !== 0) return likeDiff;
       return new Date(a.startAt).getTime() - new Date(b.startAt).getTime();
     });
 
-    const total = rankedEvents.length;
+    const total = ranked.length;
     const totalPages = total ? Math.ceil(total / limit) : 1;
-    const pagedEvents = rankedEvents.slice(offset, offset + limit);
+    const pagedEvents = ranked.slice(offset, offset + limit);
+
     if (pagedEvents.length === 0) {
       return res.json({ events: [], pagination: { page, limit, total: 0, totalPages: 0 } });
     }
 
-    // 3) Fetch ticket types for these events
-    const eventIds = pagedEvents.map(e => e.eventId);
-    const { data: ticketTypes, error: ttError } = await supabase
-      .from('ticketTypes')
-      .select('*')
-      .eq('status', true)
-      .in('eventId', eventIds);
+    // 5) Build final response objects
+    const eventIdsForPage = pagedEvents.map(e => e.eventId);
+    // Already have ticket types in ttMap, so we can just use those.
 
-    if (ttError) return res.status(500).json({ error: ttError.message });
-
-    // 4) Fetch registration counts for these events (robust aggregation)
+    // Fetch registration counts for page
     let regCountMap = new Map();
-    if (eventIds.length > 0) {
-      const { data: attendees, error: regErr } = await supabase
-        .from('attendees')
-        .select('eventId')
-        .in('eventId', eventIds);
-      if (regErr) return res.status(500).json({ error: regErr.message });
-      // Aggregate counts in JS
-      for (const att of attendees || []) {
-        regCountMap.set(att.eventId, (regCountMap.get(att.eventId) || 0) + 1);
-      }
-    }
+    const { data: attendees } = await supabase
+      .from('attendees')
+      .select('eventId')
+      .in('eventId', eventIdsForPage);
+    (attendees || []).forEach(att => {
+      regCountMap.set(att.eventId, (regCountMap.get(att.eventId) || 0) + 1);
+    });
 
-    // 5) Filter ticket types by sales window, attach and return
-    const usableTicketTypes = (ticketTypes || []).filter(withinSalesWindow);
-    const withTicketTypes = attachTicketTypes(pagedEvents, usableTicketTypes).map((e) => ({
-      ...e,
-      registrationCount: regCountMap.get(e.eventId) || 0,
-      likesCount: allLikeCountMap.get(e.eventId) || 0,
-    }));
+    const withTicketTypes = pagedEvents.map(e => {
+      const usableTTs = (ttMap.get(e.eventId) || []).filter(withinSalesWindow);
+      return {
+        ...e,
+        ticketTypes: usableTTs,
+        registrationCount: regCountMap.get(e.eventId) || 0,
+        likesCount: allLikeCountMap.get(e.eventId) || 0,
+      };
+    });
+
     const enrichedEvents = await enrichEventsWithOrganizer(withTicketTypes);
 
     return res.json({

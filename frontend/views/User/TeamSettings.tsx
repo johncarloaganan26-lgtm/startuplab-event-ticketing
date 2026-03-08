@@ -6,7 +6,7 @@ import { apiService } from '../../services/apiService';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
-type PermissionCategory = 'view_events' | 'edit_events' | 'manual_checkin';
+type PermissionCategory = 'view_events' | 'edit_events' | 'manual_checkin' | 'receive_notifications';
 
 interface TeamMember {
     id: string;
@@ -39,6 +39,7 @@ export const TeamSettings: React.FC = () => {
                             const rawRole = String(u.role || '').toUpperCase();
                             const role = rawRole === 'USER' ? UserRole.ORGANIZER : rawRole;
                             if (role !== UserRole.ADMIN && role !== UserRole.STAFF && role !== UserRole.ORGANIZER) return null;
+                            const isOwner = role === UserRole.ORGANIZER;
                             return {
                                 id: u.userId,
                                 name: u.name || '',
@@ -46,11 +47,15 @@ export const TeamSettings: React.FC = () => {
                                 imageUrl: u.imageUrl || null,
                                 role,
                                 perspective: role as UserRole,
-                                permissions: [
-                                    ...(u.canViewEvents ? ['view_events'] : []),
-                                    ...(u.canEditEvents ? ['edit_events'] : []),
-                                    ...(u.canManualCheckIn ? ['manual_checkin'] : [])
-                                ],
+                                isOwner,
+                                permissions: isOwner
+                                    ? ['view_events', 'edit_events', 'manual_checkin', 'receive_notifications']
+                                    : [
+                                        ...(u.canViewEvents ? ['view_events'] : []),
+                                        ...(u.canEditEvents ? ['edit_events'] : []),
+                                        ...(u.canManualCheckIn ? ['manual_checkin'] : []),
+                                        ...(u.canReceiveNotifications ? ['receive_notifications'] : [])
+                                    ],
                             } as TeamMember;
                         })
                         .filter((member): member is TeamMember => member !== null)
@@ -88,6 +93,7 @@ export const TeamSettings: React.FC = () => {
             canViewEvents: nextPerms.includes('view_events'),
             canEditEvents: nextPerms.includes('edit_events'),
             canManualCheckIn: nextPerms.includes('manual_checkin'),
+            canReceiveNotifications: nextPerms.includes('receive_notifications'),
         };
 
         try {
@@ -147,7 +153,7 @@ export const TeamSettings: React.FC = () => {
         }
     };
 
-    const PermissionShield: React.FC<{ active?: boolean, onClick?: () => void, disabled?: boolean }> = ({ active = false, onClick, disabled = false }) => (
+    const PermissionShield: React.FC<{ active?: boolean, onClick?: () => void, disabled?: boolean, iconType?: 'shield' | 'bell' }> = ({ active = false, onClick, disabled = false, iconType = 'shield' }) => (
         <button
             type="button"
             onClick={disabled ? undefined : onClick}
@@ -158,9 +164,13 @@ export const TeamSettings: React.FC = () => {
                     : 'text-[#2E2E2F]/40 bg-[#F2F2F2] hover:bg-[#2E2E2F] hover:text-[#F2F2F2]'
                 }`}
         >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
+            {iconType === 'bell' ? (
+                <ICONS.Bell className="w-4 h-4" />
+            ) : (
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+            )}
         </button>
     );
 
@@ -266,7 +276,8 @@ export const TeamSettings: React.FC = () => {
                                             <th className="px-10 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em]">Name</th>
                                             <th className="px-6 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] text-center">View Events</th>
                                             <th className="px-6 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] text-center">Edit Events</th>
-                                            <th className="px-6 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] text-center">Manual Check-in</th>
+                                            <th className="px-6 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] text-center">Check-in</th>
+                                            <th className="px-6 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] text-center">Notify</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-[#2E2E2F]/10">
@@ -291,17 +302,22 @@ export const TeamSettings: React.FC = () => {
                                                 </td>
                                                 <td className="px-6 py-8">
                                                     <div className="flex justify-center">
-                                                        <PermissionShield active={member.permissions.includes('view_events')} disabled={member.perspective !== UserRole.STAFF} onClick={() => toggleMemberPermission(member.id, 'view_events')} />
+                                                        <PermissionShield active={member.permissions.includes('view_events')} disabled={member.isOwner} onClick={() => toggleMemberPermission(member.id, 'view_events')} />
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-8">
                                                     <div className="flex justify-center">
-                                                        <PermissionShield active={member.permissions.includes('edit_events')} disabled={member.perspective !== UserRole.STAFF} onClick={() => toggleMemberPermission(member.id, 'edit_events')} />
+                                                        <PermissionShield active={member.permissions.includes('edit_events')} disabled={member.isOwner} onClick={() => toggleMemberPermission(member.id, 'edit_events')} />
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-8">
                                                     <div className="flex justify-center">
-                                                        <PermissionShield active={member.permissions.includes('manual_checkin')} disabled={member.perspective !== UserRole.STAFF} onClick={() => toggleMemberPermission(member.id, 'manual_checkin')} />
+                                                        <PermissionShield active={member.permissions.includes('manual_checkin')} disabled={member.isOwner} onClick={() => toggleMemberPermission(member.id, 'manual_checkin')} />
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-8">
+                                                    <div className="flex justify-center">
+                                                        <PermissionShield iconType="bell" active={member.permissions.includes('receive_notifications')} disabled={member.isOwner} onClick={() => toggleMemberPermission(member.id, 'receive_notifications')} />
                                                     </div>
                                                 </td>
                                             </tr>

@@ -377,16 +377,27 @@ export const apiService = {
   },
 
   // GET /api/events
-  getEvents: async (page = 1, limit = 10, search = '', location = '', organizerId = ''): Promise<{ events: Event[], pagination: any }> => {
-    const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
-    const locParam = location ? `&location=${encodeURIComponent(location)}` : '';
-    const orgParam = organizerId ? `&organizerId=${encodeURIComponent(organizerId)}` : '';
-    const res = await fetch(`${API_BASE}/api/events?status=PUBLISHED&page=${page}&limit=${limit}${searchParam}${locParam}${orgParam}`, {
+  getEvents: async (page = 1, limit = 10, search = '', location = '', organizerId = '', filters: any = {}): Promise<{ events: Event[], pagination: any }> => {
+    const query = new URLSearchParams();
+    query.append('status', 'PUBLISHED,LIVE');
+    query.append('page', String(page));
+    query.append('limit', String(limit));
+    if (search) query.append('search', search);
+    if (location) query.append('location', location);
+    if (organizerId) query.append('organizerId', organizerId);
+
+    // Apply additional filters
+    Object.keys(filters).forEach(key => {
+      if (filters[key] && filters[key] !== 'all') {
+        query.append(key, filters[key]);
+      }
+    });
+
+    const res = await fetch(`${API_BASE}/api/events?${query}`, {
       headers: { 'Content-Type': 'application/json' }
     });
     if (!res.ok) throw new Error(`Failed to load events: ${res.status}`);
-    const data = await res.json();
-    return data;
+    return await res.json();
   },
 
   // GET /api/events/:slug
@@ -838,7 +849,7 @@ export const apiService = {
   },
 
   // PUT /api/users/:id/permissions
-  updateUserPermissions: async (userId: string, payload: { canViewEvents: boolean; canEditEvents: boolean; canManualCheckIn: boolean }) => {
+  updateUserPermissions: async (userId: string, payload: { canViewEvents: boolean; canEditEvents: boolean; canManualCheckIn: boolean; canReceiveNotifications: boolean }) => {
     const res = await fetch(`${API_BASE}/api/users/${encodeURIComponent(userId)}/permissions`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

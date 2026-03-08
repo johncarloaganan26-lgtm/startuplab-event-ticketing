@@ -9,6 +9,7 @@ import { logAudit } from '../utils/auditLogger.js';
 import {
   getUserProfileByAuthId,
   notifyUserByPreference,
+  notifyTeamByPreference,
 } from '../utils/notificationService.js';
 
 const getReservationTtlMs = () => {
@@ -323,9 +324,10 @@ export const createOrder = async (req, res) => {
             const totalQty = items.reduce((sum, i) => sum + i.quantity, 0);
             const message = `${buyerName} just registered for ${totalQty} free ticket(s) for your event "${eventRow.eventName}".`;
 
-            await notifyUserByPreference({
+            await notifyTeamByPreference({
               recipientUserId,
               recipientFallbackEmail: recipientProfile?.email || '',
+              actorEmail: buyerEmail,
               eventId,
               organizerId: eventRow.organizerId,
               type: 'ORDER_PLACED',

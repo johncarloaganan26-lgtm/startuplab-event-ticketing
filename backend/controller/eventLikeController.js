@@ -4,6 +4,7 @@ import {
   getUserProfileByAuthId,
   buildDisplayName,
   notifyUserByPreference,
+  notifyTeamByPreference,
   debugLog,
 } from '../utils/notificationService.js';
 
@@ -226,8 +227,8 @@ export const likeEvent = async (req, res) => {
           const organizerEmail = recipientProfile?.email || '';
 
           if (orgData?.emailOptIn) {
-            debugLog(`📡 [Like] Sending notification to Organizer: ${context.organizerOwnerUserId}`);
-            await notifyUserByPreference({
+            debugLog(`📡 [Like] Sending notification to Team (Owner: ${context.organizerOwnerUserId})`);
+            await notifyTeamByPreference({
               recipientUserId: context.organizerOwnerUserId,
               recipientFallbackEmail: organizerEmail,
               actorUserId: userId,

@@ -11,7 +11,7 @@ import { useUser } from '../../context/UserContext';
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 // Refined granular permissions for staff as per developer brief
-type PermissionCategory = 'view_events' | 'edit_events' | 'manual_checkin';
+type PermissionCategory = 'view_events' | 'edit_events' | 'manual_checkin' | 'receive_notifications';
 
 interface TeamMember {
   id: string;
@@ -125,7 +125,8 @@ export const SettingsView: React.FC = () => {
                 permissions: [
                   ...(u.canViewEvents ? ['view_events'] : []),
                   ...(u.canEditEvents ? ['edit_events'] : []),
-                  ...(u.canManualCheckIn ? ['manual_checkin'] : [])
+                  ...(u.canManualCheckIn ? ['manual_checkin'] : []),
+                  ...(u.canReceiveNotifications ? ['receive_notifications'] : [])
                 ],
               } as TeamMember;
             })
@@ -164,6 +165,7 @@ export const SettingsView: React.FC = () => {
       canViewEvents: nextPerms.includes('view_events'),
       canEditEvents: nextPerms.includes('edit_events'),
       canManualCheckIn: nextPerms.includes('manual_checkin'),
+      canReceiveNotifications: nextPerms.includes('receive_notifications'),
     };
 
     try {
@@ -205,7 +207,7 @@ export const SettingsView: React.FC = () => {
     setNotification({ message: 'Invitation sent successfully.', type: 'success' });
   };
 
-  const PermissionShield: React.FC<{ active?: boolean, onClick?: () => void, disabled?: boolean }> = ({ active = false, onClick, disabled = false }) => (
+  const PermissionShield: React.FC<{ active?: boolean, onClick?: () => void, disabled?: boolean, iconType?: 'shield' | 'bell' }> = ({ active = false, onClick, disabled = false, iconType = 'shield' }) => (
     <button
       type="button"
       onClick={disabled ? undefined : onClick}
@@ -216,9 +218,13 @@ export const SettingsView: React.FC = () => {
           : 'text-[#2E2E2F]/40 bg-[#F2F2F2] hover:bg-[#2E2E2F] hover:text-[#F2F2F2]'
         }`}
     >
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      </svg>
+      {iconType === 'bell' ? (
+        <ICONS.Bell className="w-4 h-4" />
+      ) : (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+      )}
     </button>
   );
 
@@ -331,7 +337,8 @@ export const SettingsView: React.FC = () => {
                           <th className="px-10 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em]">Name</th>
                           <th className="px-6 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] text-center">View Events</th>
                           <th className="px-6 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] text-center">Edit Events</th>
-                          <th className="px-6 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] text-center">Manual Check-in</th>
+                          <th className="px-6 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] text-center">Check-in</th>
+                          <th className="px-6 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] text-center">Notify</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#2E2E2F]/10">
@@ -367,6 +374,11 @@ export const SettingsView: React.FC = () => {
                             <td className="px-6 py-8">
                               <div className="flex justify-center">
                                 <PermissionShield active={member.permissions.includes('manual_checkin')} disabled={member.perspective !== UserRole.STAFF} onClick={() => toggleMemberPermission(member.id, 'manual_checkin')} />
+                              </div>
+                            </td>
+                            <td className="px-6 py-8">
+                              <div className="flex justify-center">
+                                <PermissionShield iconType="bell" active={member.permissions.includes('receive_notifications')} disabled={member.perspective !== UserRole.STAFF} onClick={() => toggleMemberPermission(member.id, 'receive_notifications')} />
                               </div>
                             </td>
                           </tr>

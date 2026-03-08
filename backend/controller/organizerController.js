@@ -15,6 +15,7 @@ import {
   getUserProfileByAuthId,
   buildDisplayName,
   notifyUserByPreference,
+  notifyTeamByPreference,
   debugLog,
 } from '../utils/notificationService.js';
 
@@ -496,7 +497,7 @@ export const followOrganizer = async (req, res) => {
           if (organizer?.emailOptIn) {
             console.log(`📡 [Follow] Sending notification to Organizer: ${organizer.ownerUserId}`);
             const message = `${actorName} followed your organization "${organizerLabel}".`;
-            await notifyUserByPreference({
+            await notifyTeamByPreference({
               recipientUserId: organizer.ownerUserId,
               actorUserId: followerUserId,
               organizerId: organizer.organizerId,
@@ -569,7 +570,7 @@ export const followOrganizer = async (req, res) => {
         if (organizer?.emailOptIn) {
           console.log(`📡 [Follow] Sending notification to Organizer: ${organizer.ownerUserId}`);
           const message = `${actorName} followed your organization "${organizerLabel}".`;
-          await notifyUserByPreference({
+          await notifyTeamByPreference({
             recipientUserId: organizer.ownerUserId,
             actorUserId: followerUserId,
             organizerId: organizer.organizerId,

@@ -581,3 +581,92 @@ export async function notifyUserByPreference({
 
   return { inApp: inAppDelivered, email: emailDelivered };
 }
+
+export async function notifyTeamByPreference(params) {
+  const { organizerId, recipientUserId } = params;
+
+  if (!organizerId && !recipientUserId) return { inApp: false, email: false };
+
+  let ownerUserId = recipientUserId;
+  if (!ownerUserId && organizerId) {
+    const { data: orgRow } = await supabase
+      .from('organizers')
+      .select('ownerUserId')
+      .eq('organizerId', organizerId)
+      .maybeSingle();
+    if (orgRow?.ownerUserId) {
+      ownerUserId = orgRow.ownerUserId;
+    }
+  }
+
+  if (!ownerUserId) return { inApp: false, email: false };
+
+  // 1. Get the owner explicitly
+  const { data: ownerDetails } = await supabase
+    .from('users')
+    .select('userId, email')
+    .eq('userId', ownerUserId)
+    .maybeSingle();
+
+  // 2. Get all staff exactly reporting to this owner (employerId = ownerUserId)
+  const { data: staffBatch, error: staffErr } = await supabase
+    .from('users')
+    .select('userId, email, canreceivenotifications, employerId')
+    .eq('employerId', ownerUserId)
+    .eq('role', 'STAFF');
+
+  let team = [];
+
+  // Add Owner
+  if (ownerDetails) {
+    team.push({ userId: ownerDetails.userId, email: ownerDetails.email });
+  } else {
+    team.push({ userId: ownerUserId, email: params.recipientFallbackEmail });
+  }
+
+  // Add staff with specific notifications enabled
+  if (staffBatch && !staffErr) {
+    for (const member of staffBatch) {
+      // If notification permission is true OR default NULL staff logic
+      const canReceive = member.canreceivenotifications === undefined || member.canreceivenotifications === null ? true : !!member.canreceivenotifications;
+      if (canReceive) {
+        team.push({ userId: member.userId, email: member.email });
+      }
+    }
+  }
+
+  let results = [];
+  // Ensure unique members logic (no double messaging if owner somehow duplicated in staff array)
+  const uniqueTeam = team.filter((v, i, a) => a.findIndex(t => t.userId === v.userId) === i);
+
+  // If the actor is the owner testing the attendee mode, skip notifying the team entirely!
+  if (params.actorUserId && String(params.actorUserId) === String(ownerUserId)) {
+    debugLog(`[TeamNotify] Actor is the Owner testing attendee mode. Skipping team notifications.`);
+    return { deliveredTo: 0, success: true };
+  }
+
+  if (params.actorEmail && ownerDetails?.email && String(params.actorEmail) === String(ownerDetails.email)) {
+    debugLog(`[TeamNotify] Actor Email matches the Owner testing attendee mode. Skipping team notifications.`);
+    return { deliveredTo: 0, success: true };
+  }
+
+  for (const recipient of uniqueTeam) {
+    // Skip notifying the person who triggered the action
+    if (params.actorUserId && String(recipient.userId) === String(params.actorUserId)) {
+      continue;
+    }
+    if (params.actorEmail && recipient.email && String(recipient.email) === String(params.actorEmail)) {
+      continue;
+    }
+
+    debugLog(`[TeamNotify] Sending to team member: ${recipient.userId}`);
+    const res = await notifyUserByPreference({
+      ...params,
+      recipientUserId: recipient.userId,
+      recipientFallbackEmail: recipient.email,
+    });
+    results.push(res);
+  }
+
+  return { deliveredTo: results.length, success: results.some(r => r.inApp || r.email) };
+}

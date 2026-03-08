@@ -10,10 +10,11 @@ interface UserContextState {
   canViewEvents?: boolean;
   canEditEvents?: boolean;
   canManualCheckIn?: boolean;
+  canReceiveNotifications?: boolean;
 }
 
 interface UserContextValue extends UserContextState {
-  setUser: (payload: { role: UserRole; email: string; name?: string | null; imageUrl?: string | null; canViewEvents?: boolean; canEditEvents?: boolean; canManualCheckIn?: boolean }) => void;
+  setUser: (payload: { role: UserRole; email: string; name?: string | null; imageUrl?: string | null; canViewEvents?: boolean; canEditEvents?: boolean; canManualCheckIn?: boolean; canReceiveNotifications?: boolean }) => void;
   clearUser: () => void;
 }
 
@@ -29,9 +30,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     canViewEvents: undefined,
     canEditEvents: undefined,
     canManualCheckIn: undefined,
+    canReceiveNotifications: undefined,
   });
 
-  const setUser = React.useCallback((payload: { role: UserRole; email: string; name?: string | null; imageUrl?: string | null; canViewEvents?: boolean; canEditEvents?: boolean; canManualCheckIn?: boolean }) => {
+  const setUser = React.useCallback((payload: { role: UserRole; email: string; name?: string | null; imageUrl?: string | null; canViewEvents?: boolean; canEditEvents?: boolean; canManualCheckIn?: boolean; canReceiveNotifications?: boolean }) => {
     setState((prev) => {
       const nextName = payload.name !== undefined ? payload.name : prev.name;
       const nextImageUrl = payload.imageUrl !== undefined ? payload.imageUrl : prev.imageUrl;
@@ -40,7 +42,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const samePermissions =
         prev.canViewEvents === payload.canViewEvents &&
         prev.canEditEvents === payload.canEditEvents &&
-        prev.canManualCheckIn === payload.canManualCheckIn;
+        prev.canManualCheckIn === payload.canManualCheckIn &&
+        prev.canReceiveNotifications === payload.canReceiveNotifications;
       if (sameIdentity && samePermissions && sameProfile) return prev;
       return {
         role: payload.role,
@@ -51,6 +54,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         canViewEvents: payload.canViewEvents,
         canEditEvents: payload.canEditEvents,
         canManualCheckIn: payload.canManualCheckIn,
+        canReceiveNotifications: payload.canReceiveNotifications,
       };
     });
   }, []);
@@ -58,7 +62,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearUser = React.useCallback(() => {
     setState((prev) => {
       if (!prev.isAuthenticated && !prev.role && !prev.email && !prev.name && !prev.imageUrl) return prev;
-      return { role: null, email: null, name: null, imageUrl: null, isAuthenticated: false, canViewEvents: undefined, canEditEvents: undefined, canManualCheckIn: undefined };
+      return { role: null, email: null, name: null, imageUrl: null, isAuthenticated: false, canViewEvents: undefined, canEditEvents: undefined, canManualCheckIn: undefined, canReceiveNotifications: undefined };
     });
   }, []);
 

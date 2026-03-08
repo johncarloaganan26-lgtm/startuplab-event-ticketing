@@ -9,7 +9,7 @@ import { PaymentStatusView } from './views/Public/PaymentStatus';
 import { TicketView } from './views/Public/TicketView';
 import { AboutUsPage } from './views/Public/AboutUsPage';
 import { ContactUsPage } from './views/Public/ContactUsPage';
-import { EventDiscoveryPage } from './views/Public/EventDiscoveryPage';
+import { PublicEventsPage } from './views/Public/PublicEventsPage';
 import { LikedEventsPage } from './views/Public/LikedEventsPage';
 import { FollowingsEventsPage } from './views/Public/FollowingsEventsPage';
 import MyTicketsPage from './views/Public/MyTicketsPage';
@@ -107,7 +107,7 @@ const reverseLookupCity = async (lat: number, lon: number): Promise<string | nul
 const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { role, email, name, imageUrl, isAuthenticated, clearUser, setUser, canViewEvents, canEditEvents, canManualCheckIn } = useUser();
+  const { role, email, name, imageUrl, isAuthenticated, clearUser, setUser, canViewEvents, canEditEvents, canManualCheckIn, canReceiveNotifications } = useUser();
   const isStaff = role === UserRole.STAFF;
   const [organizerSidebarLogoUrl, setOrganizerSidebarLogoUrl] = React.useState('');
   const [organizerSidebarName, setOrganizerSidebarName] = React.useState('');
@@ -128,6 +128,9 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   // Fetch notifications for the notification bell
   const fetchNotifications = React.useCallback(async () => {
     if (!isAuthenticated) return;
+    // Only fetch for staff if they have permission
+    if (role === UserRole.STAFF && canReceiveNotifications === false) return;
+
     try {
       setNotificationsLoading(true);
       const data = await apiService.getMyNotifications(25);
@@ -138,7 +141,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     } finally {
       setNotificationsLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, role, canReceiveNotifications]);
 
   // Mark a single notification as read
   const handleMarkNotificationRead = async (notificationId: string) => {
@@ -582,107 +585,114 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4 min-w-0">
-            <div className="relative">
-              <button
-                className="w-10 h-10 flex items-center justify-center rounded-xl border border-[#00ADC1]/20 bg-[#00ADC1]/5 hover:bg-[#00ADC1]/15 transition-colors relative"
-                onClick={() => setNotificationOpen(!notificationOpen)}
-              >
-                <ICONS.Bell className="w-5 h-5 text-[#00ADC1]" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 border-2 border-white">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
-                )}
-              </button>
-              {notificationOpen && (
-                <>
-                  <div className="fixed inset-0 z-[100] bg-[#2E2E2F]/20 backdrop-blur-sm" onClick={() => setNotificationOpen(false)} />
-                  <div className="fixed right-0 top-0 bottom-0 w-full sm:w-[400px] bg-white border-l border-[#2E2E2F]/10 shadow-2xl z-[101] flex flex-col animate-in slide-in-from-right duration-300">
-                    <div className="p-6 border-b border-[#2E2E2F]/5 flex items-start justify-between bg-white pt-8">
-                      <div>
-                        <h2 className="text-[22px] font-black tracking-tight text-[#140C3F]">Notifications</h2>
-                        <p className="text-[#140C3F]/70 text-sm mt-1 font-medium">Stay up to date on important information</p>
-                      </div>
-                      <button onClick={() => setNotificationOpen(false)} className="text-[#140C3F]/40 hover:text-[#140C3F] hover:bg-[#140C3F]/5 p-2 rounded-xl transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto bg-white">
-                      {notificationsLoading && notifications.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center p-12 text-center h-full">
-                          <div className="w-12 h-12 border-4 border-[#38BDF2]/30 border-t-[#38BDF2] rounded-full animate-spin mb-4" />
-                          <p className="text-[#140C3F]/60 font-medium tracking-tight">Fetching notifications...</p>
-                        </div>
-                      ) : notifications.length > 0 ? (
-                        <div className="divide-y divide-[#2E2E2F]/5">
-                          <div className="p-4 bg-[#F8FAFC]/50 flex justify-between items-center px-6 border-b border-[#2E2E2F]/5">
-                            <span className="text-[10px] font-black text-[#140C3F]/40 uppercase tracking-[0.2em]">{unreadCount} UNREAD</span>
-                            <button
-                              onClick={handleMarkAllRead}
-                              className="text-[10px] font-black text-[#38BDF2] hover:text-[#00ADC1] uppercase tracking-[0.2em] transition-colors"
-                            >
-                              Mark all as read
-                            </button>
+          <div className="flex items-center gap-2 min-w-0">
+            {(!(role === UserRole.STAFF && canReceiveNotifications === false)) && (
+              <div className="relative">
+                <button
+                  className="w-10 h-10 flex items-center justify-center rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 transition-colors relative group"
+                  onClick={() => setNotificationOpen(!notificationOpen)}
+                >
+                  <ICONS.Bell className="w-5 h-5 text-[#2E2E2F] group-hover:text-[#38BDF2] transition-colors" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center px-1 border-2 border-white shadow-lg animate-in zoom-in duration-300">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+                {notificationOpen && (
+                  <>
+                    <div className="fixed inset-0 z-[100] bg-[#2E2E2F]/10 backdrop-blur-[2px]" onClick={() => setNotificationOpen(false)} />
+                    <div className="fixed right-6 top-24 bottom-6 w-full max-w-[420px] bg-[#F2F2F2] rounded-[2.5rem] border border-[#2E2E2F]/5 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.15)] z-[101] flex flex-col overflow-hidden animate-in slide-in-from-right-8 fade-in duration-500">
+                      <div className="p-8 border-b border-[#2E2E2F]/5 flex items-start justify-between bg-[#F2F2F2]/80 backdrop-blur-xl sticky top-0 z-10">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h2 className="text-2xl font-black tracking-tight text-[#2E2E2F]">Notifications</h2>
+                            {unreadCount > 0 && (
+                              <span className="bg-red-500/10 text-red-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
+                                {unreadCount} New
+                              </span>
+                            )}
                           </div>
-                          {notifications.map((n) => (
-                            <div
-                              key={n.notificationId || Math.random()}
-                              className={`p-6 transition-all border-l-4 group relative ${n.isRead ? 'border-transparent opacity-60' : 'border-[#38BDF2] bg-[#38BDF2]/5 shadow-[inset_0_0_40px_rgba(56,189,242,0.03)]'
-                                }`}
-                            >
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="text-sm font-black text-[#140C3F] tracking-tight">{n.title}</h4>
-                                    {!n.isRead && <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF2] animate-pulse" />}
+                          <p className="text-[#2E2E2F]/40 text-xs font-bold uppercase tracking-widest">Stay up to date on important information</p>
+                        </div>
+                        <button onClick={() => setNotificationOpen(false)} className="w-10 h-10 rounded-2xl bg-[#F2F2F2] flex items-center justify-center text-[#2E2E2F]/40 hover:text-[#2E2E2F] hover:bg-[#2E2E2F]/5 transition-all">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+
+                      <div className="flex-1 overflow-y-auto scrollbar-hide py-4">
+                        {notificationsLoading && notifications.length === 0 ? (
+                          <div className="flex flex-col items-center justify-center p-12 text-center h-full">
+                            <div className="w-12 h-12 border-4 border-[#38BDF2]/20 border-t-[#38BDF2] rounded-full animate-spin mb-4" />
+                            <p className="text-[#2E2E2F]/40 text-xs font-black uppercase tracking-widest">Syncing notifications...</p>
+                          </div>
+                        ) : notifications.length > 0 ? (
+                          <div className="px-4 space-y-2">
+                            <div className="px-4 py-2 flex justify-between items-center mb-4">
+                              <span className="text-[10px] font-black text-[#2E2E2F]/30 uppercase tracking-[0.2em]">RECENT ACTIVITY</span>
+                              <button
+                                onClick={handleMarkAllRead}
+                                className="text-[10px] font-black text-[#38BDF2] hover:text-[#2E2E2F] uppercase tracking-[0.2em] transition-colors"
+                              >
+                                Mark all read
+                              </button>
+                            </div>
+                            {notifications.map((n) => (
+                              <div
+                                key={n.notificationId || Math.random()}
+                                className={`p-5 rounded-[2rem] transition-all group relative border ${n.isRead
+                                  ? 'bg-transparent border-transparent opacity-60'
+                                  : 'bg-[#F2F2F2] border-[#2E2E2F]/5 hover:border-[#38BDF2]/30 shadow-sm'
+                                  }`}
+                              >
+                                <div className="flex items-start gap-4">
+                                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${n.isRead ? 'bg-[#2E2E2F]/5 text-[#2E2E2F]/30' : 'bg-[#38BDF2]/10 text-[#38BDF2]'
+                                    }`}>
+                                    <ICONS.Bell className="w-5 h-5" />
                                   </div>
-                                  <p className="text-xs text-[#140C3F]/70 font-medium leading-relaxed mb-3 line-clamp-3">{n.message}</p>
-                                  <div className="flex items-center gap-3">
-                                    <span className="text-[10px] text-[#140C3F]/40 font-bold tracking-widest uppercase">
-                                      {n.createdAt ? new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recently'}
-                                    </span>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <h4 className="text-sm font-black text-[#2E2E2F] tracking-tight truncate">{n.title}</h4>
+                                      <span className="text-[9px] text-[#2E2E2F]/30 font-black uppercase tracking-widest whitespace-nowrap ml-2">
+                                        {n.createdAt ? new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Now'}
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-[#2E2E2F]/60 font-medium leading-relaxed line-clamp-2 mb-3">{n.message}</p>
+                                    {!n.isRead && (
+                                      <button
+                                        onClick={() => handleMarkNotificationRead(n.notificationId)}
+                                        className="text-[10px] font-black text-[#38BDF2] uppercase tracking-widest hover:text-[#2E2E2F] transition-colors"
+                                      >
+                                        Mark as read
+                                      </button>
+                                    )}
                                   </div>
                                 </div>
-                                {!n.isRead && (
-                                  <button
-                                    onClick={() => handleMarkNotificationRead(n.notificationId)}
-                                    className="p-2 rounded-xl bg-white border border-[#2E2E2F]/10 text-[#38BDF2] hover:bg-[#38BDF2] hover:text-white transition-all shadow-sm flex-shrink-0"
-                                    title="Mark as read"
-                                  >
-                                    <ICONS.CheckCircle className="w-4 h-4" />
-                                  </button>
-                                )}
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center p-8 text-center h-full">
-                          <div className="w-56 h-56 bg-[#F3F4F6] rounded-full flex items-center justify-center mb-6 overflow-hidden relative">
-                            <svg width="180" height="180" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[45%]">
-                              <path d="M50 100 L120 50 A 20 20 0 0 1 130 55 L140 130 A 20 20 0 0 1 120 135 L50 110 A 10 10 0 0 1 40 100 Z" fill="#FFFFFF" />
-                              <circle cx="50" cy="105" r="8" fill="#145A6" />
-                              <ellipse cx="132" cy="93" rx="10" ry="25" fill="#5F6A80" />
-                              <ellipse cx="133" cy="94" rx="6" ry="12" fill="#F05133" />
-                              <path d="M65 110 L85 155 A 10 10 0 0 1 65 160 L45 115 Z" fill="#1E1A34" />
-                              <path d="M40 135 L80 160 A 15 15 0 0 1 60 180 L20 155 Z" fill="#B2765A" />
-                            </svg>
+                            ))}
                           </div>
-                          <h3 className="text-[24px] font-black tracking-tight text-[#140C3F] mb-1 leading-none">All caught up!</h3>
-                          <p className="text-sm font-medium text-[#140C3F]/50 max-w-[240px] mx-auto leading-relaxed">
-                            We'll let you know when something new arrives
-                          </p>
-                        </div>
-                      )}
+                        ) : (
+                          <div className="flex flex-col items-center justify-center p-12 text-center h-full">
+                            <div className="w-32 h-32 bg-[#2E2E2F]/5 rounded-full flex items-center justify-center mb-8 relative">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-14 h-14 text-[#38BDF2] transform -rotate-12">
+                                <path d="M3 11l18-5v12L3 14v-3z" />
+                                <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+                              </svg>
+                            </div>
+                            <h3 className="text-2xl font-black text-[#2E2E2F] tracking-tighter mb-3">Nothing to see here (yet)!</h3>
+                            <p className="text-sm font-medium text-[#2E2E2F]/60 max-w-[280px] leading-relaxed">
+                              We'll be sure to let you know when we have something for you
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
-            </div>
+                  </>
+                )}
+              </div>
+            )}
             {/* Profile Dropdown */}
             <div className="relative">
               <button
@@ -934,7 +944,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
-  const { role, email, name, imageUrl, isAuthenticated, clearUser, setUser } = useUser();
+  const { role, email, name, imageUrl, isAuthenticated, clearUser, setUser, canReceiveNotifications } = useUser();
   const {
     publicMode,
     isAttendingView,
@@ -950,6 +960,22 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const [headerLocating, setHeaderLocating] = React.useState(false);
   const [headerLocationError, setHeaderLocationError] = React.useState('');
   const headerLocationMenuRef = React.useRef<HTMLDivElement | null>(null);
+  const [hasLiveEvents, setHasLiveEvents] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkLiveEvents = async () => {
+      try {
+        const events = await apiService.getLiveEvents();
+        setHasLiveEvents(events.length > 0);
+      } catch (e) {
+        console.error('Failed to fetch live events:', e);
+      }
+    };
+    checkLiveEvents();
+    const intervalId = setInterval(checkLiveEvents, 60000);
+    return () => clearInterval(intervalId);
+  }, []);
+
   const isOrganizer = isAuthenticated && role === UserRole.ORGANIZER;
   const publicMenuMode = isOrganizer ? publicMode : 'attending';
   const showHeaderSearchBar = !isAuthenticated || !isOrganizer || isAttendingView;
@@ -1160,19 +1186,13 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     );
   };
 
-  const navLinks = isOrganizer
-    ? [
-      { label: 'About Us', path: '/about-us' },
-      { label: 'Pricing', path: '/pricing' },
-      { label: 'Contact Us', path: '/contact-us' },
-    ]
-    : [
-      { label: 'About Us', path: '/about-us' },
-      { label: 'Events', path: '/browse-events' },
-      { label: 'Pricing', path: '/pricing' },
-      { label: 'Contact Us', path: '/contact-us' },
-    ];
-  const secondaryLinks = navLinks;
+  const navLinks: any[] = [];
+  const secondaryLinks = [
+    { label: 'About Us', path: '/about-us' },
+    { label: 'Events', path: '/browse-events' },
+    { label: 'Pricing', path: '/pricing' },
+    { label: 'Contact Us', path: '/contact-us' },
+  ];
   const trimmedHeaderSearch = headerSearchTerm.trim();
   const trimmedHeaderLocation = headerLocationTerm.trim();
   const hasHeaderExplicitLocation = Boolean(
@@ -1332,12 +1352,44 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
               </form>
             )}
 
-            {/* Navigation links removed for a cleaner search-focused header */}
+            {/* Nav Links */}
+            <div className="flex items-center gap-8 ml-8">
+              {navLinks.map((link: any) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className="text-[11px] font-black uppercase tracking-[0.15em] text-[#2E2E2F]/60 hover:text-[#38BDF2] transition-colors relative group whitespace-nowrap"
+                >
+                  {link.label}
+                  {link.isLive && (
+                    <span className="relative flex h-2 w-2 ml-1 inline-block -top-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                    </span>
+                  )}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#38BDF2] transition-all group-hover:w-full" />
+                </Link>
+              ))}
+            </div>
           </nav>
 
-          <div className="flex items-center gap-4 shrink-0 ml-auto">
+          <div className="flex items-center gap-2 shrink-0 ml-auto">
+            {/* For authenticated users: Watch Live first, then profile */}
             {isAuthenticated ? (
-              <div className="relative">
+              <>
+                <Link
+                  to="/live"
+                  className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[#38BDF2] hover:bg-[#38BDF2]/90 text-[#F2F2F2] rounded-xl text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(56,189,242,0.4)] transition-all"
+                >
+                  Watch Live
+                  {hasLiveEvents && (
+                    <span className="relative flex h-2 w-2 ml-0.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                    </span>
+                  )}
+                </Link>
+                <div className="relative">
                 <button
                   className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 transition-colors"
                   onClick={() => setUserMenuOpen((v) => !v)}
@@ -1432,23 +1484,13 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                               onClick={() => {
                                 setPublicMode('organizer');
                                 setUserMenuOpen(false);
-                                navigate('/my-events');
-                              }}
-                            >
-                              <ICONS.Calendar className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                              <span>Manage My Events</span>
-                            </button>
-                            <button
-                              className={publicUserMenuActionClass}
-                              onClick={() => {
-                                setPublicMode('organizer');
-                                setUserMenuOpen(false);
                                 navigate('/user-settings?tab=organizer');
                               }}
                             >
                               <ICONS.Users className="w-4 h-4 opacity-70 group-hover:opacity-100" />
                               <span>Organizer Profile</span>
                             </button>
+
                             <button
                               className={publicUserMenuActionClass}
                               onClick={() => {
@@ -1545,23 +1587,34 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                   </>
                 )}
               </div>
+            </>
             ) : (
-              <div className="flex items-center gap-3">
-                <Link to="/login">
-                  <Button size="sm" className={landingLoginButtonClass}>
-                    Login
-                  </Button>
+              /* For guests: Login first (left), then Watch Live (right) */
+              <>
+                <div className="flex items-center gap-3">
+                  <Link to="/login">
+                    <Button size="sm" className={landingLoginButtonClass}>
+                      Login
+                    </Button>
+                  </Link>
+                </div>
+                <Link
+                  to="/live"
+                  className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[#38BDF2] hover:bg-[#38BDF2]/90 text-[#F2F2F2] rounded-xl text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(56,189,242,0.4)] transition-all"
+                >
+                  Watch Live
+                  {hasLiveEvents && (
+                    <span className="relative flex h-2 w-2 ml-0.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                    </span>
+                  )}
                 </Link>
-                <Link to="/signup">
-                  <Button size="sm" className={landingGetStartedButtonClass}>
-                    Get Started
-                  </Button>
-                </Link>
-              </div>
+              </>
             )}
           </div>
-        </div >
-      </header >
+        </div>
+      </header>
       <main className="flex-1">{children}</main>
       <footer className="bg-[#F2F2F2] text-[#2E2E2F]/70 py-16 px-8 border-t border-[#2E2E2F]/10">
         <div className="max-w-7xl mx-auto">
@@ -1614,14 +1667,14 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           </div>
         </div>
       </footer>
-    </div >
+    </div>
   );
 };
 
 // â”€â”€â”€ USER PORTAL LAYOUT (icon sidebar only, no header bar) â”€â”€â”€
 // ─── USER DASHBOARD WRAPPER ───
 const DashboardWrapper: React.FC = () => {
-  const { role } = useUser();
+  const { role, canReceiveNotifications } = useUser();
   if (role === UserRole.ADMIN) return <PortalLayout><AdminDashboard /></PortalLayout>;
   return <UserPortalLayout><AdminDashboard /></UserPortalLayout>;
 };
@@ -1630,7 +1683,7 @@ const DashboardWrapper: React.FC = () => {
 const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { role, email, name, imageUrl, clearUser, setUser } = useUser();
+  const { role, email, name, imageUrl, clearUser, setUser, canReceiveNotifications } = useUser();
   const { isAttendingView, setPublicMode } = useEngagement();
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -1645,6 +1698,9 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   const fetchNotifications = React.useCallback(async () => {
     const isAuthenticated = Boolean(email);
     if (!isAuthenticated) return;
+    // Only fetch for staff if they have permission
+    if (role === UserRole.STAFF && canReceiveNotifications === false) return;
+
     try {
       setNotificationsLoading(true);
       const data = await apiService.getMyNotifications(25);
@@ -1655,7 +1711,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     } finally {
       setNotificationsLoading(false);
     }
-  }, [email]);
+  }, [email, role, canReceiveNotifications]);
 
   // Mark a single notification as read
   const handleMarkNotificationRead = async (notificationId: string) => {
@@ -1722,7 +1778,16 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
           const me = await res.json().catch(() => null);
           const normalizedRole = normalizeUserRole(me?.role);
           if (normalizedRole && me?.email) {
-            setUser({ role: normalizedRole, email: me.email, name: me.name ?? null, imageUrl: me.imageUrl ?? null, canViewEvents: true, canEditEvents: true, canManualCheckIn: true });
+            setUser({
+              role: normalizedRole,
+              email: me.email,
+              name: me.name ?? null,
+              imageUrl: me.imageUrl ?? null,
+              canViewEvents: me.canViewEvents ?? true,
+              canEditEvents: me.canEditEvents ?? true,
+              canManualCheckIn: me.canManualCheckIn ?? true,
+              canReceiveNotifications: me.canReceiveNotifications ?? true
+            });
           }
         }
       } catch { }
@@ -1885,223 +1950,230 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             </div>
           </div>
 
-          <div className="ml-auto flex items-center gap-4">
-            <div className="relative">
-              <button
-                className="w-10 h-10 flex items-center justify-center rounded-xl border border-[#00ADC1]/20 bg-[#00ADC1]/5 hover:bg-[#00ADC1]/15 transition-colors relative"
-                onClick={() => setNotificationOpen(!notificationOpen)}
-              >
-                <ICONS.Bell className="w-5 h-5 text-[#00ADC1]" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 border-2 border-white">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
-                )}
-              </button>
-              {notificationOpen && (
-                <>
-                  <div className="fixed inset-0 z-[100] bg-[#2E2E2F]/20 backdrop-blur-sm" onClick={() => setNotificationOpen(false)} />
-                  <div className="fixed right-0 top-0 bottom-0 w-full sm:w-[400px] bg-white border-l border-[#2E2E2F]/10 shadow-2xl z-[101] flex flex-col animate-in slide-in-from-right duration-300">
-                    <div className="p-6 border-b border-[#2E2E2F]/5 flex items-start justify-between bg-white pt-8">
-                      <div>
-                        <h2 className="text-[22px] font-black tracking-tight text-[#140C3F]">Notifications</h2>
-                        <p className="text-[#140C3F]/70 text-sm mt-1 font-medium">Stay up to date on important information</p>
-                      </div>
-                      <button onClick={() => setNotificationOpen(false)} className="text-[#140C3F]/40 hover:text-[#140C3F] hover:bg-[#140C3F]/5 p-2 rounded-xl transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto bg-white">
-                      {notificationsLoading && notifications.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center p-12 text-center h-full">
-                          <div className="w-12 h-12 border-4 border-[#38BDF2]/30 border-t-[#38BDF2] rounded-full animate-spin mb-4" />
-                          <p className="text-[#140C3F]/60 font-medium tracking-tight">Fetching notifications...</p>
-                        </div>
-                      ) : notifications.length > 0 ? (
-                        <div className="divide-y divide-[#2E2E2F]/5">
-                          <div className="p-4 bg-[#F8FAFC]/50 flex justify-between items-center px-6 border-b border-[#2E2E2F]/5">
-                            <span className="text-[10px] font-black text-[#140C3F]/40 uppercase tracking-[0.2em]">{unreadCount} UNREAD</span>
-                            <button
-                              onClick={handleMarkAllRead}
-                              className="text-[10px] font-black text-[#38BDF2] hover:text-[#00ADC1] uppercase tracking-[0.2em] transition-colors"
-                            >
-                              Mark all as read
-                            </button>
+          <div className="ml-auto flex items-center gap-6">
+            {(!(role === UserRole.STAFF && canReceiveNotifications === false)) && (
+              <div className="relative">
+                <button
+                  className="w-10 h-10 flex items-center justify-center rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 transition-colors relative group"
+                  onClick={() => setNotificationOpen(!notificationOpen)}
+                >
+                  <ICONS.Bell className="w-5 h-5 text-[#2E2E2F] group-hover:text-[#38BDF2] transition-colors" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center px-1 border-2 border-white shadow-lg animate-in zoom-in duration-300">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+                {notificationOpen && (
+                  <>
+                    <div className="fixed inset-0 z-[100] bg-[#2E2E2F]/10 backdrop-blur-[2px]" onClick={() => setNotificationOpen(false)} />
+                    <div className="fixed right-6 top-24 bottom-6 w-full max-w-[420px] bg-[#F2F2F2] rounded-[2.5rem] border border-[#2E2E2F]/5 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.15)] z-[101] flex flex-col overflow-hidden animate-in slide-in-from-right-8 fade-in duration-500">
+                      <div className="p-8 border-b border-[#2E2E2F]/5 flex items-start justify-between bg-[#F2F2F2]/80 backdrop-blur-xl sticky top-0 z-10">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h2 className="text-2xl font-black tracking-tight text-[#2E2E2F]">Notifications</h2>
+                            {unreadCount > 0 && (
+                              <span className="bg-red-500/10 text-red-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
+                                {unreadCount} New
+                              </span>
+                            )}
                           </div>
-                          {notifications.map((n) => (
-                            <div
-                              key={n.notificationId || Math.random()}
-                              className={`p-6 transition-all border-l-4 group relative ${n.isRead ? 'border-transparent opacity-60' : 'border-[#38BDF2] bg-[#38BDF2]/5 shadow-[inset_0_0_40px_rgba(56,189,242,0.03)]'
-                                }`}
-                            >
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="text-sm font-black text-[#140C3F] tracking-tight">{n.title}</h4>
-                                    {!n.isRead && <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF2] animate-pulse" />}
+                          <p className="text-[#2E2E2F]/40 text-xs font-bold uppercase tracking-widest">Stay up to date on important information</p>
+                        </div>
+                        <button onClick={() => setNotificationOpen(false)} className="w-10 h-10 rounded-2xl bg-[#F2F2F2] flex items-center justify-center text-[#2E2E2F]/40 hover:text-[#2E2E2F] hover:bg-[#2E2E2F]/5 transition-all">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+
+                      <div className="flex-1 overflow-y-auto scrollbar-hide py-4">
+                        {notificationsLoading && notifications.length === 0 ? (
+                          <div className="flex flex-col items-center justify-center p-12 text-center h-full">
+                            <div className="w-12 h-12 border-4 border-[#38BDF2]/20 border-t-[#38BDF2] rounded-full animate-spin mb-4" />
+                            <p className="text-[#2E2E2F]/40 text-xs font-black uppercase tracking-widest">Syncing notifications...</p>
+                          </div>
+                        ) : notifications.length > 0 ? (
+                          <div className="px-4 space-y-2">
+                            <div className="px-4 py-2 flex justify-between items-center mb-4">
+                              <span className="text-[10px] font-black text-[#2E2E2F]/30 uppercase tracking-[0.2em]">RECENT ACTIVITY</span>
+                              <button
+                                onClick={handleMarkAllRead}
+                                className="text-[10px] font-black text-[#38BDF2] hover:text-[#2E2E2F] uppercase tracking-[0.2em] transition-colors"
+                              >
+                                Mark all read
+                              </button>
+                            </div>
+                            {notifications.map((n) => (
+                              <div
+                                key={n.notificationId || Math.random()}
+                                className={`p-5 rounded-[2rem] transition-all group relative border ${n.isRead
+                                  ? 'bg-transparent border-transparent opacity-60'
+                                  : 'bg-[#F2F2F2] border-[#2E2E2F]/5 hover:border-[#38BDF2]/30 shadow-sm'
+                                  }`}
+                              >
+                                <div className="flex items-start gap-4">
+                                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${n.isRead ? 'bg-[#2E2E2F]/5 text-[#2E2E2F]/30' : 'bg-[#38BDF2]/10 text-[#38BDF2]'
+                                    }`}>
+                                    <ICONS.Bell className="w-5 h-5" />
                                   </div>
-                                  <p className="text-xs text-[#140C3F]/70 font-medium leading-relaxed mb-3 line-clamp-3">{n.message}</p>
-                                  <div className="flex items-center gap-3">
-                                    <span className="text-[10px] text-[#140C3F]/40 font-bold tracking-widest uppercase">
-                                      {n.createdAt ? new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recently'}
-                                    </span>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <h4 className="text-sm font-black text-[#2E2E2F] tracking-tight truncate">{n.title}</h4>
+                                      <span className="text-[9px] text-[#2E2E2F]/30 font-black uppercase tracking-widest whitespace-nowrap ml-2">
+                                        {n.createdAt ? new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Now'}
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-[#2E2E2F]/60 font-medium leading-relaxed line-clamp-2 mb-3">{n.message}</p>
+                                    {!n.isRead && (
+                                      <button
+                                        onClick={() => handleMarkNotificationRead(n.notificationId)}
+                                        className="text-[10px] font-black text-[#38BDF2] uppercase tracking-widest hover:text-[#2E2E2F] transition-colors"
+                                      >
+                                        Mark as read
+                                      </button>
+                                    )}
                                   </div>
                                 </div>
-                                {!n.isRead && (
-                                  <button
-                                    onClick={() => handleMarkNotificationRead(n.notificationId)}
-                                    className="p-2 rounded-xl bg-white border border-[#2E2E2F]/10 text-[#38BDF2] hover:bg-[#38BDF2] hover:text-white transition-all shadow-sm flex-shrink-0"
-                                    title="Mark as read"
-                                  >
-                                    <ICONS.CheckCircle className="w-4 h-4" />
-                                  </button>
-                                )}
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center p-8 text-center h-full">
-                          <div className="w-56 h-56 bg-[#F3F4F6] rounded-full flex items-center justify-center mb-6 overflow-hidden relative">
-                            <svg width="180" height="180" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[45%]">
-                              <path d="M50 100 L120 50 A 20 20 0 0 1 130 55 L140 130 A 20 20 0 0 1 120 135 L50 110 A 10 10 0 0 1 40 100 Z" fill="#FFFFFF" />
-                              <circle cx="50" cy="105" r="8" fill="#145A6" />
-                              <ellipse cx="132" cy="93" rx="10" ry="25" fill="#5F6A80" />
-                              <ellipse cx="133" cy="94" rx="6" ry="12" fill="#F05133" />
-                              <path d="M65 110 L85 155 A 10 10 0 0 1 65 160 L45 115 Z" fill="#1E1A34" />
-                              <path d="M40 135 L80 160 A 15 15 0 0 1 60 180 L20 155 Z" fill="#B2765A" />
-                            </svg>
+                            ))}
                           </div>
-                          <h3 className="text-[24px] font-black tracking-tight text-[#140C3F] mb-1 leading-none">All caught up!</h3>
-                          <p className="text-sm font-medium text-[#140C3F]/50 max-w-[240px] mx-auto leading-relaxed">
-                            We'll let you know when something new arrives
-                          </p>
-                        </div>
-                      )}
+                        ) : (
+                          <div className="flex flex-col items-center justify-center p-12 text-center h-full">
+                            <div className="w-32 h-32 bg-[#2E2E2F]/5 rounded-full flex items-center justify-center mb-8 relative">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-14 h-14 text-[#38BDF2] transform -rotate-12">
+                                <path d="M3 11l18-5v12L3 14v-3z" />
+                                <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+                              </svg>
+                            </div>
+                            <h3 className="text-2xl font-black text-[#2E2E2F] tracking-tighter mb-3">Nothing to see here (yet)!</h3>
+                            <p className="text-sm font-medium text-[#2E2E2F]/60 max-w-[280px] leading-relaxed">
+                              We'll be sure to let you know when we have something for you
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
-            </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
 
-            <div className="relative">
-              <button
-                className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 transition-colors"
-                onClick={() => setUserMenuOpen((v) => !v)}
-              >
-                <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#38BDF2]/20 text-[#2E2E2F] flex items-center justify-center">
-                  {imageUrl ? (
-                    <img src={imageUrl} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="font-semibold text-xs text-[#2E2E2F]">{initials}</span>
-                  )}
-                </div>
-                <div className="hidden sm:block text-left leading-tight">
-                  <p className="text-xs font-semibold text-[#2E2E2F] truncate max-w-[120px]">{displayName}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#2E2E2F]/45 mt-0.5">{roleLabel}</p>
-                </div>
-                <svg className="w-4 h-4 text-[#2E2E2F]/50" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {userMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
-                  <div className="absolute right-0 top-[calc(100%+8px)] w-60 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-2xl shadow-xl z-50 p-2 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
-                    <div className="px-4 py-3 border-b border-[#2E2E2F]/5 mb-1">
-                      <p className="text-[10px] font-medium text-[#2E2E2F]/40 uppercase tracking-widest mb-0.5">Account</p>
-                      <p className="text-xs font-semibold text-[#2E2E2F] truncate">{displayName}</p>
-                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#2E2E2F]/45 mt-1">{roleLabel}</p>
-                    </div>
+          <div className="relative ml-6">
+            <button
+              className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 transition-colors"
+              onClick={() => setUserMenuOpen((v) => !v)}
+            >
+              <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#38BDF2]/20 text-[#2E2E2F] flex items-center justify-center">
+                {imageUrl ? (
+                  <img src={imageUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="font-semibold text-xs text-[#2E2E2F]">{initials}</span>
+                )}
+              </div>
+              <div className="hidden sm:block text-left leading-tight">
+                <p className="text-xs font-semibold text-[#2E2E2F] truncate max-w-[120px]">{displayName}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#2E2E2F]/45 mt-0.5">{roleLabel}</p>
+              </div>
+              <svg className="w-4 h-4 text-[#2E2E2F]/50" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {userMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
+                <div className="absolute right-0 top-[calc(100%+8px)] w-60 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-2xl shadow-xl z-50 p-2 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
+                  <div className="px-4 py-3 border-b border-[#2E2E2F]/5 mb-1">
+                    <p className="text-[10px] font-medium text-[#2E2E2F]/40 uppercase tracking-widest mb-0.5">Account</p>
+                    <p className="text-xs font-semibold text-[#2E2E2F] truncate">{displayName}</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#2E2E2F]/45 mt-1">{roleLabel}</p>
+                  </div>
+                  <button
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
+                    onClick={() => {
+                      setPublicMode('organizer');
+                      navigate('/my-events');
+                      setUserMenuOpen(false);
+                    }}
+                  >
+                    <ICONS.Calendar className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                    <span>Manage My Events</span>
+                  </button>
+                  {role === UserRole.ORGANIZER && (
                     <button
                       className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
-                      onClick={() => {
-                        setPublicMode('organizer');
-                        navigate('/my-events');
-                        setUserMenuOpen(false);
-                      }}
-                    >
-                      <ICONS.Calendar className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                      <span>Manage My Events</span>
-                    </button>
-                    {role === UserRole.ORGANIZER && (
-                      <button
-                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
-                        onClick={handleToggleAttendingMode}
-                      >
-                        <ICONS.Users className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                        <span>{isAttendingView ? 'Organize Events' : 'Switch to Attending'}</span>
-                      </button>
-                    )}
-                    <button
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
-                      onClick={() => {
-                        navigate('/user-settings?tab=organizer');
-                        setUserMenuOpen(false);
-                      }}
+                      onClick={handleToggleAttendingMode}
                     >
                       <ICONS.Users className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                      <span>Org Profile</span>
+                      <span>{isAttendingView ? 'Organize Events' : 'Switch to Attending'}</span>
                     </button>
-                    <button
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
-                      onClick={() => {
-                        navigate('/user-settings?tab=team');
-                        setUserMenuOpen(false);
-                      }}
-                    >
-                      <ICONS.Shield className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                      <span>Teams & Access</span>
-                    </button>
-                    <button
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
-                      onClick={() => {
-                        navigate('/user-settings?tab=email');
-                        setUserMenuOpen(false);
-                      }}
-                    >
-                      <ICONS.Mail className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                      <span>Email Setup</span>
-                    </button>
-                    <button
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
-                      onClick={() => {
-                        navigate('/user-settings?tab=payments');
-                        setUserMenuOpen(false);
-                      }}
-                    >
-                      <ICONS.CreditCard className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                      <span>Payment Gateway</span>
-                    </button>
-                    <button
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
-                      onClick={() => {
-                        navigate('/user-settings?tab=account');
-                        setUserMenuOpen(false);
-                      }}
-                    >
-                      <ICONS.Settings className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                      <span>Account Settings</span>
-                    </button>
-                    <button
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-red-50 hover:text-red-500 transition-colors text-left group"
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        handleLogout();
-                      }}
-                    >
-                      <svg className="w-4 h-4 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                      </svg>
-                      <span>Logout</span>
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+                  )}
+                  <button
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
+                    onClick={() => {
+                      navigate('/user-settings?tab=organizer');
+                      setUserMenuOpen(false);
+                    }}
+                  >
+                    <ICONS.Users className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                    <span>Org Profile</span>
+                  </button>
+                  <button
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
+                    onClick={() => {
+                      navigate('/user-settings?tab=team');
+                      setUserMenuOpen(false);
+                    }}
+                  >
+                    <ICONS.Shield className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                    <span>Teams & Access</span>
+                  </button>
+                  <button
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
+                    onClick={() => {
+                      navigate('/user-settings?tab=email');
+                      setUserMenuOpen(false);
+                    }}
+                  >
+                    <ICONS.Mail className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                    <span>Email Setup</span>
+                  </button>
+                  <button
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
+                    onClick={() => {
+                      navigate('/user-settings?tab=payments');
+                      setUserMenuOpen(false);
+                    }}
+                  >
+                    <ICONS.CreditCard className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                    <span>Payment Gateway</span>
+                  </button>
+                  <button
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
+                    onClick={() => {
+                      navigate('/user-settings?tab=account');
+                      setUserMenuOpen(false);
+                    }}
+                  >
+                    <ICONS.Settings className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                    <span>Account Settings</span>
+                  </button>
+                  <button
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-red-50 hover:text-red-500 transition-colors text-left group"
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      handleLogout();
+                    }}
+                  >
+                    <svg className="w-4 h-4 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </header>
 
@@ -2199,6 +2271,7 @@ const RequireRoleRoute: React.FC<{ allow: UserRole[]; children: React.ReactEleme
           canViewEvents: me.canViewEvents,
           canEditEvents: me.canEditEvents,
           canManualCheckIn: me.canManualCheckIn,
+          canReceiveNotifications: me.canReceiveNotifications,
         });
 
         if (!cancelled) setResolvedRole(role);
@@ -2237,7 +2310,7 @@ const App: React.FC = () => (
       <Route path="/payment/status" element={<PublicLayout><PaymentStatusView /></PublicLayout>} />
       <Route path="/tickets/:ticketId" element={<PublicLayout><TicketView /></PublicLayout>} />
       <Route path="/about-us" element={<PublicLayout><AboutUsPage /></PublicLayout>} />
-      <Route path="/browse-events" element={<PublicLayout><EventDiscoveryPage /></PublicLayout>} />
+      <Route path="/browse-events" element={<PublicLayout><PublicEventsPage /></PublicLayout>} />
       <Route path="/liked" element={<PublicLayout><LikedEventsPage /></PublicLayout>} />
       <Route path="/followings" element={<PublicLayout><FollowingsEventsPage /></PublicLayout>} />
       <Route path="/my-tickets" element={<PublicLayout><MyTicketsPage /></PublicLayout>} />

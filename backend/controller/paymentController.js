@@ -7,6 +7,7 @@ import { logAudit } from '../utils/auditLogger.js'
 import {
   getUserProfileByAuthId,
   notifyUserByPreference,
+  notifyTeamByPreference,
 } from '../utils/notificationService.js'
 
 const HITPAY_API_KEY = process.env.HITPAY_API_KEY
@@ -763,9 +764,10 @@ export const hitpayWebhook = async (req, res) => {
             const amountStr = `${order.currency} ${order.totalAmount}`;
             const message = `Great news! ${order.buyerName} just purchased tickets for "${eventRow.eventName}". Total: ${amountStr}`;
 
-            await notifyUserByPreference({
+            await notifyTeamByPreference({
               recipientUserId,
               recipientFallbackEmail: recipientProfile?.email || '',
+              actorEmail: order.buyerEmail,
               eventId: order.eventId,
               organizerId: eventRow.organizerId,
               type: 'ORDER_PLACED',

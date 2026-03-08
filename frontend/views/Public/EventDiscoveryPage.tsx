@@ -142,288 +142,218 @@ export const EventDiscoveryPage: React.FC = () => {
     if (loading) return <PageLoader label="Discovering events..." variant="page" />;
 
     return (
-        <div className="min-h-screen bg-[#F2F2F2]">
-            {/* Branded Banner Section */}
-            <section className="relative w-full h-[260px] sm:h-[320px] overflow-hidden mb-8">
-                <div className="absolute inset-0 bg-[linear-gradient(116deg,#38BDF2_0%,#38BDF2_44%,#F2F2F2_100%)]" />
-                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,62,134,0.45)_0%,rgba(0,62,134,0.2)_34%,rgba(0,62,134,0)_72%)]" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_14%_32%,rgba(255,255,255,0.34),transparent_46%),linear-gradient(90deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.06)_26%,rgba(255,255,255,0)_52%)]" />
-                <div className="relative z-10 mx-auto flex h-full w-full max-w-7xl items-center px-6 sm:px-8">
-                    <div className="max-w-[720px]">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/90 mb-3">Discovery Mode</p>
-                        <h1 className="text-[2.5rem] font-black leading-none tracking-tight text-white sm:text-6xl">Find Your <span className="text-white/80">Vibe</span></h1>
-                        <p className="mt-6 max-w-[640px] text-base leading-relaxed text-white/95 sm:text-[1.1rem]">
-                            {searchTerm ? <>Showing results for <span className="font-black">"{searchTerm}"</span></> : "Browse hundreds of professional events and narrow down your search using our advanced filtering system."}
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col lg:flex-row gap-12">
-                {/* Filter Sidebar */}
-                <aside className={`${isSidebarCollapsed ? 'w-full lg:w-14' : 'w-full lg:w-72'} shrink-0`}>
-                    <div className={`${isSidebarCollapsed ? '' : 'border-b border-[#2E2E2F]/5 pb-6'} mb-6`}>
+        <div className="flex min-h-screen bg-[#F2F2F2]">
+            {/* Edge Left Filter Sidebar */}
+            <aside
+                className={`hidden lg:block bg-white/40 backdrop-blur-xl border-r border-[#2E2E2F]/5 sticky top-0 h-screen overflow-y-auto transition-all duration-500 ease-in-out z-20 ${isSidebarCollapsed ? 'w-20' : 'w-[340px]'
+                    }`}
+            >
+                <div className="flex flex-col h-full">
+                    {/* Header for Filter */}
+                    <div className="p-8 border-b border-[#2E2E2F]/5 flex items-center justify-between">
+                        {!isSidebarCollapsed && (
+                            <div>
+                                <h1 className="text-[22px] font-black text-[#2E2E2F] tracking-tighter uppercase leading-none">Filters</h1>
+                                <p className="text-[10px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em] mt-2">Personalize Feed</p>
+                            </div>
+                        )}
                         <button
-                            type="button"
-                            onClick={() => setIsSidebarCollapsed((prev) => !prev)}
-                            className={`inline-flex items-center gap-2 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/55 hover:text-[#2E2E2F] hover:border-[#38BDF2]/40 transition-colors ${isSidebarCollapsed ? 'w-full lg:w-auto lg:px-2.5 justify-center' : ''}`}
+                            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                            className={`w-10 h-10 rounded-2xl bg-[#F2F2F2] border border-[#2E2E2F]/10 flex items-center justify-center text-[#2E2E2F] hover:bg-[#38BDF2] hover:text-white transition-all transform active:scale-90 ${isSidebarCollapsed ? 'mx-auto' : ''}`}
                         >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.8" d={isSidebarCollapsed ? "M4 6h16M4 12h16M4 18h16" : "M4 6h16M4 12h10M4 18h16"} />
+                            <svg className={`w-5 h-5 transition-transform duration-500 ${isSidebarCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
                             </svg>
-                            <span className={isSidebarCollapsed ? 'lg:hidden' : ''}>{isSidebarCollapsed ? 'Show Filters' : 'Hide Filters'}</span>
                         </button>
                     </div>
 
                     {!isSidebarCollapsed && (
-                        <div className="space-y-12">
-                    {/* Category Filter */}
-                    <div className="border-b border-[#2E2E2F]/5 pb-8">
-                        <button
-                            onClick={() => toggleSection('categories')}
-                            className="w-full flex items-center justify-between group mb-2"
-                        >
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40 group-hover:text-[#2E2E2F] transition-colors">Category</h3>
-                            <svg className={`w-3.5 h-3.5 text-[#2E2E2F]/30 transition-transform duration-300 ${sectionsOpen.categories ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
-                        </button>
-                        {sectionsOpen.categories && (
-                            <div className="flex flex-col gap-3.5 mt-6 animate-in slide-in-from-top-2 duration-300">
-                                {EVENT_CATEGORIES.map(cat => {
-                                    const isChecked = selectedCategories.includes(cat.key);
-                                    return (
-                                        <label key={cat.key} className="flex items-center gap-3 cursor-pointer group">
-                                            <div className="relative flex items-center">
-                                                <input
-                                                    type="checkbox"
-                                                    className="peer sr-only"
-                                                    checked={isChecked}
-                                                    onChange={() => toggleCategory(cat.key)}
-                                                />
-                                                <div className="w-5 h-5 rounded-lg border-2 border-[#2E2E2F]/10 bg-[#F2F2F2] peer-checked:bg-[#38BDF2] peer-checked:border-[#38BDF2] transition-all duration-200" />
-                                                <ICONS.Check className="absolute inset-0 m-auto w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" strokeWidth={4} />
-                                            </div>
-                                            <div className={`w-6 h-6 rounded-lg border transition-colors flex items-center justify-center ${isChecked
-                                                ? 'border-[#38BDF2]/45 bg-[#38BDF2]/10 text-[#38BDF2]'
-                                                : 'border-[#2E2E2F]/10 bg-[#F2F2F2] text-[#2E2E2F]/55 group-hover:text-[#38BDF2] group-hover:border-[#38BDF2]/30'
-                                                }`}>
-                                                <cat.Icon className="w-3.5 h-3.5" />
-                                            </div>
-                                            <span className="text-sm font-bold text-[#2E2E2F]/70 group-hover:text-[#2E2E2F] transition-colors">{cat.label}</span>
-                                        </label>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Date Filter */}
-                    <div className="border-b border-[#2E2E2F]/5 pb-8">
-                        <button
-                            onClick={() => toggleSection('date')}
-                            className="w-full flex items-center justify-between group mb-2"
-                        >
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40 group-hover:text-[#2E2E2F] transition-colors">Date</h3>
-                            <svg className={`w-3.5 h-3.5 text-[#2E2E2F]/30 transition-transform duration-300 ${sectionsOpen.date ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
-                        </button>
-                        {sectionsOpen.date && (
-                            <div className="flex flex-col gap-3.5 mt-6 animate-in slide-in-from-top-2 duration-300">
-                                {[
-                                    { id: 'all', label: 'Any time' },
-                                    { id: 'today', label: 'Today' },
-                                    { id: 'tomorrow', label: 'Tomorrow' },
-                                    { id: 'weekend', label: 'This Weekend' },
-                                ].map(date => (
-                                    <label key={date.id} className="flex items-center gap-3 cursor-pointer group">
-                                        <input
-                                            type="radio"
-                                            name="date"
-                                            className="peer sr-only"
-                                            checked={selectedDate === date.id}
-                                            onChange={() => setSelectedDate(date.id)}
-                                        />
-                                        <div className="w-5 h-5 rounded-full border-2 border-[#2E2E2F]/10 bg-[#F2F2F2] peer-checked:border-[#38BDF2] peer-checked:bg-[#38BDF2]/10 transition-all duration-200 flex items-center justify-center">
-                                            <div className="w-2 h-2 rounded-full bg-[#38BDF2] opacity-0 peer-checked:opacity-100 transition-opacity" />
-                                        </div>
-                                        <span className="text-sm font-bold text-[#2E2E2F]/70 group-hover:text-[#2E2E2F] transition-colors">{date.label}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Price Filter */}
-                    <div className="border-b border-[#2E2E2F]/5 pb-8">
-                        <button
-                            onClick={() => toggleSection('price')}
-                            className="w-full flex items-center justify-between group mb-2"
-                        >
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40 group-hover:text-[#2E2E2F] transition-colors">Price</h3>
-                            <svg className={`w-3.5 h-3.5 text-[#2E2E2F]/30 transition-transform duration-300 ${sectionsOpen.price ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
-                        </button>
-                        {sectionsOpen.price && (
-                            <div className="flex flex-col gap-3 mt-6 animate-in slide-in-from-top-2 duration-300">
-                                {[
-                                    { id: 'all', label: 'All Prices' },
-                                    { id: 'free', label: 'Free' },
-                                    { id: 'paid', label: 'Paid' },
-                                ].map(price => (
-                                    <button
-                                        key={price.id}
-                                        onClick={() => setSelectedPrice(price.id)}
-                                        className={`text-left px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all ${selectedPrice === price.id
-                                            ? 'bg-[#2E2E2F] text-white border-[#2E2E2F]'
-                                            : 'bg-[#F2F2F2] text-[#2E2E2F]/40 border-[#2E2E2F]/10 hover:border-[#38BDF2]/40 hover:text-[#38BDF2]'
-                                            }`}
-                                    >
-                                        {price.label}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Format Filter */}
-                    <div className="border-b border-[#2E2E2F]/5 pb-8">
-                        <button
-                            onClick={() => toggleSection('format')}
-                            className="w-full flex items-center justify-between group mb-2"
-                        >
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40 group-hover:text-[#2E2E2F] transition-colors">Format</h3>
-                            <svg className={`w-3.5 h-3.5 text-[#2E2E2F]/30 transition-transform duration-300 ${sectionsOpen.format ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
-                        </button>
-                        {sectionsOpen.format && (
-                            <div className="flex flex-col gap-3.5 mt-6 animate-in slide-in-from-top-2 duration-300">
-                                {[
-                                    { id: 'all', label: 'All Formats' },
-                                    { id: 'online', label: 'Online' },
-                                    { id: 'in-person', label: 'In-person' },
-                                ].map(format => (
-                                    <label key={format.id} className="flex items-center gap-3 cursor-pointer group">
-                                        <input
-                                            type="radio"
-                                            name="format"
-                                            className="peer sr-only"
-                                            checked={selectedFormat === format.id}
-                                            onChange={() => setSelectedFormat(format.id)}
-                                        />
-                                        <div className="w-5 h-5 rounded-lg border-2 border-[#2E2E2F]/10 bg-[#F2F2F2] peer-checked:border-[#38BDF2] peer-checked:bg-[#38BDF2]/10 transition-all duration-200 flex items-center justify-center">
-                                            <ICONS.Check className="w-3 h-3 text-[#38BDF2] opacity-0 peer-checked:opacity-100 transition-opacity" strokeWidth={4} />
-                                        </div>
-                                        <span className="text-sm font-bold text-[#2E2E2F]/70 group-hover:text-[#2E2E2F] transition-colors">{format.label}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Language and Following */}
-                    <div>
-                        <button
-                            onClick={() => toggleSection('advanced')}
-                            className="w-full flex items-center justify-between group mb-2"
-                        >
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40 group-hover:text-[#2E2E2F] transition-colors">Advanced</h3>
-                            <svg className={`w-3.5 h-3.5 text-[#2E2E2F]/30 transition-transform duration-300 ${sectionsOpen.advanced ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
-                        </button>
-                        {sectionsOpen.advanced && (
-                            <div className="space-y-8 mt-8 animate-in slide-in-from-top-2 duration-300">
-                                <div>
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40 mb-5">Language</h3>
-                                    <select
-                                        className="w-full bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-2xl px-5 py-3.5 text-xs font-bold text-[#2E2E2F] outline-none focus:border-[#38BDF2]/40 appearance-none"
-                                        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%232E2E2F' stroke-width='3'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1.25rem center', backgroundSize: '1rem' }}
-                                    >
-                                        <option>English</option>
-                                        <option>Tagalog / Filipino</option>
-                                        <option>Others</option>
-                                    </select>
+                        <div className="flex-1 p-8 space-y-12 scrollbar-hide">
+                            {/* Category Area */}
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-xs font-black uppercase tracking-[0.1em] text-[#2E2E2F]">Category</h3>
+                                    {selectedCategories.length > 0 && (
+                                        <button
+                                            onClick={() => setSelectedCategories([])}
+                                            className="text-[10px] font-bold text-[#38BDF2] hover:text-[#2E2E2F] transition-colors"
+                                        >
+                                            Clear
+                                        </button>
+                                    )}
                                 </div>
-
-                                <div>
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40 mb-5">By Following</h3>
-                                    <label className="flex items-center justify-between cursor-pointer group">
-                                        <span className="text-xs font-bold text-[#2E2E2F]/70 group-hover:text-[#2E2E2F] transition-colors">Following Only</span>
-                                        <div className="relative">
-                                            <input
-                                                type="checkbox"
-                                                className="sr-only peer"
-                                                checked={showFollowedOnly}
-                                                onChange={() => setShowFollowedOnly(!showFollowedOnly)}
-                                            />
-                                            <div className="w-10 h-6 bg-[#2E2E2F]/10 rounded-full peer peer-checked:bg-[#38BDF2] transition-all duration-300" />
-                                            <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-4 shadow-sm" />
-                                        </div>
-                                    </label>
+                                <div className="space-y-4">
+                                    {EVENT_CATEGORIES.slice(0, 15).map(cat => {
+                                        const isChecked = selectedCategories.includes(cat.key);
+                                        return (
+                                            <button
+                                                key={cat.key}
+                                                onClick={() => toggleCategory(cat.key)}
+                                                className={`flex items-center gap-4 w-full group transition-all ${isChecked ? 'text-[#38BDF2]' : 'text-[#2E2E2F]/70 hover:text-[#38BDF2]'
+                                                    }`}
+                                            >
+                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isChecked ? 'bg-[#38BDF2]/10' : 'bg-[#F2F2F2] group-hover:bg-[#38BDF2]/5'
+                                                    }`}>
+                                                    <cat.Icon className="w-4 h-4" />
+                                                </div>
+                                                <span className="font-bold text-sm tracking-tight">{cat.label}</span>
+                                            </button>
+                                        );
+                                    })}
+                                    <button className="text-xs font-bold text-[#38BDF2] pt-2 hover:underline">View more</button>
                                 </div>
                             </div>
-                        )}
-                    </div>
+
+                            {/* Occurrence Area */}
+                            <div className="space-y-6">
+                                <h3 className="text-xs font-black uppercase tracking-[0.1em] text-[#2E2E2F]">Occurrence</h3>
+                                <div className="space-y-3">
+                                    {[
+                                        { id: 'all', label: 'Any time' },
+                                        { id: 'today', label: 'Today' },
+                                        { id: 'tomorrow', label: 'Tomorrow' },
+                                        { id: 'weekend', label: 'Weekend' },
+                                    ].map(date => (
+                                        <button
+                                            key={date.id}
+                                            onClick={() => setSelectedDate(date.id)}
+                                            className={`flex items-center gap-3 w-full group transition-all ${selectedDate === date.id ? 'text-[#38BDF2]' : 'text-[#2E2E2F]/70 hover:text-[#38BDF2]'
+                                                }`}
+                                        >
+                                            <div className={`w-2 h-2 rounded-full transition-all ${selectedDate === date.id ? 'bg-[#38BDF2] scale-125' : 'bg-[#2E2E2F]/10'}`} />
+                                            <span className="font-bold text-sm tracking-tight">{date.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Price Area */}
+                            <div className="space-y-6">
+                                <h3 className="text-xs font-black uppercase tracking-[0.1em] text-[#2E2E2F]">Price Format</h3>
+                                <div className="flex flex-col gap-3">
+                                    {[
+                                        { id: 'all', label: 'All', icon: ICONS.Layout },
+                                        { id: 'free', label: 'Free', icon: ICONS.Check },
+                                        { id: 'paid', label: 'Paid', icon: ICONS.CreditCard },
+                                    ].map(price => (
+                                        <button
+                                            key={price.id}
+                                            onClick={() => setSelectedPrice(price.id)}
+                                            className={`flex items-center gap-4 w-full group transition-all ${selectedPrice === price.id ? 'text-[#38BDF2]' : 'text-[#2E2E2F]/70 hover:text-[#38BDF2]'
+                                                }`}
+                                        >
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${selectedPrice === price.id ? 'bg-[#38BDF2]/10' : 'bg-[#F2F2F2] group-hover:bg-[#38BDF2]/5'}`}>
+                                                <price.icon className="w-4 h-4" />
+                                            </div>
+                                            <span className="font-bold text-sm tracking-tight">{price.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     )}
-                </aside>
+                </div>
+            </aside>
 
-                {/* Event Listings */}
-                <div className="flex-1 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-10 pb-6 border-b border-[#2E2E2F]/5 gap-4">
-                        <div>
-                            <h2 className="text-3xl font-black text-[#2E2E2F] tracking-tight">Events in <span className="text-[#38BDF2]">{locationTerm || 'Anywhere'}</span></h2>
-                            <p className="text-[#2E2E2F]/40 text-[10px] font-black uppercase tracking-widest mt-2">{filteredEvents.length} results matching filters</p>
+            {/* Main Content Area */}
+            <main className="flex-1 min-w-0 h-screen overflow-y-auto scrollbar-hide">
+                {/* Modern Banner */}
+                <section className="relative w-full h-[400px] overflow-hidden">
+                    <div className="absolute inset-0 bg-[#2E2E2F]" />
+                    {/* Animated Gradient Background */}
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,#38BDF2_0%,transparent_50%),radial-gradient(circle_at_0%_100%,#38BDF2_0%,transparent_50%)] opacity-30 animate-pulse" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#2E2E2F]/50 to-[#F2F2F2]" />
+
+                    <div className="relative z-10 h-full flex flex-col justify-center px-8 sm:px-16 max-w-[1400px]">
+                        <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 w-fit mb-8 animate-in slide-in-from-left duration-700">
+                            <span className="w-2 h-2 rounded-full bg-[#38BDF2] animate-ping" />
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Live Discovery Mode</p>
                         </div>
-                        <div className="flex items-center gap-3 flex-wrap justify-start sm:justify-end">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/40">Sort:</span>
-                            <select
-                                value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value)}
-                                className="bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl px-4 py-2 text-xs font-bold text-[#2E2E2F] outline-none focus:border-[#38BDF2]/40 transition-colors"
-                            >
-                                <option value="relevance">Relevance</option>
-                                <option value="newest">Newest</option>
-                                <option value="date_soon">Soonest</option>
-                                <option value="price_low">Price: Low to High</option>
-                            </select>
+                        <h1 className="text-6xl sm:text-8xl font-black text-white tracking-tighter leading-[0.85] uppercase mb-8 animate-in slide-in-from-left duration-1000">
+                            Find Your <br />
+                            <span className="text-[#38BDF2]">Perspective.</span>
+                        </h1>
+                        <p className="max-w-[580px] text-lg font-medium text-white/60 leading-relaxed mb-10 animate-in slide-in-from-left duration-700 delay-200">
+                            Explore hundreds of professional sessions curated for the next generation of industry leaders. Use the edge filters to narrow down your search.
+                        </p>
+                    </div>
+                </section>
+
+                <div className="px-8 sm:px-16 py-12 max-w-[1400px]">
+                    {/* Results Header */}
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 pb-8 border-b border-[#2E2E2F]/5">
+                        <div className="space-y-2">
+                            <h2 className="text-4xl font-black text-[#2E2E2F] tracking-tighter uppercase leading-none">
+                                {locationTerm ? `Events in ${locationTerm}` : 'Explore All Sessions'}
+                            </h2>
+                            <p className="text-[11px] font-black text-[#2E2E2F]/30 uppercase tracking-[0.2em]">
+                                {filteredEvents.length} Sessions detected based on your criteria
+                            </p>
+                        </div>
+
+                        <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-3 bg-white px-5 py-2.5 rounded-2xl border border-[#2E2E2F]/5 shadow-sm">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/40">Sort By</span>
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="bg-transparent text-xs font-bold text-[#2E2E2F] outline-none cursor-pointer"
+                                >
+                                    <option value="relevance">Relevance</option>
+                                    <option value="newest">Newest Arrivals</option>
+                                    <option value="date_soon">Soonest Date</option>
+                                    <option value="price_low">Price: Low to High</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
+                    {/* Event Grid */}
                     {filteredEvents.length > 0 ? (
-                        <div className={`grid gap-8 ${isSidebarCollapsed ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'}`}>
-                            {filteredEvents.map(event => (
-                                <EventCard key={event.eventId} event={event} onActionNotice={setInteractionNotice} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+                            {filteredEvents.map((event, idx) => (
+                                <div key={event.eventId} className="animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: `${idx * 50}ms` }}>
+                                    <EventCard event={event} onActionNotice={setInteractionNotice} />
+                                </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="py-24 text-center bg-[#F2F2F2] rounded-[3rem] border-2 border-dashed border-[#2E2E2F]/5">
-                            <div className="w-20 h-20 bg-[#2E2E2F]/5 rounded-full flex items-center justify-center mx-auto mb-8">
-                                <ICONS.Search className="w-10 h-10 text-[#2E2E2F]/15" />
+                        <div className="py-32 flex flex-col items-center text-center">
+                            <div className="w-24 h-24 bg-[#F2F2F2] rounded-[2rem] border-2 border-[#2E2E2F]/5 flex items-center justify-center mb-8">
+                                <ICONS.Search className="w-10 h-10 text-[#2E2E2F]/10" />
                             </div>
-                            <h3 className="text-2xl font-black text-[#2E2E2F] mb-3">No matching events</h3>
-                            <p className="text-[#2E2E2F]/40 text-sm font-medium max-w-[300px] mx-auto mb-10">We couldn't find any events that match your current filter selection.</p>
+                            <h3 className="text-2xl font-black text-[#2E2E2F] uppercase tracking-tighter mb-4">No Sessions Matching Selection</h3>
+                            <p className="text-[#2E2E2F]/40 text-sm font-medium max-w-[320px] mb-10 leading-relaxed">
+                                We couldn't find any results specifically for these filters. Try broadening your date or category selection.
+                            </p>
                             <Button
-                                variant="outline"
-                                className="px-10 py-4 rounded-2xl border-[#2E2E2F]/10 hover:border-[#38BDF2] hover:text-[#38BDF2] transition-all"
+                                className="px-12 py-5 rounded-2xl font-black uppercase tracking-widest bg-[#2E2E2F] text-white hover:bg-[#38BDF2] transition-colors"
                                 onClick={() => {
-                                    // Resetting means navigating back to a clean state
                                     navigate('/browse-events');
                                     setSelectedCategories([]);
                                     setSelectedDate('all');
                                     setSelectedPrice('all');
                                     setSelectedFormat('all');
-                                    setShowFollowedOnly(false);
                                 }}
                             >
-                                Reset all filters
+                                Reset All Parameters
                             </Button>
                         </div>
                     )}
                 </div>
-            </div>
+            </main>
 
+            {/* Interaction Notification Toast */}
             {interactionNotice && (
-                <div className="fixed bottom-10 right-10 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">
-                    <div className="bg-[#2E2E2F] text-[#F2F2F2] px-8 py-5 rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(46,46,47,0.5)] flex items-center gap-4 border border-white/5 backdrop-blur-md">
-                        <div className="w-8 h-8 rounded-full bg-[#38BDF2] flex items-center justify-center shrink-0">
-                            <ICONS.Check className="w-4 h-4 text-white" strokeWidth={4} />
+                <div className="fixed bottom-12 right-12 z-[100] animate-in slide-in-from-bottom-6 duration-500">
+                    <div className="bg-[#2E2E2F] text-white px-8 py-6 rounded-[2.5rem] shadow-2xl flex items-center gap-5 border border-white/10 backdrop-blur-xl">
+                        <div className="w-10 h-10 rounded-2xl bg-[#38BDF2] flex items-center justify-center">
+                            <ICONS.Check className="w-5 h-5 text-white" strokeWidth={4} />
                         </div>
-                        <span className="text-sm font-bold tracking-tight">{interactionNotice}</span>
+                        <div className="pr-4">
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#38BDF2] mb-1">System Update</p>
+                            <p className="text-sm font-bold tracking-tight">{interactionNotice}</p>
+                        </div>
                     </div>
                 </div>
             )}

@@ -368,6 +368,16 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
   const [interactionNotice, setInteractionNotice] = useState('');
   const initialLoadRef = useRef(true);
   const requestIdRef = useRef(0);
+
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedPrice, setSelectedPrice] = useState<'all' | 'free' | 'paid'>('all');
+  const [selectedFormat, setSelectedFormat] = useState<'all' | 'online' | 'in-person'>('all');
+  const [selectedDate, setSelectedDate] = useState<string>('all');
+  const [showCategoriesFull, setShowCategoriesFull] = useState(false);
+  const [sortBy, setSortBy] = useState<string>('relevance');
+
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+
   const likedSet = useMemo(() => new Set(likedEventIds), [likedEventIds]);
   const followedSet = useMemo(() => new Set(followedOrganizerIds), [followedOrganizerIds]);
 
@@ -412,7 +422,42 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
         setIsFetching(true);
       }
       try {
-        const data = await apiService.getEvents(requestedPage, pageSize, serverSearchTerm);
+        const filters: any = {
+          category: selectedCategory,
+          price: selectedPrice,
+          format: selectedFormat,
+          sortBy
+        };
+
+        if (selectedDate !== 'all') {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          if (selectedDate === 'today') {
+            filters.startDate = today.toISOString();
+            const tonight = new Date(today);
+            tonight.setHours(23, 59, 59, 999);
+            filters.endDate = tonight.toISOString();
+          } else if (selectedDate === 'tomorrow') {
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+            filters.startDate = tomorrow.toISOString();
+            const tomorrowNight = new Date(tomorrow);
+            tomorrowNight.setHours(23, 59, 59, 999);
+            filters.endDate = tomorrowNight.toISOString();
+          } else if (selectedDate === 'weekend') {
+            const day = today.getDay();
+            const diff = day === 0 ? 0 : 6 - day;
+            const sat = new Date(today);
+            sat.setDate(today.getDate() + diff);
+            filters.startDate = sat.toISOString();
+            const sun = new Date(sat);
+            sun.setDate(sat.getDate() + 1);
+            sun.setHours(23, 59, 59, 999);
+            filters.endDate = sun.toISOString();
+          }
+        }
+
+        const data = await apiService.getEvents(requestedPage, pageSize, serverSearchTerm, '', '', filters);
         if (requestId !== requestIdRef.current) return;
         setEvents(data.events || []);
         if (isSpecialListing) {
@@ -436,7 +481,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
       }
     };
     fetchData();
-  }, [currentPage, isSpecialListing, isLandingAllListing, serverSearchTerm]);
+  }, [currentPage, isSpecialListing, isLandingAllListing, serverSearchTerm, selectedCategory, selectedPrice, selectedFormat, selectedDate, sortBy]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -702,8 +747,8 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
         </section>
       )}
 
-      <section className="mb-10 rounded-[1.8rem] bg-[#F2F2F2] px-4 sm:px-5 lg:px-6 py-5 sm:py-6">
-        {!isSpecialListing && (
+      {isLanding && !isSpecialListing && (
+        <section className="mb-0 px-4 sm:px-6 lg:px-8 pt-0 pb-4">
           <BrowseEventsNavigator
             activeTab={activeBrowseTab}
             onTabChange={setActiveBrowseTab}
@@ -718,30 +763,62 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
             isLoading={isFetching}
             className="mt-0 mb-2 mx-0 sm:mx-0 lg:mx-0"
           />
-        )}
 
-        {/* Events Listing Section Header */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pt-2">
-          <div className="flex-1">
-            <h2 className="text-lg lg:text-xl font-extrabold text-[#2E2E2F] tracking-tight mb-1.5">{sectionTitle}</h2>
-            <p className="text-[#2E2E2F]/50 text-[13px] font-medium">{sectionSubtitle}</p>
-          </div>
-          <div className="w-full lg:w-[320px]">
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#2E2E2F]/30 group-focus-within:text-[#38BDF2] transition-colors">
-                <ICONS.Search className="h-4 w-4" strokeWidth={3} />
-              </div>
-              <input
-                type="text"
-                placeholder="Search sessions..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full pl-10 pr-9 py-2.5 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-2xl text-[12px] font-medium transition-all focus:outline-none focus:ring-2 focus:ring-[#38BDF2]/20 focus:border-[#38BDF2] placeholder:text-[#2E2E2F]/30"
-              />
+          {/* Events Listing Section Header */}
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pt-4 mb-2 pb-0">
+            <div className="flex-1 space-y-2">
+              <h2 className="text-2xl font-black text-[#2E2E2F] tracking-tighter uppercase leading-none">{sectionTitle}</h2>
+              <p className="text-[#2E2E2F]/40 text-[11px] font-black uppercase tracking-[0.2em]">{sectionSubtitle}</p>
             </div>
           </div>
+        </section>
+      )}
+
+      <div className={`flex flex-col sm:flex-row items-center justify-between gap-6 ${isLanding ? 'mb-6 mt-0' : 'mb-8 mt-2'}`}>
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          {/* Hide Sidebar Toggle */}
+          {!isLanding && !isSpecialListing && (
+            <button
+              onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+              className="flex items-center gap-2 bg-[#F2F2F2] px-4 py-2.5 rounded-2xl border border-[#2E2E2F]/10 shadow-sm text-[10px] font-black uppercase tracking-widest text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/30 transition-all"
+            >
+              <ICONS.Filter className="w-4 h-4" />
+              {isSidebarVisible ? 'Hide Sidebar' : 'Show Sidebar'}
+            </button>
+          )}
+
+          {/* Sort By Dropdown */}
+          {!isLanding && !isSpecialListing && (
+            <div className="flex items-center gap-3 bg-[#F2F2F2] px-5 py-2.5 rounded-2xl border border-[#2E2E2F]/10 shadow-sm justify-between sm:justify-start">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/40">Sort By</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-transparent text-xs font-bold text-[#2E2E2F] outline-none cursor-pointer"
+              >
+                <option value="relevance">Relevance</option>
+                <option value="newest">Newest</option>
+                <option value="date_soon">Soonest</option>
+              </select>
+            </div>
+          )}
         </div>
-      </section>
+
+        <div className="w-full sm:w-[320px]">
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#2E2E2F]/30 group-focus-within:text-[#38BDF2] transition-colors">
+              <ICONS.Search className="h-4 w-4" strokeWidth={3} />
+            </div>
+            <input
+              type="text"
+              placeholder="Search sessions..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="block w-full pl-10 pr-9 py-3 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-2xl text-[12px] font-bold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#38BDF2]/20 focus:border-[#38BDF2] placeholder:text-[#2E2E2F]/30"
+            />
+          </div>
+        </div>
+      </div>
 
       {interactionNotice && (
         <div className="mb-6 rounded-2xl border border-[#38BDF2]/30 bg-[#38BDF2]/10 px-4 py-3 text-sm font-semibold text-[#2E2E2F]">
@@ -749,87 +826,180 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
         </div>
       )}
 
-      {/* Grid Display */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 lg:gap-8">
-        {displayEvents.map((event) => (
-          <div key={event.eventId}>
-            <EventCard
-              event={event}
-              onActionNotice={setInteractionNotice}
-              trendingRank={trendingRankByEventId.get(event.eventId) ?? null}
-            />
-          </div>
-        ))}
-      </div>
+      <div className="flex flex-col lg:flex-row gap-10">
+        {/* Sidebar Filter - Eventbrite style */}
+        {!isLanding && !isSpecialListing && isSidebarVisible && (
+          <aside className="w-full lg:w-72 shrink-0 space-y-10 animate-in fade-in slide-in-from-left-4 duration-700">
+            {/* Active Filters Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-[#2E2E2F]/5">
+              <h3 className="text-xl font-black text-[#2E2E2F] tracking-tight">Filters</h3>
+              {(selectedCategory !== 'all' || selectedDate !== 'all' || selectedPrice !== 'all' || selectedFormat !== 'all') && (
+                <button
+                  onClick={() => {
+                    setSelectedCategory('all');
+                    setSelectedDate('all');
+                    setSelectedPrice('all');
+                    setSelectedFormat('all');
+                    setSearchTerm('');
+                  }}
+                  className="text-[10px] font-black uppercase tracking-widest text-[#38BDF2] hover:text-[#2E2E2F] transition-colors"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
 
-      {/* View All Events Button (Landing page, 7+ events) */}
-      {showViewAllButton && (
-        <div className="mt-14 flex items-center justify-center">
-          <button
-            onClick={() => navigate('/browse-events')}
-            className="group relative inline-flex items-center gap-2.5 px-8 py-3.5 bg-[#2E2E2F] hover:bg-[#38BDF2] text-[#F2F2F2] font-black uppercase tracking-[0.15em] text-[11px] rounded-2xl shadow-xl shadow-[#2E2E2F]/15 hover:shadow-[#38BDF2]/25 transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]"
-          >
-            View All Events
-            <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </button>
-        </div>
-      )}
+            {/* Category Section */}
+            <div className="space-y-6">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40">Category</h4>
+              <div className="space-y-3.5">
+                {(showCategoriesFull ? EVENT_CATEGORIES : EVENT_CATEGORIES.slice(0, 6)).map((cat) => (
+                  <button
+                    key={cat.key}
+                    onClick={() => setSelectedCategory(selectedCategory === cat.key ? 'all' : cat.key)}
+                    className={`flex items-center gap-3.5 w-full text-left group transition-all ${selectedCategory === cat.key ? 'text-[#38BDF2]' : 'text-[#2E2E2F]/70 hover:text-[#38BDF2]'}`}
+                  >
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${selectedCategory === cat.key ? 'bg-[#38BDF2] text-[#F2F2F2]' : 'bg-[#F2F2F2] border border-[#2E2E2F]/5 group-hover:bg-[#38BDF2]/10'}`}>
+                      <cat.Icon className="w-4 h-4" />
+                    </div>
+                    <span className={`text-[13px] font-black tracking-tight ${selectedCategory === cat.key ? 'opacity-100' : 'opacity-80 group-hover:opacity-100'}`}>{cat.label}</span>
+                  </button>
+                ))}
+                <button
+                  onClick={() => setShowCategoriesFull(!showCategoriesFull)}
+                  className="text-xs font-black text-[#38BDF2] pt-2 hover:underline transition-all flex items-center gap-1"
+                >
+                  {showCategoriesFull ? 'View less' : 'View more'}
+                  <ICONS.ChevronDown className={`w-3.5 h-3.5 transition-transform ${showCategoriesFull ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
+            </div>
 
-      {/* Pagination Controller (Events page only) */}
-      {showPagination && (
-        <div className="mt-16 flex items-center justify-center gap-2">
-          <div className="flex items-center gap-2 px-2.5 py-1.5 bg-[#F2F2F2] rounded-full border border-[#2E2E2F]/10">
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => handlePageChange(i + 1)}
-                className={`min-h-[30px] px-3.5 rounded-full text-[10px] font-semibold uppercase tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-[#38BDF2] focus:ring-offset-2 ${currentPage === i + 1
-                  ? 'bg-[#38BDF2] text-[#F2F2F2]'
-                  : 'bg-[#F2F2F2] text-[#2E2E2F] hover:bg-[#2E2E2F] hover:text-[#F2F2F2]'
-                  }`}
-              >
-                {i + 1}
-              </button>
+            {/* Date Section */}
+            <div className="space-y-6">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40">Date</h4>
+              <div className="space-y-4">
+                {[
+                  { id: 'all', label: 'Any time' },
+                  { id: 'today', label: 'Today' },
+                  { id: 'tomorrow', label: 'Tomorrow' },
+                  { id: 'weekend', label: 'This weekend' }
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    onClick={() => setSelectedDate(opt.id)}
+                    className="flex items-center gap-3 w-full group"
+                  >
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${selectedDate === opt.id ? 'border-[#38BDF2]' : 'border-[#2E2E2F]/10 group-hover:border-[#38BDF2]/40'}`}>
+                      {selectedDate === opt.id && <div className="w-2 h-2 bg-[#38BDF2] rounded-full" />}
+                    </div>
+                    <span className={`text-[13px] font-bold tracking-tight ${selectedDate === opt.id ? 'text-[#2E2E2F]' : 'text-[#2E2E2F]/60 group-hover:text-[#2E2E2F]'}`}>{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Price Section */}
+            <div className="space-y-6">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40">Price</h4>
+              <div className="space-y-4">
+                {[
+                  { id: 'all', label: 'All Prices' },
+                  { id: 'free', label: 'Free' },
+                  { id: 'paid', label: 'Paid' }
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    onClick={() => setSelectedPrice(opt.id as any)}
+                    className="flex items-center gap-3 w-full group"
+                  >
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${selectedPrice === opt.id ? 'border-[#38BDF2]' : 'border-[#2E2E2F]/10 group-hover:border-[#38BDF2]/40'}`}>
+                      {selectedPrice === opt.id && <div className="w-2 h-2 bg-[#38BDF2] rounded-full" />}
+                    </div>
+                    <span className={`text-[13px] font-bold tracking-tight ${selectedPrice === opt.id ? 'text-[#2E2E2F]' : 'text-[#2E2E2F]/60 group-hover:text-[#2E2E2F]'}`}>{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Format Section */}
+            <div className="space-y-6">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40">Format</h4>
+              <div className="space-y-4">
+                {[
+                  { id: 'all', label: 'All Formats' },
+                  { id: 'online', label: 'Online' },
+                  { id: 'in-person', label: 'In-person' }
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    onClick={() => setSelectedFormat(opt.id as any)}
+                    className="flex items-center gap-3 w-full group"
+                  >
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${selectedFormat === opt.id ? 'border-[#38BDF2]' : 'border-[#2E2E2F]/10 group-hover:border-[#38BDF2]/40'}`}>
+                      {selectedFormat === opt.id && <div className="w-2 h-2 bg-[#38BDF2] rounded-full" />}
+                    </div>
+                    <span className={`text-[13px] font-bold tracking-tight ${selectedFormat === opt.id ? 'text-[#2E2E2F]' : 'text-[#2E2E2F]/60 group-hover:text-[#2E2E2F]'}`}>{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </aside>
+        )}
+
+        <div className="flex-1 min-w-0 space-y-10">
+          {/* Grid Display */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7 lg:gap-8 min-h-[400px]">
+            {displayEvents.map((event) => (
+              <div key={event.eventId} className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <EventCard
+                  event={event}
+                  onActionNotice={setInteractionNotice}
+                  trendingRank={trendingRankByEventId.get(event.eventId) ?? null}
+                />
+              </div>
             ))}
           </div>
-        </div>
-      )}
 
-      {/* Empty State */}
-      {displayEvents.length === 0 && (
-        <div className="py-16 px-6 text-center bg-[#F2F2F2] rounded-[2.2rem] border border-[#2E2E2F]/10">
-          <div className="w-12 h-12 bg-[#F2F2F2] rounded-full flex items-center justify-center mx-auto mb-5 border border-[#2E2E2F]/10">
-            <ICONS.Search className="w-6 h-6 text-[#2E2E2F]/60" />
-          </div>
-          <h3 className="text-xl font-bold text-[#2E2E2F] tracking-tight mb-3">
-            {listing === 'liked'
-              ? 'No liked events yet'
-              : listing === 'followings'
-                ? 'No events from followed organizations yet'
-                : activeBrowseTab === 'FOR_YOU'
-                  ? 'No recommended events available yet'
-                  : 'No active sessions found'}
-          </h3>
-          <p className="text-[13px] font-medium text-[#2E2E2F]/55 mb-5">
-            {listing === 'all'
-              ? 'Try another tab, change location, or clear your search to discover more events.'
-              : 'Like events or follow organizations to build this list.'}
-          </p>
-          <Button
-            variant="outline"
-            className="px-3"
-            onClick={() => {
-              setSearchTerm('');
-              setSelectedLocation('Your Location');
-              setActiveBrowseTab('ALL');
-            }}
-          >
-            {listing === 'all' ? 'Clear Filters' : 'Reset View'}
-          </Button>
+          {/* Empty State */}
+          {displayEvents.length === 0 && (
+            <div className="py-24 px-6 text-center bg-[#F2F2F2] rounded-[2.5rem] border border-[#2E2E2F]/10 animate-in zoom-in-95 duration-500">
+              <div className="w-16 h-16 bg-[#F2F2F2] border border-[#2E2E2F]/5 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <ICONS.Search className="w-8 h-8 text-[#2E2E2F]/20" />
+              </div>
+              <h3 className="text-2xl font-black text-[#2E2E2F] tracking-tighter mb-4 uppercase">
+                {listing === 'liked'
+                  ? 'No liked events yet'
+                  : listing === 'followings'
+                    ? 'No events from followed organizations yet'
+                    : activeBrowseTab === 'FOR_YOU'
+                      ? 'No recommended events yet'
+                      : 'No matches found'}
+              </h3>
+              <p className="text-sm font-bold text-[#2E2E2F]/50 mb-10 max-w-[340px] mx-auto leading-relaxed">
+                {listing === 'all'
+                  ? 'Try adjusting your filters or search terms to discover more exciting sessions.'
+                  : 'Like events or follow organizations to build your personalized feed.'}
+              </p>
+              <Button
+                variant="outline"
+                className="px-8 py-3.5 rounded-2xl border-2 border-[#2E2E2F]/10 text-[#2E2E2F] font-black uppercase tracking-widest text-[10px]"
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedLocation(DEFAULT_LOCATION);
+                  setActiveBrowseTab('ALL');
+                  setSelectedCategory('all');
+                  setSelectedDate('all');
+                  setSelectedPrice('all');
+                  setSelectedFormat('all');
+                }}
+              >
+                Reset All Filters
+              </Button>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {isLanding && <PricingSection />}
       {isLanding && <FeaturedOrganizers />}
@@ -871,8 +1041,13 @@ const FAQSection: React.FC = () => {
   return (
     <section className="mt-20 mb-20 animate-in fade-in slide-in-from-bottom-10 duration-1000">
       <div className="text-center mb-16">
-        <h2 className="text-4xl lg:text-5xl font-black text-[#2E2E2F] tracking-tighter uppercase mb-4">Frequently Asked Questions</h2>
-        <p className="text-[#2E2E2F]/50 text-base font-bold uppercase tracking-widest italic">Everything you need to know about StartupLab Event SaaS.</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#38BDF2] mb-4">FAQs</p>
+        <h2 className="text-3xl sm:text-4xl font-black text-[#2E2E2F] tracking-tight mb-4">
+          Frequently Asked Questions
+        </h2>
+        <p className="max-w-xl mx-auto text-[#2E2E2F]/60 font-medium">
+          Everything you need to know about StartupLab Event SaaS.
+        </p>
       </div>
       <div className="max-w-4xl mx-auto space-y-4">
         {faqs.map((faq, index) => (

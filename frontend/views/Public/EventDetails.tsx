@@ -75,11 +75,12 @@ const StreamStatusBanner: React.FC<{ event: Event; isOwner?: boolean }> = ({ eve
   const videoId = isYouTube ? getYouTubeId(normalizedUrl) : null;
   const hasLink = !!(normalizedUrl && normalizedUrl.startsWith('http'));
 
-  // Logic: if it has a link, we show it IF it's either explicitly LIVE status OR set as Online/Hybrid
-  const showingLive = hasLink && (isLiveStatus || isOnline);
+  // Logic: if it has a link AND is a valid YouTube/Facebook URL, we show it IF it's either explicitly LIVE status OR set as Online/Hybrid
+  const hasValidStreamingUrl = hasLink && (isYouTube || isFacebook);
+  const showingLive = hasValidStreamingUrl && (isLiveStatus || isOnline);
 
-  // Hide entire banner if not online or no streaming URL
-  if (!isOnline || !hasLink) return null;
+  // Hide entire banner if not online or no valid YouTube/Facebook streaming URL
+  if (!isOnline || !hasValidStreamingUrl) return null;
 
   return (
     <div className={`overflow-hidden rounded-[2.5rem] border border-[#2E2E2F]/10 mb-10 shadow-2xl ${isOwner && hasLink ? 'ring-2 ring-[#2E2E2F]/30' : ''}`}>
