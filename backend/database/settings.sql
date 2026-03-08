@@ -31,7 +31,7 @@ IF
   -- 'hitpay_salt'       - Encrypted webhook salt
 
   -- Constraint: Link to the platform's user table
-DO $ $
+DO $$
 BEGIN
   IF NOT EXISTS (
     SELECT
@@ -46,7 +46,7 @@ BEGIN
     ADD CONSTRAINT settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users("userId")
     ON DELETE CASCADE;
   END IF;
-END $ $;
+END $$;
 
 -- Indices for rapid lookup during email generation
 CREATE INDEX

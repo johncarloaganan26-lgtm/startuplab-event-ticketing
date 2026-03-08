@@ -45,11 +45,11 @@ export async function updateSmtpSettings(req, res) {
 
         return res.json({ message: 'Settings updated successfully' });
 
-    await logAudit({
-      actionType: 'SMTP_SETTINGS_UPDATED',
-      details: { userId: req.user?.id },
-      req
-    });
+        await logAudit({
+            actionType: 'SMTP_SETTINGS_UPDATED',
+            details: { userId: req.user?.id },
+            req
+        });
     } catch (error) {
         console.error('[Settings] Update failed:', error.message);
         return res.status(500).json({ error: 'Failed to update settings' });
@@ -195,31 +195,25 @@ export async function updateHitPaySettings(req, res) {
             apiKeyLength: hitpayApiKey?.length || 0,
             saltLength: hitpaySalt?.length || 0
         });
-        
+
         // Base keys mapped to db
         const settings = [
             { user_id: userId, key: 'hitpay_enabled', value: enabled === true ? 'true' : 'false' },
             { user_id: userId, key: 'hitpay_mode', value: mode === 'sandbox' ? 'sandbox' : 'live' }
         ];
 
-        // Handle API key: if provided and not empty, save it. If disabled and no new value, delete it.
+        // Handle API key: if provided and not empty, save it.
         if (typeof hitpayApiKey === 'string' && hitpayApiKey.trim() !== '') {
             const encrypted = encryptString(hitpayApiKey.trim());
             console.log('[HitPay Settings] API Key encrypted:', !!encrypted);
             settings.push({ user_id: userId, key: 'hitpay_api_key', value: encrypted });
-        } else if (enabled !== true) {
-            // If disabling, delete the API key
-            settings.push({ user_id: userId, key: 'hitpay_api_key', value: null });
         }
 
-        // Handle salt: if provided and not empty, save it. If disabled and no new value, delete it.
+        // Handle salt: if provided and not empty, save it.
         if (typeof hitpaySalt === 'string' && hitpaySalt.trim() !== '') {
             const encrypted = encryptString(hitpaySalt.trim());
             console.log('[HitPay Settings] Salt encrypted:', !!encrypted);
             settings.push({ user_id: userId, key: 'hitpay_salt', value: encrypted });
-        } else if (enabled !== true) {
-            // If disabling, delete the salt
-            settings.push({ user_id: userId, key: 'hitpay_salt', value: null });
         }
 
         const { error } = await supabase

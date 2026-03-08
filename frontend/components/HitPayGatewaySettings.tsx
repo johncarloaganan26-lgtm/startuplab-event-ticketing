@@ -156,28 +156,28 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
 
     try {
       setSaving(true);
-      
+
       // Determine if we need to send new API key/salt values
       // Always send if there's a non-empty value in the form that differs from stored
       const apiKeyToSave = currentData.hitpayApiKey.trim() || undefined;
       const saltToSave = currentData.hitpaySalt.trim() || undefined;
-      
+
       // Only send the actual values if they have content (new or updated)
       const payload: any = {
         enabled: currentData.enabled,
         mode: currentData.mode,
       };
-      
+
       // Send API key if user provided one (whether editing or not)
       if (apiKeyToSave) {
         payload.hitpayApiKey = apiKeyToSave;
       }
-      
+
       // Send salt if user provided one (whether editing or not)
       if (saltToSave) {
         payload.hitpaySalt = saltToSave;
       }
-      
+
       const response = await apiService.updateHitPaySettings(scope, payload);
 
       if (!response.backendReady) {
@@ -209,18 +209,12 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
   };
 
   const handleToggle = (checked: boolean) => {
-    const newState = { enabled: checked };
-    setFormData(prev => ({ ...prev, ...newState }));
-    // Automatically attempt save when toggled if turning off, or if turning on and keys exist
-    if (!checked || (!editingApiKey && !editingSalt) || (formData.hitpayApiKey && formData.hitpaySalt)) {
-      handleSave(newState);
-    }
+    setFormData(prev => ({ ...prev, enabled: checked }));
   };
 
   const handleModeChange = (val: 'live' | 'sandbox') => {
-    const newState = { mode: val };
-    setFormData(prev => ({ ...prev, ...newState }));
-    handleSave(newState);
+    setFormData(prev => ({ ...prev, mode: val }));
+    // Removed automatic save on mode change
   };
 
   const renderInput = (
@@ -248,23 +242,25 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
         <label className="block text-sm font-semibold text-gray-800 mb-1.5">{label}</label>
         <div className="relative group">
           <input
-            type={show ? "text" : "password"}
+            type={isEditing ? "text" : (show ? "text" : "password")}
             value={value || (!isEditing && hasStored ? maskedValue || '' : '')}
             onChange={(e) => handleInputChange(field, e.target.value)}
             onFocus={onFocusInput}
             placeholder={hasStored && !isEditing ? "••••••••••••••••" : "Enter credential..."}
-            className={`w-full text-sm font-mono border border-[#2E2E2F]/10 rounded-lg py-2.5 pl-3 pr-10 focus:outline-none focus:border-[#38BDF2] focus:ring-1 focus:ring-[#38BDF2] text-gray-800 transition-colors ${!isEditing && hasStored ? 'bg-[#F2F2F2]' : 'bg-white'}`}
+            className={`w-full text-sm font-mono border border-[#2E2E2F]/10 rounded-lg py-2.5 pl-3 pr-10 focus:outline-none focus:border-[#38BDF2] focus:ring-1 focus:ring-[#38BDF2] text-gray-800 transition-colors bg-[#F2F2F2]`}
             disabled={!formData.enabled}
             readOnly={!isEditing && hasStored}
           />
-          <button
-            type="button"
-            onClick={() => setShow(!show)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-            disabled={!formData.enabled}
-          >
-            {show ? <EyeOffIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
-          </button>
+          {!isEditing && hasStored && (
+            <button
+              type="button"
+              onClick={() => setShow(!show)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+              disabled={!formData.enabled}
+            >
+              {show ? <EyeOffIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+            </button>
+          )}
         </div>
         {hasStored && !isEditing && formData.enabled && (
           <p className="mt-1.5 text-[10px] font-black uppercase tracking-widest text-[#38BDF2] cursor-pointer hover:text-[#2E2E2F] transition-colors flex items-center gap-1.5" onClick={handleEditClick}>
@@ -384,21 +380,19 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
                 hasStoredSalt
               )}
             </div>
-
-            {(editingApiKey || editingSalt) && (formData.hitpayApiKey || formData.hitpaySalt) && (
-              <div className="flex justify-end mt-4">
-                <button
-                  onClick={() => handleSave()}
-                  disabled={saving}
-                  className="px-5 py-2 bg-[#38BDF2] hover:bg-[#2E2E2F] text-white text-sm font-medium rounded-lg transition-colors shadow-sm disabled:opacity-50"
-                >
-                  {saving ? 'Saving...' : 'Save Credentials'}
-                </button>
-              </div>
-            )}
-
           </div>
         )}
+
+        {/* Global Save Button for HitPay Gateway */}
+        <div className="px-6 py-4 bg-[#F2F2F2] border-t border-gray-100 flex justify-end">
+          <button
+            onClick={() => handleSave()}
+            disabled={saving}
+            className="px-5 py-2 bg-[#38BDF2] hover:bg-[#2E2E2F] text-white text-sm font-medium rounded-lg transition-colors shadow-sm disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save HitPay Settings'}
+          </button>
+        </div>
       </div>
 
       <div className="flex items-start gap-3 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-lg p-4">
