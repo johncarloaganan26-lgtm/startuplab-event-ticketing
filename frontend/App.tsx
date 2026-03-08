@@ -587,14 +587,14 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           </div>
           <div className="flex items-center gap-4 min-w-0">
             {(!(role === UserRole.STAFF && canReceiveNotifications === false)) && (
-              <div className="relative">
+              <div className="relative group">
                 <button
-                  className="w-11 h-11 flex items-center justify-center rounded-2xl border border-[#38BDF2]/20 bg-white/50 backdrop-blur-md hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/40 hover:scale-105 active:scale-95 transition-all shadow-sm relative group"
+                  className="w-11 h-11 flex items-center justify-center rounded-2xl border border-[#38BDF2]/20 bg-transparent hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/40 hover:scale-105 active:scale-95 transition-all shadow-sm relative"
                   onClick={() => setNotificationOpen(!notificationOpen)}
                 >
                   <ICONS.Bell className="w-5 h-5 text-[#2E2E2F] group-hover:text-[#38BDF2] transition-colors" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center px-1 border-2 border-white shadow-lg animate-in zoom-in duration-300">
+                    <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center px-1 border-2 border-[#F2F2F2] shadow-lg animate-in zoom-in duration-300">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}
@@ -602,8 +602,8 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 {notificationOpen && (
                   <>
                     <div className="fixed inset-0 z-[100] bg-[#2E2E2F]/10 backdrop-blur-[2px]" onClick={() => setNotificationOpen(false)} />
-                    <div className="fixed right-6 top-24 bottom-6 w-full max-w-[420px] bg-white rounded-[2.5rem] border border-[#2E2E2F]/5 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.15)] z-[101] flex flex-col overflow-hidden animate-in slide-in-from-right-8 fade-in duration-500">
-                      <div className="p-8 border-b border-[#2E2E2F]/5 flex items-start justify-between bg-white/80 backdrop-blur-xl sticky top-0 z-10">
+                    <div className="fixed right-6 top-24 bottom-6 w-full max-w-[420px] bg-[#F2F2F2] rounded-[2.5rem] border border-[#2E2E2F]/5 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.15)] z-[101] flex flex-col overflow-hidden animate-in slide-in-from-right-8 fade-in duration-500">
+                      <div className="p-8 border-b border-[#2E2E2F]/5 flex items-start justify-between bg-[#F2F2F2]/80 backdrop-blur-xl sticky top-0 z-10">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <h2 className="text-2xl font-black tracking-tight text-[#2E2E2F]">Updates</h2>
@@ -1915,14 +1915,14 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 
           <div className="ml-auto flex items-center gap-4">
             {(!(role === UserRole.STAFF && canReceiveNotifications === false)) && (
-              <div className="relative">
+              <div className="relative group">
                 <button
-                  className="w-11 h-11 flex items-center justify-center rounded-2xl border border-[#38BDF2]/20 bg-white/50 backdrop-blur-md hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/40 hover:scale-105 active:scale-95 transition-all shadow-sm relative group"
+                  className="w-11 h-11 flex items-center justify-center rounded-2xl border border-[#38BDF2]/20 bg-transparent hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/40 hover:scale-105 active:scale-95 transition-all shadow-sm relative"
                   onClick={() => setNotificationOpen(!notificationOpen)}
                 >
                   <ICONS.Bell className="w-5 h-5 text-[#2E2E2F] group-hover:text-[#38BDF2] transition-colors" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center px-1 border-2 border-white shadow-lg animate-in zoom-in duration-300">
+                    <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center px-1 border-2 border-[#F2F2F2] shadow-lg animate-in zoom-in duration-300">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}
@@ -1930,8 +1930,8 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                 {notificationOpen && (
                   <>
                     <div className="fixed inset-0 z-[100] bg-[#2E2E2F]/10 backdrop-blur-[2px]" onClick={() => setNotificationOpen(false)} />
-                    <div className="fixed right-6 top-24 bottom-6 w-full max-w-[420px] bg-white rounded-[2.5rem] border border-[#2E2E2F]/5 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.15)] z-[101] flex flex-col overflow-hidden animate-in slide-in-from-right-8 fade-in duration-500">
-                      <div className="p-8 border-b border-[#2E2E2F]/5 flex items-start justify-between bg-white/80 backdrop-blur-xl sticky top-0 z-10">
+                    <div className="fixed right-6 top-24 bottom-6 w-full max-w-[420px] bg-[#F2F2F2] rounded-[2.5rem] border border-[#2E2E2F]/5 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.15)] z-[101] flex flex-col overflow-hidden animate-in slide-in-from-right-8 fade-in duration-500">
+                      <div className="p-8 border-b border-[#2E2E2F]/5 flex items-start justify-between bg-[#F2F2F2]/80 backdrop-blur-xl sticky top-0 z-10">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <h2 className="text-2xl font-black tracking-tight text-[#2E2E2F]">Notifications</h2>
