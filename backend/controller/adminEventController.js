@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import path from 'path';
 import { getOrCreateOrganizerForUser, getOrganizerByOwnerUserId } from '../utils/organizerData.js';
 import { logAudit } from '../utils/auditLogger.js';
+import { checkPlanLimits } from '../utils/planValidator.js';
 
 const STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'startuplab-business-ticketing';
 const ADMIN_ROLES = ['ADMIN', 'STAFF'];
@@ -224,6 +225,30 @@ export const createUserEvent = async (req, res) => {
     });
   }
 
+  // 1. Check Max Events Limit
+  const eventLimit = await checkPlanLimits(organizerCheck.organizer.organizerId, 'max_events');
+  if (!eventLimit.allowed) {
+    return res.status(403).json({
+      error: eventLimit.message,
+      code: 'PLAN_LIMIT_REACHED',
+      limit: eventLimit.limit,
+      current: eventLimit.current
+    });
+  }
+
+  // 2. Check Capacity Limit
+  const capacityTotal = req.body?.capacityTotal ? Number(req.body.capacityTotal) : 0;
+  if (capacityTotal > 0) {
+    const capacityLimit = await checkPlanLimits(organizerCheck.organizer.organizerId, 'max_attendees_per_event', capacityTotal);
+    if (!capacityLimit.allowed) {
+      return res.status(403).json({
+        error: capacityLimit.message,
+        code: 'PLAN_LIMIT_REACHED',
+        limit: capacityLimit.limit
+      });
+    }
+  }
+
   req.enforceExistingOrganizer = true;
   return createEvent(req, res);
 };
@@ -238,6 +263,22 @@ export const updateUserEvent = async (req, res) => {
     if (ownership.status !== 200) {
       if (ownership.error) return res.status(500).json({ error: ownership.error.message });
       return res.status(ownership.status).json({ error: ownership.message });
+    }
+
+    // 3. Check Capacity Limit on Update
+    const requestedCapacity = req.body?.capacityTotal ? Number(req.body.capacityTotal) : 0;
+    if (requestedCapacity > (ownership.event?.capacityTotal || 0)) {
+      const organizerCheck = await resolveOrganizerReadinessForUser(userId);
+      if (organizerCheck.ok) {
+        const capacityLimit = await checkPlanLimits(organizerCheck.organizer.organizerId, 'max_attendees_per_event', requestedCapacity);
+        if (!capacityLimit.allowed) {
+          return res.status(403).json({
+            error: capacityLimit.message,
+            code: 'PLAN_LIMIT_REACHED',
+            limit: capacityLimit.limit
+          });
+        }
+      }
     }
 
     const requestedStatus = toUpperStatus(req.body?.status);
@@ -494,14 +535,14 @@ export const deleteEvent = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user?.userId;
-    
+
     // Check if event is already archived
     const { data: existingEvent } = await supabase
       .from('events')
       .select('is_archived, deleted_at')
       .eq('eventId', id)
       .maybeSingle();
-    
+
     // If already archived, do permanent delete
     if (existingEvent?.is_archived && existingEvent?.deleted_at) {
       // Permanent delete - remove all related data first
@@ -509,7 +550,7 @@ export const deleteEvent = async (req, res) => {
       await supabase.from('ticket_types').delete().eq('eventId', id);
       await supabase.from('orders').delete().eq('eventId', id);
       await supabase.from('event_likes').delete().eq('eventId', id);
-      
+
       const { error } = await supabase
         .from('events')
         .delete()
@@ -529,8 +570,8 @@ export const deleteEvent = async (req, res) => {
     // Soft delete - archive the event
     const { error } = await supabase
       .from('events')
-      .update({ 
-        is_archived: true, 
+      .update({
+        is_archived: true,
         deleted_at: new Date().toISOString(),
         archived_by: userId,
         updated_at: new Date().toISOString()
@@ -558,8 +599,8 @@ export const restoreEvent = async (req, res) => {
 
     const { data, error } = await supabase
       .from('events')
-      .update({ 
-        is_archived: false, 
+      .update({
+        is_archived: false,
         deleted_at: null,
         archived_by: null,
         updated_at: new Date().toISOString()

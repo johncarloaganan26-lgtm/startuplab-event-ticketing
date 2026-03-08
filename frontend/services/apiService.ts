@@ -16,6 +16,7 @@ import {
   HitPaySettingsResponse
 } from '../types';
 import { MOCK_EVENTS } from './mockData';
+import { supabase } from '../supabase/supabaseClient';
 // Local storage keys
 const STORAGE_EVENTS = 'ef_events';
 const STORAGE_ORDERS = 'ef_orders';
@@ -364,6 +365,83 @@ export const apiService = {
     }
     const data = await res.json();
     return Array.isArray(data?.plans) ? data.plans : [];
+  },
+
+  // --- Subscription APIs ---
+  getCurrentSubscription: async (): Promise<{ subscription: any; organizer: any }> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(`${API_BASE}/api/subscriptions/current`, {
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` }
+    });
+    if (!res.ok) {
+      const errorPayload = await res.json().catch(() => ({}));
+      throw new Error(errorPayload?.error || `Failed to load subscription: ${res.status}`);
+    }
+    return await res.json();
+  },
+
+  getSubscriptionPlans: async (): Promise<AdminPlan[]> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(`${API_BASE}/api/subscriptions/plans`, {
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` }
+    });
+    if (!res.ok) {
+      const errorPayload = await res.json().catch(() => ({}));
+      throw new Error(errorPayload?.error || `Failed to load plans: ${res.status}`);
+    }
+    const data = await res.json();
+    return Array.isArray(data?.plans) ? data.plans : [];
+  },
+
+  createSubscription: async (planId: string, billingInterval: string): Promise<{ subscription: any; plan: AdminPlan; paymentUrl?: string; free?: boolean }> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(`${API_BASE}/api/subscriptions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ planId, billingInterval })
+    });
+    if (!res.ok) {
+      const errorPayload = await res.json().catch(() => ({}));
+      throw new Error(errorPayload?.error || `Failed to create subscription: ${res.status}`);
+    }
+    return await res.json();
+  },
+
+  cancelSubscription: async (subscriptionId: string): Promise<{ success: boolean; message: string }> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(`${API_BASE}/api/subscriptions/${encodeURIComponent(subscriptionId)}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` }
+    });
+    if (!res.ok) {
+      const errorPayload = await res.json().catch(() => ({}));
+      throw new Error(errorPayload?.error || `Failed to cancel subscription: ${res.status}`);
+    }
+    return await res.json();
+  },
+
+  getSubscriptionHistory: async (): Promise<{ subscriptions: any[] }> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(`${API_BASE}/api/subscriptions/history`, {
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` }
+    });
+    if (!res.ok) {
+      const errorPayload = await res.json().catch(() => ({}));
+      throw new Error(errorPayload?.error || `Failed to load history: ${res.status}`);
+    }
+    return await res.json();
+  },
+
+  verifySubscription: async (subscriptionId: string): Promise<{ success: boolean; status: string }> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(`${API_BASE}/api/subscriptions/verify/${encodeURIComponent(subscriptionId)}`, {
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` }
+    });
+    if (!res.ok) {
+      const errorPayload = await res.json().catch(() => ({}));
+      throw new Error(errorPayload?.error || `Verification failed: ${res.status}`);
+    }
+    return await res.json();
   },
 
   // GET /api/events/live

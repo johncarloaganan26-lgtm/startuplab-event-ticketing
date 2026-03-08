@@ -163,7 +163,7 @@ export async function getOrganizerByOwnerUserId(ownerUserId) {
 
   const { data, error } = await supabase
     .from('organizers')
-    .select('*')
+    .select('*, plan:plans(*)')
     .eq('ownerUserId', ownerUserId)
     .maybeSingle();
 
@@ -182,7 +182,7 @@ export async function getOrganizerWithStatsById(organizerId) {
 
   const { data, error } = await supabase
     .from('organizers')
-    .select('*')
+    .select('*, plan:plans(*)')
     .eq('organizerId', organizerId)
     .maybeSingle();
 

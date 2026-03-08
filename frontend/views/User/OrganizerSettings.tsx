@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, Button, Input } from '../../components/Shared';
 import { apiService } from '../../services/apiService';
 import { OrganizerProfile } from '../../types';
@@ -38,6 +39,7 @@ const toFormState = (profile: OrganizerProfile | null, fallbackName: string): Fo
 
 export const OrganizerSettings: React.FC = () => {
   const { name } = useUser();
+  const navigate = useNavigate();
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const [loading, setLoading] = React.useState(true);
@@ -329,9 +331,19 @@ export const OrganizerSettings: React.FC = () => {
               </p>
             </div>
 
-            <Button type="submit" className="px-8 py-3 rounded-xl font-black tracking-widest text-[10px]" disabled={loading || saving || uploading}>
-              {saving ? 'Saving...' : 'Save Organizer Profile'}
-            </Button>
+            <div className="flex gap-3">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => navigate('/subscription')}
+                className="px-6 py-3 rounded-xl font-black tracking-widest text-[10px]"
+              >
+                Subscription
+              </Button>
+              <Button type="submit" className="px-8 py-3 rounded-xl font-black tracking-widest text-[10px]" disabled={loading || saving || uploading}>
+                {saving ? 'Saving...' : 'Save Organizer Profile'}
+              </Button>
+            </div>
           </div>
         </Card>
       </form>

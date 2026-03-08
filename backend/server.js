@@ -23,6 +23,7 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
 import adminPlanRoutes from "./routes/adminPlanRoutes.js";
 import planRoutes from "./routes/planRoutes.js";
+import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 const PORT = process.env.BACKEND_PORT
 const app = express();
 
@@ -110,6 +111,7 @@ app.use("/api", organizerRoutes);
 app.use("/api", notificationRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/plans", planRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/admin/events", authMiddleware, adminEventRoutes);
 app.use("/api/admin/plans", authMiddleware, adminPlanRoutes);
 

@@ -38,6 +38,8 @@ import { ResetPassword } from './views/Auth/ResetPassword';
 import { UserSettings } from './views/User/UserSettings';
 import { UserEvents } from './views/User/UserEvents';
 import { UserHome } from './views/User/UserHome';
+import { OrganizerSubscription } from './views/User/OrganizerSubscription';
+import { SubscriptionSuccess } from './views/User/SubscriptionSuccess';
 import { ONLINE_LOCATION_VALUE } from './components/BrowseEventsNavigator';
 import { ICONS } from './constants';
 import { Button, Input, Modal, PageLoader } from './components/Shared';
@@ -1811,6 +1813,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     { label: 'Teams & Access', path: '/user-settings?tab=team', icon: <ICONS.Shield className="w-5 h-5" /> },
     { label: 'Email Setup', path: '/user-settings?tab=email', icon: <ICONS.Mail className="w-5 h-5" /> },
     { label: 'Payment Gateway', path: '/user-settings?tab=payments', icon: <ICONS.CreditCard className="w-5 h-5" /> },
+    { label: 'Subscription', path: '/subscription', icon: <ICONS.CreditCard className="w-5 h-5" /> },
     { label: 'Account', path: '/user-settings?tab=account', icon: <ICONS.Settings className="w-5 h-5" /> },
   ];
 
@@ -2295,7 +2298,8 @@ const App: React.FC = () => (
       <Route path="/user/attendees" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><RegistrationsList /></UserPortalLayout></RequireRoleRoute>} />
       <Route path="/user/checkin" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><CheckIn /></UserPortalLayout></RequireRoleRoute>} />
       <Route path="/user/archive" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><ArchiveEvents /></UserPortalLayout></RequireRoleRoute>} />
-      <Route path="/user/reports" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><OrganizerReports /></UserPortalLayout></RequireRoleRoute>} />
+      <Route path="/subscription" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><OrganizerSubscription /></UserPortalLayout></RequireRoleRoute>} />
+      <Route path="/subscription/success" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><SubscriptionSuccess /></UserPortalLayout></RequireRoleRoute>} />
 
       {/* Admin Portal Routes */}
       <Route path="/dashboard" element={<RequireRoleRoute allow={[UserRole.ADMIN, UserRole.ORGANIZER]}><DashboardWrapper /></RequireRoleRoute>} />
@@ -2309,3 +2313,4 @@ const App: React.FC = () => (
   </Router>
 );
 export default App;
+

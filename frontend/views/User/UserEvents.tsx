@@ -601,7 +601,7 @@ export const UserEvents: React.FC = () => {
 
             {/* Header section replicated from Admin */}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 px-2 mb-8 pt-4">
-                <div>
+                <div className="flex flex-col">
                     <div className="flex items-center gap-3">
                         <h1 className="text-3xl font-bold text-[#2E2E2F] tracking-tight">Events</h1>
                         <button
@@ -612,6 +612,18 @@ export const UserEvents: React.FC = () => {
                         >
                             <CommentNoticeIcon className="w-4 h-4" />
                         </button>
+                        {organizerProfile && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-[#2E2E2F]/10 rounded-xl shadow-sm ml-2">
+                                <div className={`w-2 h-2 rounded-full ${organizerProfile.subscriptionStatus === 'active' ? 'bg-green-500' : 'bg-red-400'}`}></div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/60">
+                                    {organizerProfile.plan?.name || 'Starter'}
+                                </span>
+                                <span className="text-[10px] font-bold text-[#2E2E2F]/30">|</span>
+                                <span className="text-[10px] font-bold text-[#2E2E2F]/60">
+                                    {events.length} / {organizerProfile.plan?.limits?.max_events || 1}
+                                </span>
+                            </div>
+                        )}
                     </div>
                     <p className="text-[#2E2E2F]/70 font-medium text-sm mt-1">Configure and manage your session lifecycle.</p>
                 </div>
@@ -1266,7 +1278,7 @@ export const UserEvents: React.FC = () => {
                                             <option value="PUBLISHED" disabled={!canPublishByTicketRule}>
                                                 {canPublishByTicketRule ? 'Published' : 'Published (Add ticket first)'}
                                             </option>
-                                            
+
                                             {isEditMode && <option value="CLOSED">Closed</option>}
                                         </select>
                                     </div>

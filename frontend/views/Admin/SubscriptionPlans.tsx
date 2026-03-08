@@ -222,19 +222,19 @@ export const SubscriptionPlans: React.FC = () => {
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <label className="block text-[10px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] mb-3 ml-1">Necessary Plan Features for Event SaaS</label>
+          <label className="block text-[10px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] mb-3 ml-1">Pricing Plans</label>
           <div className="bg-[#F2F2F2] p-1 rounded-2xl border border-[#2E2E2F]/10 flex items-center self-start">
             <button
               onClick={() => setBillingCycle('monthly')}
               className={`min-h-[32px] px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-colors ${billingCycle === 'monthly' ? 'bg-[#38BDF2] text-[#F2F2F2]' : 'bg-[#F2F2F2] text-[#2E2E2F] hover:bg-[#2E2E2F] hover:text-[#F2F2F2]'}`}
             >
-              Monthly Cycle
+              Monthly
             </button>
             <button
               onClick={() => setBillingCycle('yearly')}
               className={`min-h-[32px] px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 ${billingCycle === 'yearly' ? 'bg-[#38BDF2] text-[#F2F2F2]' : 'bg-[#F2F2F2] text-[#2E2E2F] hover:bg-[#2E2E2F] hover:text-[#F2F2F2]'}`}
             >
-              Yearly Cycle
+              Yearly
               <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${billingCycle === 'yearly' ? 'bg-[#F2F2F2] text-[#38BDF2]' : 'bg-[#38BDF2] text-white'}`}>SAVE 20%</span>
             </button>
           </div>
@@ -242,7 +242,7 @@ export const SubscriptionPlans: React.FC = () => {
         <Button onClick={openAddModal} className="rounded-xl px-8 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-[#38BDF2]/20 active:scale-95 transition-transform">
           <span className="flex items-center gap-2">
             <ICONS.Plus className="w-3.5 h-3.5" strokeWidth={3} />
-            Architect New Plan
+            Add New Plan
           </span>
         </Button>
       </div>
@@ -254,7 +254,7 @@ export const SubscriptionPlans: React.FC = () => {
               <div className="absolute -top-4 left-10 z-10 animate-in slide-in-from-top-4 duration-700">
                 <span className="bg-[#38BDF2] text-[#F2F2F2] px-5 py-2 rounded-2xl text-[9px] font-black uppercase tracking-widest shadow-xl shadow-[#38BDF2]/30 border border-white/20 flex items-center gap-2">
                   <ICONS.CheckCircle className="w-3.5 h-3.5" />
-                  Optimized Node
+                  Recommended
                 </span>
               </div>
             )}
@@ -265,10 +265,10 @@ export const SubscriptionPlans: React.FC = () => {
                   <div>
                     <h3 className="text-2xl font-black text-[#2E2E2F] tracking-tighter mb-2 uppercase leading-none">{plan.name}</h3>
                     <div className="flex gap-2">
-                      {plan.isDefault && <div className="bg-[#38BDF2] text-[#F2F2F2] text-[8px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest">primary</div>}
+                      {plan.isDefault && <div className="bg-[#38BDF2] text-[#F2F2F2] text-[8px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest">Default</div>}
                       <div className={`text-[8px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest flex items-center gap-1.5 ${plan.isActive ? 'bg-[#38BDF2] text-white' : 'bg-[#2E2E2F]/10 text-[#2E2E2F]/40'}`}>
                         <div className={`w-1 h-1 rounded-full ${plan.isActive ? 'bg-white' : 'bg-[#2E2E2F]/40'}`} />
-                        {plan.isActive ? 'Live' : 'offline'}
+                        {plan.isActive ? 'Active' : 'Inactive'}
                       </div>
                     </div>
                   </div>
@@ -283,14 +283,14 @@ export const SubscriptionPlans: React.FC = () => {
                       ₱{billingCycle === 'monthly' ? Number(plan.monthlyPrice || 0).toLocaleString() : Number(plan.yearlyPrice || 0).toLocaleString()}
                     </span>
                     <span className="text-[10px] font-black text-[#2E2E2F]/30 uppercase tracking-[0.2em]">
-                      / {billingCycle === 'monthly' ? 'monthly' : 'yearly'} hub
+                      / {billingCycle === 'monthly' ? 'month' : 'year'}
                     </span>
                   </div>
                   {plan.trialDays > 0 && billingCycle === 'yearly' && (
                     <div className="flex items-center gap-2 mt-3">
                       <div className="bg-[#38BDF2]/10 text-[#38BDF2] text-[8px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5">
                         <ICONS.Calendar className="w-3 h-3" />
-                        {plan.trialDays} Day Exploration Period
+                        {plan.trialDays} Day Free Trial
                       </div>
                     </div>
                   )}
@@ -302,7 +302,7 @@ export const SubscriptionPlans: React.FC = () => {
 
                 <div className="space-y-10 mt-auto">
                   <div>
-                    <label className="block text-[9px] font-black text-[#2E2E2F]/30 uppercase tracking-[0.2em] mb-4 ml-1">Recommended Core Plan Features</label>
+                    <label className="block text-[9px] font-black text-[#2E2E2F]/30 uppercase tracking-[0.2em] mb-4 ml-1">Plan Features</label>
                     <div className="grid grid-cols-1 gap-3">
                       {[
                         { label: 'Custom Branding', enabled: plan.features.enable_custom_branding },
@@ -327,7 +327,7 @@ export const SubscriptionPlans: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[9px] font-black text-[#2E2E2F]/30 uppercase tracking-[0.2em] mb-4 ml-1">Plan Limits & Constraints</label>
+                    <label className="block text-[9px] font-black text-[#2E2E2F]/30 uppercase tracking-[0.2em] mb-4 ml-1">Plan Limits</label>
                     <div className="grid grid-cols-2 gap-3">
                       {[
                         { label: 'Total Events', val: plan.limits.max_events, icon: <ICONS.Box /> },
@@ -354,8 +354,8 @@ export const SubscriptionPlans: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <Toggle enabled={plan.isActive} onChange={() => void handleToggleActive(plan)} />
                   <div className="flex flex-col">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-[#2E2E2F]">Node Status</span>
-                    <span className={`text-[8px] font-bold uppercase tracking-widest ${plan.isActive ? 'text-[#38BDF2]' : 'text-[#2E2E2F]/40'}`}>{plan.isActive ? 'operational' : 'suspended'}</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-[#2E2E2F]">Status</span>
+                    <span className={`text-[8px] font-bold uppercase tracking-widest ${plan.isActive ? 'text-[#38BDF2]' : 'text-[#2E2E2F]/40'}`}>{plan.isActive ? 'Active' : 'Inactive'}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -385,32 +385,32 @@ export const SubscriptionPlans: React.FC = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={closeModal}
-        title={editingPlan ? 'Necessary Plan Features for Event SaaS' : 'Necessary Plan Features for Event SaaS'}
-        subtitle={editingPlan ? `Synchronizing parameters for ${editingPlan.name}` : 'Provisioning a new system-wide subscription node'}
+        title={editingPlan ? 'Edit Pricing Plan' : 'Create New Pricing Plan'}
+        subtitle={editingPlan ? `Editing: ${editingPlan.name}` : 'Set up a new subscription plan for organizers'}
         size="xl"
       >
         <div className="space-y-12 py-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             <div className="space-y-8">
               <div>
-                <label className="block text-[10px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em] mb-3 ml-1">Identity & Pricing</label>
+                <label className="block text-[10px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em] mb-3 ml-1">Plan Details & Pricing</label>
                 <div className="space-y-6">
                   <Input
-                    label="Protocol Name"
+                    label="Plan Name"
                     value={draft.name}
                     placeholder="e.g. Enterprise Tier"
                     onChange={(e: any) => setDraft((prev) => ({ ...prev, name: e.target.value }))}
                   />
                   <div className="grid grid-cols-2 gap-4">
                     <Input
-                      label="Monthly Credits"
+                      label="Monthly Price"
                       type="number"
                       value={draft.monthlyPrice}
                       placeholder="0"
                       onChange={(e: any) => setDraft((prev) => ({ ...prev, monthlyPrice: Math.max(0, parseNumeric(e.target.value, 0)) }))}
                     />
                     <Input
-                      label="Yearly Credits"
+                      label="Yearly Price"
                       type="number"
                       value={draft.yearlyPrice}
                       placeholder="0"
@@ -418,10 +418,10 @@ export const SubscriptionPlans: React.FC = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-black text-[#2E2E2F]/60 uppercase tracking-widest ml-1">Functional Brief</label>
+                    <label className="block text-[10px] font-black text-[#2E2E2F]/60 uppercase tracking-widest ml-1">Description</label>
                     <textarea
                       className="block w-full px-5 py-4 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-[1.5rem] focus:outline-none focus:ring-2 focus:ring-[#38BDF2]/30 transition-all font-bold text-sm min-h-[140px] resize-none text-[#2E2E2F]"
-                      placeholder="Define the purpose of this node..."
+                      placeholder="Describe what this plan includes..."
                       value={draft.description}
                       onChange={(e) => setDraft((prev) => ({ ...prev, description: e.target.value }))}
                     />
@@ -432,20 +432,20 @@ export const SubscriptionPlans: React.FC = () => {
 
             <div className="space-y-8">
               <div>
-                <label className="block text-[10px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em] mb-3 ml-1">Plan Limits & Constraints</label>
+                <label className="block text-[10px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em] mb-3 ml-1">Plan Limits</label>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-6">
                   <Input label="Max Total Events" type="number" value={draft.limits.max_events} onChange={(e: any) => setDraft((prev) => ({ ...prev, limits: { ...prev.limits, max_events: parseNumeric(e.target.value, 0) } }))} />
                   <Input label="Max Active Events" type="number" value={draft.limits.max_active_events} onChange={(e: any) => setDraft((prev) => ({ ...prev, limits: { ...prev.limits, max_active_events: parseNumeric(e.target.value, 0) } }))} />
                   <Input label="Max Staff Accounts" type="number" value={draft.limits.max_staff_accounts} onChange={(e: any) => setDraft((prev) => ({ ...prev, limits: { ...prev.limits, max_staff_accounts: parseNumeric(e.target.value, 0) } }))} />
                   <Input label="Monthly Attendees" type="number" value={draft.limits.max_attendees_per_month} onChange={(e: any) => setDraft((prev) => ({ ...prev, limits: { ...prev.limits, max_attendees_per_month: parseNumeric(e.target.value, 0) } }))} />
-                  <Input label="Trial Lifecycle" type="number" value={draft.trialDays} onChange={(e: any) => setDraft((prev) => ({ ...prev, trialDays: Math.max(0, Math.floor(parseNumeric(e.target.value, 0))) }))} />
+                  <Input label="Free Trial Days" type="number" value={draft.trialDays} onChange={(e: any) => setDraft((prev) => ({ ...prev, trialDays: Math.max(0, Math.floor(parseNumeric(e.target.value, 0))) }))} />
                 </div>
               </div>
             </div>
           </div>
 
           <div className="space-y-6">
-            <label className="block text-[10px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em] ml-1">Recommended Core Plan Features</label>
+            <label className="block text-[10px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em] ml-1">Plan Features</label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
                 {
@@ -478,22 +478,22 @@ export const SubscriptionPlans: React.FC = () => {
                 },
                 {
                   id: 'default',
-                  label: 'Primary Entry Node',
-                  desc: 'Auto-assign this plan to newly initialized accounts',
+                  label: 'Default Plan',
+                  desc: 'Automatically assign this plan to new users',
                   enabled: draft.isDefault,
                   onToggle: (value: boolean) => setDraft((prev) => ({ ...prev, isDefault: value })),
                 },
                 {
                   id: 'recommended',
-                  label: 'Recommended Badge',
-                  desc: 'Highlights the plan card as preferred',
+                  label: 'Mark as Recommended',
+                  desc: 'Highlight this plan as the preferred choice',
                   enabled: draft.isRecommended,
                   onToggle: (value: boolean) => setDraft((prev) => ({ ...prev, isRecommended: value })),
                 },
                 {
                   id: 'active',
-                  label: 'Plan Availability',
-                  desc: 'Enable or suspend this plan for organizer purchase',
+                  label: 'Plan Status',
+                  desc: 'Make this plan available or unavailable for purchase',
                   enabled: draft.isActive,
                   onToggle: (value: boolean) => setDraft((prev) => ({ ...prev, isActive: value })),
                 },
@@ -516,14 +516,14 @@ export const SubscriptionPlans: React.FC = () => {
               className="flex-1 rounded-2xl py-4 !bg-[#F2F2F2] !text-[#2E2E2F] border-[#2E2E2F]/10 hover:!bg-[#E0E0E0] font-black text-[11px] uppercase tracking-widest"
               disabled={submitting}
             >
-              Discard Configuration
+              Cancel
             </Button>
             <Button
               onClick={() => void handleSavePlan()}
               className="flex-[2] rounded-2xl py-4 shadow-2xl shadow-[#38BDF2]/30 font-black text-[11px] uppercase tracking-[0.2em]"
               disabled={submitting}
             >
-              {submitting ? 'Saving...' : (editingPlan ? 'Commit Sync Changes' : 'Initialize Plan Node')}
+              {submitting ? 'Saving...' : (editingPlan ? 'Save Changes' : 'Create Plan')}
             </Button>
           </div>
         </div>
