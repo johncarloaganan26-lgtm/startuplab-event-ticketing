@@ -15,6 +15,9 @@ const router = express.Router();
 // Public webhook endpoint (HitPay will call this)
 router.post('/webhook', handleSubscriptionWebhook);
 
+// Public verify endpoint (can be called without auth after payment redirect)
+router.get('/verify/:subscriptionId', verifySubscription);
+
 // Protected routes (require authentication)
 router.use(authMiddleware);
 
@@ -32,8 +35,5 @@ router.delete('/:subscriptionId', cancelSubscription);
 
 // Get subscription history
 router.get('/history', getSubscriptionHistory);
-
-// Verify subscription after payment
-router.get('/verify/:subscriptionId', verifySubscription);
 
 export default router;

@@ -112,9 +112,11 @@ const createHitPayPayment = async (amount, currency, organizerName, planName, su
     ? 'https://api.hit-pay.com/v1'
     : 'https://api.sandbox.hit-pay.com/v1';
 
-  const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/#/subscription/success`;
   const baseUrl = process.env.BACKEND_URL || process.env.SERVER_BASE_URL || 'http://localhost:5000';
   const webhookUrl = `${baseUrl.replace(/\/$/, '')}/api/subscriptions/webhook`;
+  const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/#/subscription/success`;
+
+  console.log('📍 [Subscription] Webhook URL for HitPay dashboard:', webhookUrl);
 
   const payload = {
     amount: amount,
@@ -352,6 +354,8 @@ export const handleSubscriptionWebhook = async (req, res) => {
   try {
     const { reference_id, status } = req.body;
 
+    console.log('📦 [Subscription Webhook] Received webhook:', { reference_id, status, body: req.body });
+
     if (!reference_id) {
       return res.status(400).json({ error: 'Missing reference_id' });
     }
@@ -364,11 +368,14 @@ export const handleSubscriptionWebhook = async (req, res) => {
       .single();
 
     if (error || !subscription) {
-      console.error('Subscription not found:', reference_id);
+      console.error('❌ Subscription not found:', reference_id);
       return res.status(404).json({ error: 'Subscription not found' });
     }
 
-    if (status === 'completed' || status === 'paid') {
+    console.log('📋 [Subscription Webhook] Found subscription:', subscription.subscriptionId, 'Current status:', subscription.status, 'Webhook status:', status);
+
+    if (status === 'completed' || status === 'paid' || status === 'succeeded' || status === 'payment_successful') {
+      console.log('✅ [Subscription Webhook] Payment completed, activating subscription...');
       // Calculate end date
       const now = new Date();
       const endDate = subscription.billingInterval === 'yearly'
@@ -523,9 +530,7 @@ export const verifySubscription = async (req, res) => {
     const { subscriptionId } = req.params;
     const userId = req.user?.id;
 
-    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
-
-    console.log(`🔍 [Subscription] Verifying status for ${subscriptionId}`);
+    console.log(`🔍 [Subscription] Verifying status for ${subscriptionId}, userId: ${userId || 'none'}`);
 
     // 1. Get the subscription record
     const { data: subscription, error: subError } = await supabase
@@ -570,7 +575,7 @@ export const verifySubscription = async (req, res) => {
     const hitPayData = await response.json();
     const hitPayStatus = hitPayData.status; // 'completed', 'paid', 'pending', etc.
 
-    if (hitPayStatus === 'completed' || hitPayStatus === 'paid') {
+    if (hitPayStatus === 'completed' || hitPayStatus === 'paid' || hitPayStatus === 'succeeded' || hitPayStatus === 'payment_successful') {
       // 3. Update the database (similar to webhook)
       const endDate = new Date();
       if (subscription.billingInterval === 'monthly') {
