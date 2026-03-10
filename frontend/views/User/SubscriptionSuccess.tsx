@@ -45,6 +45,7 @@ export const SubscriptionSuccess: React.FC = () => {
                 if (result.success && result.status === 'active') {
                     setStatus('success');
                     setMessage('Your subscription has been activated!');
+                    setTimeout(() => navigate('/subscription', { replace: true }), 400);
                 } else if (result.status === 'pending') {
                     // Payment might still be processing
                     setStatus('pending');
@@ -57,6 +58,7 @@ export const SubscriptionSuccess: React.FC = () => {
                             if (retryResult.success && retryResult.status === 'active') {
                                 setStatus('success');
                                 setMessage('Your subscription has been activated!');
+                                setTimeout(() => navigate('/subscription', { replace: true }), 400);
                             }
                         } catch (e) {
                             // Keep showing pending
@@ -81,6 +83,7 @@ export const SubscriptionSuccess: React.FC = () => {
                     if (subData.subscription && subData.subscription.status === 'active') {
                         setStatus('success');
                         setMessage('Your subscription is active!');
+                        setTimeout(() => navigate('/subscription', { replace: true }), 400);
                     } else if (subData.subscription && subData.subscription.status === 'pending') {
                         setStatus('pending');
                         setMessage('Your payment is being processed. Please check back in a few minutes.');

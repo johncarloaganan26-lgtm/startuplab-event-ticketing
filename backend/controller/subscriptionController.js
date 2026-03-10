@@ -2,6 +2,7 @@ import supabase from '../database/db.js';
 import { logAudit } from '../utils/auditLogger.js';
 import { decryptString } from '../utils/encryption.js';
 import { sendSmtpEmail } from '../utils/smtpMailer.js';
+import { notifyUserByPreference } from '../utils/notificationService.js';
 
 const fetchEmailConfig = async (userId) => {
   const { data } = await supabase
@@ -214,6 +215,44 @@ const activateSubscription = async (subscription) => {
     planData,
     organizer
   );
+
+  // In-app notifications
+  const ownerUserId = organizer?.ownerUserId;
+  if (ownerUserId) {
+    await notifyUserByPreference({
+      recipientUserId: ownerUserId,
+      actorUserId: ownerUserId,
+      title: 'Subscription activated',
+      message: `Your ${planData?.name || 'plan'} subscription is now active.`,
+      metadata: {
+        subscriptionId: subscription.subscriptionId,
+        planId: subscription.planId,
+        status: 'active'
+      }
+    });
+  }
+
+  const { data: adminUser } = await supabase
+    .from('users')
+    .select('userId')
+    .eq('role', 'ADMIN')
+    .limit(1)
+    .maybeSingle();
+
+  if (adminUser?.userId) {
+    await notifyUserByPreference({
+      recipientUserId: adminUser.userId,
+      actorUserId: ownerUserId || adminUser.userId,
+      title: 'Organizer purchased a plan',
+      message: `${organizer?.organizerName || 'An organizer'} activated ${planData?.name || 'a plan'}.`,
+      metadata: {
+        subscriptionId: subscription.subscriptionId,
+        planId: subscription.planId,
+        organizerId: subscription.organizerId,
+        status: 'active'
+      }
+    });
+  }
 
   await logAudit({
     actionType: 'SUBSCRIPTION_ACTIVATED',
