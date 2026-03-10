@@ -469,11 +469,10 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       localStorage.removeItem('sb-ddkkbtijqrgpitncxylx-auth-token');
       showToast('success', 'Logged out successfully', 5000);
       clearUser();
-
-      // 4. Navigate to login
       navigate('/');
     } catch {
-      // Still navigate to login even if there was an error
+      showToast('success', 'Logged out successfully', 5000);
+      clearUser();
       navigate('/');
     }
   };
@@ -1116,6 +1115,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       clearUser();
       navigate('/');
     } catch {
+      showToast('success', 'Logged out successfully', 5000);
       clearUser();
       navigate('/');
     }
@@ -1679,6 +1679,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   const navigate = useNavigate();
   const location = useLocation();
   const { role, email, name, imageUrl, clearUser, setUser, canReceiveNotifications } = useUser();
+  const { showToast } = useToast();
   const { isAttendingView, setPublicMode } = useEngagement();
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -1873,8 +1874,15 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     try {
       await fetch(`${API}/api/auth/logout`, { method: "POST", credentials: "include" });
       await supabase.auth.signOut();
-      clearUser(); navigate('/');
-    } catch { clearUser(); navigate('/'); }
+      localStorage.removeItem('sb-ddkkbtijqrgpitncxylx-auth-token');
+      showToast('success', 'Logged out successfully', 5000);
+      clearUser(); 
+      navigate('/');
+    } catch { 
+      showToast('success', 'Logged out successfully', 5000);
+      clearUser(); 
+      navigate('/'); 
+    }
   };
 
   const [expandedSections, setExpandedSections] = React.useState<string[]>(['Main', 'Events Records', 'Settings']);
