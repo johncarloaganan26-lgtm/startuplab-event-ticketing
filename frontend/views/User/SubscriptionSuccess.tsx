@@ -109,18 +109,19 @@ export const SubscriptionSuccess: React.FC = () => {
             }
         };
 
-        // If the reference ID is in the URL (not just in sessionStorage),
-        // we clean the URL by moving it to sessionStorage and navigating.
-        const hasUrlRef = searchParams.has('reference_id') || searchParams.has('reference_number');
-        if (hasUrlRef && referenceId) {
-            console.log('🧹 [SubscriptionSuccess] Cleaning URL parameters...');
-            sessionStorage.setItem(SUBSCRIPTION_REF_STORAGE_KEY, referenceId);
-            navigate('/subscription/success', { replace: true });
-            return; // Stop the first verification call; the redirected component will handle it.
+        // If parameters are in the URL, move them to storage and clean the hash URL
+        if (searchParams.has('reference_id') || searchParams.has('reference_number')) {
+            const rid = searchParams.get('reference_id') || searchParams.get('reference_number');
+            if (rid) {
+                sessionStorage.setItem(SUBSCRIPTION_REF_STORAGE_KEY, rid);
+                // Clean the hash by navigating to the same route without search params
+                navigate('/subscription/success', { replace: true });
+                return;
+            }
         }
 
         verify();
-    }, [referenceId, searchParams, navigate]);
+    }, [searchParams, navigate]);
 
     return (
         <div className="min-h-[70vh] flex items-center justify-center p-6">

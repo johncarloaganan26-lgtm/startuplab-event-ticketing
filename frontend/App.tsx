@@ -2401,18 +2401,33 @@ const RequireRoleRoute: React.FC<{ allow: UserRole[]; children: React.ReactEleme
 };
 
 const HashBypassBridge: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
   useEffect(() => {
-    // If the browser lands on a non-hash path that matches our success route
-    // (This happens when HitPay/Browsers strip the # part or misinterpret the redirect)
-    if (window.location.pathname === '/subscription/success') {
-      console.log('🔀 [App] Redirecting clean URL to Hash route...');
+    // If the browser lands on a non-root path (common on hosting like Vercel with clean URLs)
+    // we need to force it back to the root hash route so React Router takes over properly.
+    if (window.location.pathname !== '/' && window.location.pathname !== '') {
+      console.log('🧼 [App] Cleanup triggered for dirty URL:', window.location.pathname);
+      
       const search = window.location.search;
-      navigate(`/subscription/success${search}`, { replace: true });
+      const urlParams = new URLSearchParams(search);
+      const refId = urlParams.get('reference_id') || urlParams.get('reference_number');
+      
+      // Persist the reference ID if it exists in the dirty URL
+      if (refId) {
+        sessionStorage.setItem('subscriptionReferenceId', refId);
+      }
+
+      // Determine the destination hash
+      let targetHash = '/';
+      if (window.location.pathname.includes('/subscription/success')) {
+        targetHash = '/subscription/success';
+      }
+
+      // Force a HARD reload to the root origin with the clean hash
+      // This wipes the 'pathname' and ensures the browser settles on index.html
+      const cleanUrl = `${window.location.origin}/#${targetHash}`;
+      window.location.replace(cleanUrl);
     }
-  }, [navigate]);
+  }, []);
 
   return null;
 };
