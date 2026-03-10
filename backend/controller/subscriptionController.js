@@ -3,6 +3,194 @@ import { logAudit } from '../utils/auditLogger.js';
 import { decryptString } from '../utils/encryption.js';
 import { sendSmtpEmail } from '../utils/smtpMailer.js';
 
+const SUCCESS_PAYMENT_STATUSES = new Set([
+  'completed',
+  'paid',
+  'succeeded',
+  'payment_successful',
+  'success',
+]);
+
+const FAILED_PAYMENT_STATUSES = new Set([
+  'failed',
+  'cancelled',
+  'canceled',
+  'expired',
+  'declined',
+  'error',
+]);
+
+const normalizePaymentStatus = (value) => String(value || '').trim().toLowerCase();
+
+const isSuccessfulPaymentStatus = (status) => SUCCESS_PAYMENT_STATUSES.has(normalizePaymentStatus(status));
+const isFailedPaymentStatus = (status) => FAILED_PAYMENT_STATUSES.has(normalizePaymentStatus(status));
+
+const firstDefinedString = (...values) => {
+  for (const value of values) {
+    const normalized = String(value ?? '').trim();
+    if (normalized) return normalized;
+  }
+  return null;
+};
+
+const deriveStatusFromEventType = (eventType) => {
+  const normalizedEvent = normalizePaymentStatus(eventType);
+  if (!normalizedEvent) return '';
+  if (
+    normalizedEvent.includes('completed') ||
+    normalizedEvent.includes('paid') ||
+    normalizedEvent.includes('succeeded') ||
+    normalizedEvent.includes('success')
+  ) {
+    return 'paid';
+  }
+  if (
+    normalizedEvent.includes('failed') ||
+    normalizedEvent.includes('cancelled') ||
+    normalizedEvent.includes('canceled') ||
+    normalizedEvent.includes('expired')
+  ) {
+    return 'failed';
+  }
+  if (normalizedEvent.includes('pending')) return 'pending';
+  return '';
+};
+
+const extractSubscriptionWebhookMeta = (payload = {}) => {
+  const eventType = firstDefinedString(payload?.event, payload?.type, payload?.event_type, payload?.name);
+  const eventData = payload?.data?.payment_request || payload?.data || payload?.payment_request || payload;
+  const referenceId = firstDefinedString(
+    payload?.reference_id,
+    payload?.referenceId,
+    payload?.reference_number,
+    payload?.referenceNumber,
+    payload?.reference,
+    payload?.order_id,
+    eventData?.reference_id,
+    eventData?.referenceId,
+    eventData?.reference_number,
+    eventData?.referenceNumber,
+    eventData?.reference,
+    eventData?.order_id,
+  );
+  const paymentRequestId = firstDefinedString(
+    payload?.payment_request_id,
+    payload?.paymentRequestId,
+    payload?.id,
+    eventData?.payment_request_id,
+    eventData?.paymentRequestId,
+    eventData?.id,
+  );
+  const status = normalizePaymentStatus(
+    firstDefinedString(
+      payload?.status,
+      payload?.payment_status,
+      eventData?.status,
+      eventData?.payment_status,
+      eventData?.state,
+    ) || deriveStatusFromEventType(eventType)
+  );
+
+  return {
+    eventType,
+    eventData,
+    referenceId,
+    paymentRequestId,
+    status,
+  };
+};
+
+const computeSubscriptionEndDate = (billingInterval) => {
+  const endDate = new Date();
+  if (String(billingInterval || '').toLowerCase() === 'yearly') {
+    endDate.setFullYear(endDate.getFullYear() + 1);
+  } else {
+    endDate.setMonth(endDate.getMonth() + 1);
+  }
+  return endDate;
+};
+
+const fetchSubscriptionWithPlan = async (column, value) => {
+  let { data: subscription, error } = await supabase
+    .from('organizersubscriptions')
+    .select('*, plans(*)')
+    .eq(column, value)
+    .maybeSingle();
+
+  if (!error && subscription) return subscription;
+
+  const { data: rawSub, error: rawErr } = await supabase
+    .from('organizersubscriptions')
+    .select('*')
+    .eq(column, value)
+    .maybeSingle();
+
+  if (rawErr || !rawSub) return null;
+
+  const { data: planData } = await supabase
+    .from('plans')
+    .select('*')
+    .eq('planId', rawSub.planId)
+    .maybeSingle();
+
+  return { ...rawSub, plans: planData };
+};
+
+const activateSubscription = async (subscription) => {
+  const endDate = computeSubscriptionEndDate(subscription.billingInterval);
+
+  const { error: subErr } = await supabase
+    .from('organizersubscriptions')
+    .update({
+      status: 'active',
+      endDate: endDate.toISOString(),
+      updated_at: new Date().toISOString()
+    })
+    .eq('subscriptionId', subscription.subscriptionId);
+
+  if (subErr) {
+    throw new Error(`Failed to update subscription: ${subErr.message}`);
+  }
+
+  const { error: orgErr } = await supabase
+    .from('organizers')
+    .update({
+      currentPlanId: subscription.planId,
+      subscriptionStatus: 'active',
+      planExpiresAt: endDate.toISOString(),
+      updated_at: new Date().toISOString()
+    })
+    .eq('organizerId', subscription.organizerId);
+
+  if (orgErr) {
+    console.error('❌ [Subscription] Failed to update organizer plan:', orgErr);
+  }
+
+  const { data: organizer } = await supabase
+    .from('organizers')
+    .select('*')
+    .eq('organizerId', subscription.organizerId)
+    .maybeSingle();
+
+  const planData = subscription.plans || subscription.plan || null;
+  await sendSubscriptionConfirmationEmail(
+    { ...subscription, status: 'active', endDate: endDate.toISOString() },
+    planData,
+    organizer
+  );
+
+  await logAudit({
+    actionType: 'SUBSCRIPTION_ACTIVATED',
+    details: {
+      subscriptionId: subscription.subscriptionId,
+      planId: subscription.planId,
+    },
+    req: { user: { id: subscription.organizerId } }
+  });
+
+  return endDate;
+};
+
 // Helper to send subscription confirmation email
 const sendSubscriptionConfirmationEmail = async (subscription, plan, organizer) => {
   try {
@@ -116,45 +304,52 @@ const createHitPayPayment = async (req, amount, currency, organizerName, planNam
   const proto = req.headers['x-forwarded-proto'] || 'http';
   const host = req.get('host');
   const dynamicBaseUrl = `${proto}://${host}`;
+  const serverBaseUrl = (process.env.SERVER_BASE_URL || dynamicBaseUrl).replace(/\/$/, '');
+  const webhookUrl = `${serverBaseUrl}/api/subscriptions/webhook`;
 
-  const webhookUrl = `${dynamicBaseUrl}/api/subscriptions/webhook`;
-
-  // For the redirect, we need to ensure the HashRouter gets the right path
-  // HitPay sometimes strips hashes, so we'll provide a clean URL and handle it in App.tsx
+  // Use a clean URL and carry reference_id in query so verification always has a stable key.
+  // App.tsx HashBypassBridge will route this into the hash-based SPA path.
   const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
-  const redirectUrl = `${frontendUrl}/#/subscription/success`;
+  const redirectUrl = `${frontendUrl}/subscription/success?reference_id=${encodeURIComponent(subscriptionId)}`;
 
   console.log('📍 [Subscription] Dynamic Webhook URL:', webhookUrl);
   console.log('📍 [Subscription] Redirect URL:', redirectUrl);
 
-  const payload = {
-    amount: amount,
-    currency: currency || 'PHP',
-    description: `Subscription to ${planName} plan`,
-    reference_id: subscriptionId,
-    redirect_url: redirectUrl,
-    webhook_url: webhookUrl,
-    expiry_date: new Date(Date.now() + 24 * 60 * 60 * 1000)
+  const payload = new URLSearchParams();
+  payload.set('amount', String(Number(amount || 0)));
+  payload.set('currency', currency || 'PHP');
+  payload.set('purpose', `Subscription to ${planName} plan`);
+  payload.set('reference_number', subscriptionId);
+  payload.set('reference_id', subscriptionId);
+  payload.set('redirect_url', redirectUrl);
+  payload.set('webhook', webhookUrl);
+  payload.set('webhook_url', webhookUrl);
+  payload.set(
+    'expiry_date',
+    new Date(Date.now() + 24 * 60 * 60 * 1000)
       .toISOString()
       .replace('T', ' ')
-      .split('.')[0], // 24 hours - Format: YYYY-MM-DD HH:mm:ss
-  };
+      .split('.')[0]
+  );
+  if (organizerName) payload.set('name', organizerName);
 
   const response = await fetch(`${hitPayUrl}/payment-requests`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'X-Business-Api-Key': hitPayApiKey,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-BUSINESS-API-KEY': hitPayApiKey,
+      'X-Requested-With': 'XMLHttpRequest',
     },
-    body: JSON.stringify(payload),
+    body: payload.toString(),
   });
 
+  const data = await response.json().catch(() => null);
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`HitPay payment creation failed: ${error}`);
+    const errorMessage = data?.error || data?.message || 'Unknown HitPay error';
+    throw new Error(`HitPay payment creation failed: ${errorMessage}`);
   }
 
-  return response.json();
+  return data || {};
 };
 
 // Get current subscription for organizer
@@ -339,8 +534,8 @@ export const createSubscription = async (req, res) => {
     await supabase
       .from('organizersubscriptions')
       .update({
-        paymentReference: payment?.url || payment?.payment_request_url,
-        hitPayPaymentId: payment?.id || payment?.payment_request_id,
+        paymentReference: payment?.url || payment?.payment_url || payment?.checkout_url || payment?.payment_request_url || null,
+        hitPayPaymentId: payment?.id || payment?.payment_request_id || payment?.paymentRequestId || null,
       })
       .eq('subscriptionId', subscription.subscriptionId);
 
@@ -370,7 +565,7 @@ export const createSubscription = async (req, res) => {
     return res.status(201).json({
       subscription,
       plan,
-      paymentUrl: payment?.url || payment?.payment_request_url,
+      paymentUrl: payment?.url || payment?.payment_url || payment?.checkout_url || payment?.payment_request_url || null,
     });
   } catch (error) {
     console.error('createSubscription error:', error);
@@ -381,109 +576,76 @@ export const createSubscription = async (req, res) => {
 // Handle HitPay webhook for subscription payments
 export const handleSubscriptionWebhook = async (req, res) => {
   try {
-    const { reference_id, status } = req.body;
+    const payload = req.body || {};
+    const { referenceId, paymentRequestId, status, eventType } = extractSubscriptionWebhookMeta(payload);
 
-    console.log('📦 [Subscription Webhook] Received webhook:', { reference_id, status, body: req.body });
+    console.log('📦 [Subscription Webhook] Received webhook:', {
+      referenceId,
+      paymentRequestId,
+      status,
+      eventType,
+      body: payload
+    });
 
-    if (!reference_id) {
-      return res.status(400).json({ error: 'Missing reference_id' });
+    if (!referenceId && !paymentRequestId) {
+      return res.status(400).json({ error: 'Missing subscription reference in webhook payload' });
     }
 
-    // Find subscription
-    // Fallback: Use individual fetch if join fails
-    let { data: subscription, error } = await supabase
-      .from('organizersubscriptions')
-      .select('*, plans(*)')
-      .eq('subscriptionId', reference_id)
-      .maybeSingle();
-
-    if (error || !subscription) {
-      // Retry without join
-      const { data: rawSub, error: rawErr } = await supabase
-        .from('organizersubscriptions')
-        .select('*')
-        .eq('subscriptionId', reference_id)
-        .maybeSingle();
-
-      if (rawErr || !rawSub) {
-        console.error('❌ [Subscription Webhook] Subscription not found:', reference_id);
-        return res.status(404).json({ error: 'Subscription not found' });
-      }
-
-      const { data: planData } = await supabase
-        .from('plans')
-        .select('*')
-        .eq('planId', rawSub.planId)
-        .maybeSingle();
-
-      subscription = { ...rawSub, plans: planData };
+    let subscription = null;
+    if (referenceId) {
+      subscription = await fetchSubscriptionWithPlan('subscriptionId', referenceId);
+    }
+    if (!subscription && paymentRequestId) {
+      subscription = await fetchSubscriptionWithPlan('hitPayPaymentId', paymentRequestId);
+    }
+    if (!subscription && referenceId) {
+      subscription = await fetchSubscriptionWithPlan('hitPayPaymentId', referenceId);
     }
 
-    console.log('📋 [Subscription Webhook] Found subscription:', subscription.subscriptionId, 'Current status:', subscription.status, 'Webhook status:', status);
+    if (!subscription) {
+      console.error('❌ [Subscription Webhook] Subscription not found:', { referenceId, paymentRequestId });
+      return res.status(404).json({ error: 'Subscription not found' });
+    }
 
-    if (status === 'completed' || status === 'paid' || status === 'succeeded' || status === 'payment_successful') {
-      console.log('✅ [Subscription Webhook] Payment completed, activating subscription...');
-      // Calculate end date
-      const now = new Date();
-      const endDate = subscription.billingInterval === 'yearly'
-        ? new Date(now.setFullYear(now.getFullYear() + 1))
-        : new Date(now.setMonth(now.getMonth() + 1));
+    console.log('📋 [Subscription Webhook] Found subscription:', {
+      subscriptionId: subscription.subscriptionId,
+      currentStatus: subscription.status,
+      webhookStatus: status,
+      paymentRequestId: paymentRequestId || subscription.hitPayPaymentId || null,
+    });
 
-      // Update subscription status
-      const { error: subErr } = await supabase
+    if (paymentRequestId && paymentRequestId !== subscription.hitPayPaymentId) {
+      await supabase
         .from('organizersubscriptions')
         .update({
-          status: 'active',
-          endDate: endDate.toISOString(),
+          hitPayPaymentId: paymentRequestId,
           updated_at: new Date().toISOString()
         })
         .eq('subscriptionId', subscription.subscriptionId);
-
-      if (subErr) {
-        console.error('❌ [Subscription Webhook] DB Error updating subscription:', subErr);
-        return res.status(500).json({ error: 'Failed to update subscription' });
-      }
-
-      // Update organizer
-      const { error: orgErr } = await supabase
-        .from('organizers')
-        .update({
-          currentPlanId: subscription.planId,
-          subscriptionStatus: 'active',
-          planExpiresAt: endDate.toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('organizerId', subscription.organizerId);
-
-      if (orgErr) {
-        console.error('❌ [Subscription Webhook] DB Error updating organizer:', orgErr);
-      }
-
-      // Get organizer details for email
-      const { data: organizer } = await supabase
-        .from('organizers')
-        .select('*')
-        .eq('organizerId', subscription.organizerId)
-        .maybeSingle();
-
-      // Send confirmation email
-      await sendSubscriptionConfirmationEmail(
-        { ...subscription, status: 'active', endDate: endDate },
-        subscription.plans,
-        organizer
-      );
-
-      await logAudit({
-        actionType: 'SUBSCRIPTION_ACTIVATED',
-        details: {
-          subscriptionId: subscription.subscriptionId,
-          planId: subscription.planId,
-        },
-        req: { user: { id: subscription.organizerId } }
-      });
     }
 
-    return res.json({ success: true });
+    if (isSuccessfulPaymentStatus(status)) {
+      if (subscription.status !== 'active') {
+        console.log('✅ [Subscription Webhook] Payment completed, activating subscription...');
+        await activateSubscription(subscription);
+      }
+      return res.json({ success: true, status: 'active' });
+    }
+
+    if (isFailedPaymentStatus(status)) {
+      await supabase
+        .from('organizersubscriptions')
+        .update({
+          status: 'failed',
+          updated_at: new Date().toISOString()
+        })
+        .eq('subscriptionId', subscription.subscriptionId)
+        .in('status', ['pending', 'trial']);
+
+      return res.json({ success: true, status: 'failed' });
+    }
+
+    return res.json({ success: true, status: status || 'pending' });
   } catch (error) {
     console.error('handleSubscriptionWebhook error:', error);
     return res.status(500).json({ error: error.message || 'Webhook processing failed' });
@@ -657,67 +819,36 @@ export const verifySubscription = async (req, res) => {
     }
 
     const hitPayData = await response.json();
-    const hitPayStatus = hitPayData.status; // 'completed', 'paid', 'pending', etc.
+    const hitPayStatus = normalizePaymentStatus(
+      firstDefinedString(
+        hitPayData?.status,
+        hitPayData?.payment_status,
+        hitPayData?.data?.status,
+        hitPayData?.data?.payment_request?.status,
+        hitPayData?.payment_request?.status,
+      )
+    ) || 'pending';
 
     console.log(`📡 [Subscription] HitPay state for ${subscriptionId}:`, {
       status: hitPayStatus,
       paymentId: subscription.hitPayPaymentId
     });
 
-    if (hitPayStatus === 'completed' || hitPayStatus === 'paid' || hitPayStatus === 'succeeded' || hitPayStatus === 'payment_successful') {
+    if (isSuccessfulPaymentStatus(hitPayStatus)) {
       console.log('✅ [Subscription] Valid payment detected, activating...');
-      // 3. Update the database (similar to webhook)
-      const endDate = new Date();
-      if (subscription.billingInterval === 'monthly') {
-        endDate.setMonth(endDate.getMonth() + 1);
-      } else {
-        endDate.setFullYear(endDate.getFullYear() + 1);
-      }
+      await activateSubscription(subscription);
+      return res.json({ success: true, status: 'active', message: 'Subscription activated' });
+    }
 
-      // Update subscription
-      const { error: subUpdateErr } = await supabase
+    if (isFailedPaymentStatus(hitPayStatus)) {
+      await supabase
         .from('organizersubscriptions')
         .update({
-          status: 'active',
-          startDate: new Date().toISOString(),
-          endDate: endDate.toISOString(),
+          status: 'failed',
           updated_at: new Date().toISOString()
         })
-        .eq('subscriptionId', subscriptionId);
-
-      if (subUpdateErr) {
-        console.error('❌ [Subscription] Failed to update subscription status:', subUpdateErr);
-        throw new Error('Database update failed for subscription');
-      }
-
-      // Update organizer
-      const { error: orgUpdateErr } = await supabase
-        .from('organizers')
-        .update({
-          currentPlanId: subscription.planId,
-          subscriptionStatus: 'active',
-          planExpiresAt: endDate.toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('organizerId', subscription.organizerId);
-
-      if (orgUpdateErr) {
-        console.error('❌ [Subscription] Failed to update organizer plan:', orgUpdateErr);
-        // We don't throw here to ensure email potentially still goes out if sub is active
-      }
-
-      // Get organizer details for email
-      const { data: organizer } = await supabase
-        .from('organizers')
-        .select('*')
-        .eq('organizerId', subscription.organizerId)
-        .maybeSingle();
-
-      // Send confirmation email
-      const updatedSubscription = { ...subscription, status: 'active', endDate: endDate };
-      await sendSubscriptionConfirmationEmail(updatedSubscription, subscription.plan, organizer);
-
-      return res.json({ success: true, status: 'active', message: 'Subscription activated' });
+        .eq('subscriptionId', subscriptionId)
+        .in('status', ['pending', 'trial']);
     }
 
     return res.json({ success: false, status: hitPayStatus, message: `Status is still ${hitPayStatus}` });

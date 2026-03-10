@@ -13,8 +13,11 @@ export const SubscriptionSuccess: React.FC = () => {
     // HitPay passes the reference_id in the redirect URL
     // We try multiple ways to get it, because HashRouter can be tricky on localhost
     const referenceId = searchParams.get('reference_id') ||
+        searchParams.get('reference_number') ||
         new URLSearchParams(window.location.hash.split('?')[1]).get('reference_id') ||
-        new URLSearchParams(window.location.search).get('reference_id');
+        new URLSearchParams(window.location.hash.split('?')[1]).get('reference_number') ||
+        new URLSearchParams(window.location.search).get('reference_id') ||
+        new URLSearchParams(window.location.search).get('reference_number');
 
     useEffect(() => {
         const verify = async () => {

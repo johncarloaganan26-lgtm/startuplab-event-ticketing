@@ -5,12 +5,16 @@ import { apiService } from '../../services/apiService';
 import { Button, Card, PageLoader } from '../../components/Shared';
 import { PricingPlansGrid } from '../../components/PricingPlansGrid';
 import { PlanBillingCycle } from '../../utils/pricingPlans';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../../context/UserContext';
 
 export const PricingPage: React.FC = () => {
     const [plans, setPlans] = useState<AdminPlan[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [billingCycle, setBillingCycle] = useState<PlanBillingCycle>('monthly');
+    const navigate = useNavigate();
+    const { isAuthenticated } = useUser();
 
     useEffect(() => {
         let active = true;
@@ -71,6 +75,13 @@ export const PricingPage: React.FC = () => {
                         billingCycle={billingCycle}
                         onBillingCycleChange={setBillingCycle}
                         showBillingToggle
+                        onPlanAction={() => {
+                            if (!isAuthenticated) {
+                                navigate('/signup');
+                            } else {
+                                navigate('/subscription');
+                            }
+                        }}
                     />
                 )}
 

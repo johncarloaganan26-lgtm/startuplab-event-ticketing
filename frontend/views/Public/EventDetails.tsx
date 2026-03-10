@@ -192,7 +192,7 @@ const CompactEventRow: React.FC<{ event: Event; brandColor: string }> = ({ event
         window.scrollTo(0, 0);
       }}
     >
-      <div className="flex-1 pr-6">
+      <div className="flex-1 pr-6 min-w-0">
         <h4 className="text-[17px] font-black text-[#2E2E2F] mb-1 leading-tight group-hover:text-[#38BDF2] transition-colors line-clamp-1">
           {event.eventName}
         </h4>
@@ -852,7 +852,7 @@ export const EventDetails: React.FC = () => {
                 More events from this organizer
                 <div className="h-px flex-1 bg-[#2E2E2F]/10" />
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-8">
                 {organizerEvents.map(e => (
                   <CompactEventRow key={e.eventId} event={e} brandColor={brandColor} />
                 ))}
@@ -866,7 +866,7 @@ export const EventDetails: React.FC = () => {
               You might also like...
               <div className="h-px flex-1 bg-[#2E2E2F]/10" />
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-8">
               {recommendedEvents.length > 0 ? (
                 recommendedEvents.map(e => (
                   <CompactEventRow key={e.eventId} event={e} brandColor={brandColor} />

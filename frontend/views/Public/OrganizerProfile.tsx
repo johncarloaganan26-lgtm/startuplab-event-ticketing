@@ -246,9 +246,9 @@ export const OrganizerProfilePage: React.FC = () => {
                         <div className="flex items-center gap-3 mb-2">
                             <button
                                 onClick={handleFollow}
-                                className={`flex items-center gap-2 px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg ${following
-                                    ? 'bg-[#38BDF2] text-white shadow-[#38BDF2]/20'
-                                    : 'bg-[#38BDF2]/10 text-[#38BDF2] hover:bg-[#38BDF2] hover:text-white transition-all'
+                                className={`flex items-center gap-2 px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all duration-300 shadow-xl ${following
+                                    ? '!bg-[#2E2E2F] !text-white opacity-30 cursor-default border-none'
+                                    : 'bg-[#38BDF2] text-white hover:bg-[#2E2E2F] shadow-[#38BDF2]/20 hover:shadow-[#2E2E2F]/20 border-none'
                                     }`}
                             >
                                 <ICONS.CheckCircle className={`w-4 h-4 ${following ? '' : 'hidden'}`} />
@@ -259,7 +259,7 @@ export const OrganizerProfilePage: React.FC = () => {
                                     if (organizer.websiteUrl) window.open(organizer.websiteUrl, '_blank');
                                     else setInteractionNotice('No contact method specified.');
                                 }}
-                                className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-[#F2F2F2] text-[#2E2E2F] font-black text-xs uppercase tracking-widest hover:bg-[#2E2E2F]/10 transition-all border border-[#2E2E2F]/5"
+                                className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-[#2E2E2F] text-white font-black text-xs uppercase tracking-widest hover:bg-[#38BDF2] shadow-xl shadow-[#2E2E2F]/10 hover:shadow-[#38BDF2]/30 transition-all duration-300 border-none"
                             >
                                 <ICONS.Mail className="w-4 h-4" />
                                 Contact
@@ -287,7 +287,7 @@ export const OrganizerProfilePage: React.FC = () => {
 
                     <div className="bg-[#F2F2F2] p-8 rounded-[2rem] shadow-sm border border-[#2E2E2F]/10 overflow-hidden">
                         <div className="flex items-center justify-between mb-8">
-                            <h2 className="text-2xl font-black text-[#2E2E2F] tracking-tight">Active Broadcasts & Events</h2>
+                            <h2 className="text-2xl font-black text-[#2E2E2F] tracking-tight">Upcoming & Live Events</h2>
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-[#38BDF2] animate-pulse" />
                                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40">{events.length} Results</span>

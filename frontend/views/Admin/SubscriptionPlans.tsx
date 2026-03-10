@@ -253,10 +253,10 @@ export const SubscriptionPlans: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-10">
         {plans.map((plan) => (
-          <div key={plan.planId} className="relative group h-full">
+          <div key={plan.planId} className="relative group h-full pt-4 mt-[-1rem]">
             {plan.isRecommended && (
-              <div className="absolute -top-4 left-10 z-10 animate-in slide-in-from-top-4 duration-700">
-                <span className="bg-[#38BDF2] text-[#F2F2F2] px-5 py-2 rounded-2xl text-[9px] font-black uppercase tracking-widest shadow-xl shadow-[#38BDF2]/30 border border-white/20 flex items-center gap-2">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10 animate-in slide-in-from-top-4 duration-700">
+                <span className="bg-[#38BDF2] text-white px-5 py-2 rounded-2xl text-[9px] font-black uppercase tracking-widest shadow-xl shadow-[#38BDF2]/30 border border-white/20 flex items-center gap-2 whitespace-nowrap">
                   <ICONS.CheckCircle className="w-3.5 h-3.5" />
                   Recommended
                 </span>
