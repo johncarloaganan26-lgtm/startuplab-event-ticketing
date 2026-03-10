@@ -49,6 +49,8 @@ import { UserRole, normalizeUserRole } from './types';
 import { supabase } from "./supabase/supabaseClient.js";
 import { useUser } from './context/UserContext';
 import { useEngagement } from './context/EngagementContext';
+import { ToastProvider, useToast } from './context/ToastContext';
+import { ToastContainer } from './components/ToastContainer';
 const API = import.meta.env.VITE_API_BASE;
 const DEFAULT_HEADER_LOCATION = 'Your Location';
 const BROWSE_LOCATION_STORAGE_KEY = 'browse_events_location';
@@ -112,6 +114,7 @@ const reverseLookupCity = async (lat: number, lon: number): Promise<string | nul
 const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const { role, email, name, imageUrl, isAuthenticated, clearUser, setUser, canViewEvents, canEditEvents, canManualCheckIn, canReceiveNotifications } = useUser();
   const isStaff = role === UserRole.STAFF;
   const [organizerSidebarLogoUrl, setOrganizerSidebarLogoUrl] = React.useState('');
@@ -464,6 +467,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
       // 3. Clear any local tokens/storage
       localStorage.removeItem('sb-ddkkbtijqrgpitncxylx-auth-token');
+      showToast('success', 'Logged out successfully', 5000);
       clearUser();
 
       // 4. Navigate to login
@@ -950,6 +954,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const { role, email, name, imageUrl, isAuthenticated, clearUser, setUser, canReceiveNotifications } = useUser();
   const {
     publicMode,
@@ -1107,6 +1112,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       });
       await supabase.auth.signOut();
       localStorage.removeItem('sb-ddkkbtijqrgpitncxylx-auth-token');
+      showToast('success', 'Logged out successfully', 5000);
       clearUser();
       navigate('/');
     } catch {
@@ -2467,4 +2473,5 @@ const App: React.FC = () => (
   </Router>
 );
 export default App;
+
 

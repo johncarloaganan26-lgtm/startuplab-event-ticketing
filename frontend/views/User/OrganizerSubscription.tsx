@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ICONS } from '../../constants';
 import { apiService } from '../../services/apiService';
+import { useToast } from '../../context/ToastContext';
 import { AdminPlan } from '../../types';
 import { Button, Card, PageLoader } from '../../components/Shared';
 import { PricingPlansGrid } from '../../components/PricingPlansGrid';
@@ -14,22 +15,16 @@ type CurrentSubscription = {
 };
 
 export const OrganizerSubscription: React.FC = () => {
+  const { showToast } = useToast();
   const [currentSubscription, setCurrentSubscription] = useState<CurrentSubscription | null>(null);
   const [availablePlans, setAvailablePlans] = useState<AdminPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [subscribing, setSubscribing] = useState<string | null>(null);
-  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     loadData();
   }, []);
-
-  useEffect(() => {
-    if (!notification) return;
-    const timer = window.setTimeout(() => setNotification(null), 4000);
-    return () => window.clearTimeout(timer);
-  }, [notification]);
 
   const loadData = async () => {
     try {
@@ -51,7 +46,7 @@ export const OrganizerSubscription: React.FC = () => {
 
       setAvailablePlans(plansData);
     } catch (error: any) {
-      setNotification({ type: 'error', message: error?.message || 'Failed to load subscription data' });
+      showToast('error', error?.message || 'Failed to load subscription data');
     } finally {
       setLoading(false);
     }
@@ -63,14 +58,13 @@ export const OrganizerSubscription: React.FC = () => {
       const result = await apiService.createSubscription(plan.planId, billingCycle);
 
       if (result.free) {
-        setNotification({ type: 'success', message: `Successfully subscribed to ${plan.name}!` });
+        showToast('success', `Successfully subscribed to ${plan.name}!`);
         await loadData();
       } else if (result.paymentUrl) {
-        // Redirect to HitPay payment
         window.location.href = result.paymentUrl;
       }
     } catch (error: any) {
-      setNotification({ type: 'error', message: error?.message || 'Failed to create subscription' });
+      showToast('error', error?.message || 'Failed to create subscription');
     } finally {
       setSubscribing(null);
     }
@@ -82,11 +76,11 @@ export const OrganizerSubscription: React.FC = () => {
 
     try {
       await apiService.cancelSubscription(currentSubscription.subscription.subscriptionId);
-      setNotification({ type: 'success', message: 'Subscription has been cancelled and features have been revoked.' });
-      setCurrentSubscription(null); // Clear local state immediately for better UX
+      showToast('success', 'Subscription has been cancelled and features have been revoked.');
+      setCurrentSubscription(null);
       await loadData();
     } catch (error: any) {
-      setNotification({ type: 'error', message: error?.message || 'Failed to cancel subscription' });
+      showToast('error', error?.message || 'Failed to cancel subscription');
     }
   };
 
@@ -96,14 +90,6 @@ export const OrganizerSubscription: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F2F2F2] pb-20">
-      {notification && (
-        <div className="fixed top-20 right-4 z-50">
-          <Card className={`px-5 py-4 rounded-2xl border ${notification.type === 'success' ? 'bg-green-100 border-green-400 text-green-800' : 'bg-red-100 border-red-400 text-red-800'}`}>
-            <p className="font-bold text-sm">{notification.message}</p>
-          </Card>
-        </div>
-      )}
-
       {/* Header */}
       <div className="bg-gradient-to-r from-[#38BDF8] to-[#0EA5E9] py-12">
         <div className="max-w-6xl mx-auto px-5">

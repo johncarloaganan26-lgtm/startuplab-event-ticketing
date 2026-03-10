@@ -1,12 +1,13 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button, Input } from '../../components/Shared';
+import { useToast } from '../../context/ToastContext';
 
 const API = import.meta.env.VITE_API_BASE;
 
 export const SignUpView: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,23 +16,27 @@ export const SignUpView: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.');
+      const msg = 'Passwords do not match.';
+      setError(msg);
+      showToast('error', msg);
       return;
     }
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters.');
+      const msg = 'Password must be at least 6 characters.';
+      setError(msg);
+      showToast('error', msg);
       return;
     }
     if (!formData.name.trim()) {
-      setError('Name is required.');
+      const msg = 'Name is required.';
+      setError(msg);
+      showToast('error', msg);
       return;
     }
 
@@ -49,17 +54,22 @@ export const SignUpView: React.FC = () => {
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.message || 'Failed to create account.');
+        const msg = data.message || 'Failed to create account.';
+        setError(msg);
+        showToast('error', msg);
         setIsSubmitting(false);
         return;
       }
 
-      setSuccess(data.message || 'Account created! Please check your email to verify your account before signing in.');
+      const msg = data.message || 'Account created! Please check your email to verify your account before signing in.';
+      showToast('success', msg);
       setTimeout(() => {
         navigate('/login');
       }, 3000);
     } catch (err: any) {
-      setError(err?.message || 'Failed to create account.');
+      const msg = err?.message || 'Failed to create account.';
+      setError(msg);
+      showToast('error', msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -123,9 +133,6 @@ export const SignUpView: React.FC = () => {
 
             {error && (
               <div className="mt-2 text-[#2E2E2F] text-sm font-bold text-center">{error}</div>
-            )}
-            {success && (
-              <div className="mt-2 text-[#38BDF2] text-sm font-bold text-center">{success}</div>
             )}
           </form>
           <div className="mt-8 pt-6 border-t border-[#2E2E2F]/10 text-center">

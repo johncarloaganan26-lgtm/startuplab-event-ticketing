@@ -3,19 +3,24 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, Button, PageLoader } from '../../components/Shared';
 import { ICONS } from '../../constants';
 import { apiService } from '../../services/apiService';
+import { useToast } from '../../context/ToastContext';
+
+const SUBSCRIPTION_REF_STORAGE_KEY = 'subscriptionReferenceId';
 
 export const SubscriptionSuccess: React.FC = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'pending'>('loading');
     const [message, setMessage] = useState('Processing your subscription...');
+    const { showToast } = useToast();
 
     // HitPay passes the reference_id in the redirect URL
     // We try multiple ways to get it, because HashRouter can be tricky on localhost
     const referenceId = searchParams.get('reference_id') ||
         searchParams.get('reference_number') ||
-        new URLSearchParams(window.location.hash.split('?')[1]).get('reference_id') ||
-        new URLSearchParams(window.location.hash.split('?')[1]).get('reference_number') ||
+        sessionStorage.getItem(SUBSCRIPTION_REF_STORAGE_KEY) ||
+        new URLSearchParams((window.location.hash.split('?')[1] || '')).get('reference_id') ||
+        new URLSearchParams((window.location.hash.split('?')[1] || '')).get('reference_number') ||
         new URLSearchParams(window.location.search).get('reference_id') ||
         new URLSearchParams(window.location.search).get('reference_number');
 
@@ -45,6 +50,7 @@ export const SubscriptionSuccess: React.FC = () => {
                 if (result.success && result.status === 'active') {
                     setStatus('success');
                     setMessage('Your subscription has been activated!');
+                    showToast('success', 'Subscription activated successfully.');
                     setTimeout(() => navigate('/subscription', { replace: true }), 400);
                 } else if (result.status === 'pending') {
                     // Payment might still be processing
@@ -58,6 +64,7 @@ export const SubscriptionSuccess: React.FC = () => {
                             if (retryResult.success && retryResult.status === 'active') {
                                 setStatus('success');
                                 setMessage('Your subscription has been activated!');
+                                showToast('success', 'Subscription activated successfully.');
                                 setTimeout(() => navigate('/subscription', { replace: true }), 400);
                             }
                         } catch (e) {
@@ -67,6 +74,7 @@ export const SubscriptionSuccess: React.FC = () => {
                 } else {
                     setStatus('error');
                     setMessage(`Subscription status: ${result.status}`);
+                    showToast('error', `Subscription status: ${result.status}`);
                 }
             } catch (err: any) {
                 console.error('Verification error:', err);
@@ -83,6 +91,7 @@ export const SubscriptionSuccess: React.FC = () => {
                     if (subData.subscription && subData.subscription.status === 'active') {
                         setStatus('success');
                         setMessage('Your subscription is active!');
+                        showToast('success', 'Your subscription is active!');
                         setTimeout(() => navigate('/subscription', { replace: true }), 400);
                     } else if (subData.subscription && subData.subscription.status === 'pending') {
                         setStatus('pending');
@@ -90,16 +99,28 @@ export const SubscriptionSuccess: React.FC = () => {
                     } else {
                         setStatus('error');
                         setMessage('Could not verify subscription. Please sign in and check your billing page.');
+                        showToast('error', 'Could not verify subscription. Please sign in and check billing.');
                     }
                 } catch (subErr) {
                     setStatus('error');
                     setMessage('Please sign in to view your updated subscription status.');
+                    showToast('error', 'Please sign in to view your updated subscription status.');
                 }
             }
         };
 
+        // If the reference ID is in the URL (not just in sessionStorage),
+        // we clean the URL by moving it to sessionStorage and navigating.
+        const hasUrlRef = searchParams.has('reference_id') || searchParams.has('reference_number');
+        if (hasUrlRef && referenceId) {
+            console.log('🧹 [SubscriptionSuccess] Cleaning URL parameters...');
+            sessionStorage.setItem(SUBSCRIPTION_REF_STORAGE_KEY, referenceId);
+            navigate('/subscription/success', { replace: true });
+            return; // Stop the first verification call; the redirected component will handle it.
+        }
+
         verify();
-    }, [referenceId]);
+    }, [referenceId, searchParams, navigate]);
 
     return (
         <div className="min-h-[70vh] flex items-center justify-center p-6">
@@ -151,7 +172,7 @@ export const SubscriptionSuccess: React.FC = () => {
 
                         <div className="pt-4 space-y-3">
                             <Button
-                                onClick={() => { window.location.href = '#/subscription'; }}
+                                onClick={() => navigate('/subscription')}
                                 className="w-full py-4 rounded-2xl font-black tracking-widest text-xs"
                             >
                                 CHECK STATUS
@@ -170,14 +191,14 @@ export const SubscriptionSuccess: React.FC = () => {
 
                         <div className="pt-4 space-y-3">
                             <Button
-                                onClick={() => { window.location.href = '#/subscription'; }}
+                                onClick={() => navigate('/subscription')}
                                 className="w-full py-4 rounded-2xl font-black tracking-widest text-xs"
                             >
                                 GO TO SUBSCRIPTION
                             </Button>
                             <Button
                                 variant="outline"
-                                onClick={() => { window.location.href = '#/user-home'; }}
+                                onClick={() => navigate('/user-home')}
                                 className="w-full py-4 rounded-2xl font-black tracking-widest text-xs border-[#2E2E2F]/10"
                             >
                                 GO TO DASHBOARD

@@ -1,0 +1,102 @@
+// PATCH: EventsManagement.tsx - Global Toast Integration
+
+// 1. ADD IMPORT at top
+import { useToast } from '../../context/ToastContext';
+
+// 2. REMOVE these lines from component:
+// const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+// 3. ADD this line after other hooks:
+const { showToast } = useToast();
+
+// 4. REMOVE this entire useEffect:
+// useEffect(() => {
+//   if (notification) {
+//     const timer = setTimeout(() => setNotification(null), 4000);
+//     return () => clearTimeout(timer);
+//   }
+// }, [notification]);
+
+// 5. REPLACE all setNotification calls:
+
+// OLD: setNotification({ message: 'Image upload failed. Please retry.', type: 'error' });
+// NEW:
+showToast('error', 'Image upload failed. Please retry.');
+
+// OLD: setNotification({ message: 'Changes synchronized successfully.', type: 'success' });
+// NEW:
+showToast('success', 'Changes synchronized successfully.');
+
+// OLD: setNotification({ message: 'Event successfully launched.', type: 'success' });
+// NEW:
+showToast('success', 'Event successfully launched.');
+
+// OLD: setNotification({ message: 'Sync failed. Please retry.', type: 'error' });
+// NEW:
+showToast('error', 'Sync failed. Please retry.');
+
+// OLD: setNotification({ message: 'Ticket inventory updated.', type: 'success' });
+// NEW:
+showToast('success', 'Ticket inventory updated.');
+
+// OLD: setNotification({ message: 'Failed to update ticket inventory.', type: 'error' });
+// NEW:
+showToast('error', 'Failed to update ticket inventory.');
+
+// OLD: setNotification({ message: `"${deleteConfirm.eventName}" has been permanently deleted.`, type: 'success' });
+// NEW:
+showToast('success', `"${deleteConfirm.eventName}" has been permanently deleted.`);
+
+// OLD: setNotification({ message: 'Failed to delete event. Please retry.', type: 'error' });
+// NEW:
+showToast('error', 'Failed to delete event. Please retry.');
+
+// 6. REMOVE this entire JSX block from return:
+// {notification && (
+//   <div className="fixed top-24 right-8 z-[120]">
+//     <Card className={`flex items-center gap-4 px-6 py-4 rounded-2xl border ${notification.type === 'success' ? 'bg-[#38BDF2]/20 border-[#38BDF2]/40 text-[#2E2E2F]' : 'bg-[#2E2E2F]/10 border-[#2E2E2F]/30 text-[#2E2E2F]'}`}>
+//       <div className={`p-2 rounded-xl ${notification.type === 'success' ? 'bg-[#38BDF2]/10 text-[#2E2E2F]' : 'bg-[#2E2E2F]/20 text-[#2E2E2F]'}`}>
+//         {notification.type === 'success' ? <ICONS.CheckCircle className="w-5 h-5" /> : <ICONS.Layout className="w-5 h-5" />}
+//       </div>
+//       <p className="font-bold text-sm tracking-tight">{notification.message}</p>
+//     </Card>
+//   </div>
+// )}
+
+// 7. UPDATE TicketManager component signature:
+// OLD:
+// interface TicketManagerProps {
+//   event: Event | null;
+//   onSave: (tickets: TicketType[]) => void;
+//   submitting: boolean;
+//   setNotification: (n: { message: string; type: 'success' | 'error' }) => void;
+// }
+
+// NEW:
+// interface TicketManagerProps {
+//   event: Event | null;
+//   onSave: (tickets: TicketType[]) => void;
+//   submitting: boolean;
+// }
+
+// 8. UPDATE TicketManager component body:
+// OLD:
+// const TicketManager: React.FC<TicketManagerProps> = ({ event, onSave, submitting, setNotification }) => {
+
+// NEW:
+// const TicketManager: React.FC<TicketManagerProps> = ({ event, onSave, submitting }) => {
+//   const { showToast } = useToast();
+
+// 9. REPLACE setNotification calls in TicketManager:
+// OLD: setNotification({ message: 'Failed to delete ticket type.', type: 'error' });
+// NEW: showToast('error', 'Failed to delete ticket type.');
+
+// 10. REMOVE this line from TicketManager JSX:
+// <TicketManager
+//   event={selectedEvent}
+//   onSave={handleSaveTickets}
+//   submitting={submitting}
+//   setNotification={setNotification}  // <-- REMOVE THIS
+// />
+
+// RESULT: All notifications now use global toast system!

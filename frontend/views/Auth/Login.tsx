@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button, Input } from '../../components/Shared';
 import { ICONS } from '../../constants';
 import { supabase } from "../../supabase/supabaseClient.js";
 import { useUser } from '../../context/UserContext';
+import { useToast } from '../../context/ToastContext';
 import { UserRole, normalizeUserRole } from '../../types';
 
 const API = import.meta.env.VITE_API_BASE;
@@ -37,11 +37,10 @@ const PasswordInput = ({ value, onChange, placeholder, required }: { value: stri
   );
 };
 
-
-
 export const LoginPerspective: React.FC = () => {
   const navigate = useNavigate();
   const { setUser } = useUser();
+  const { showToast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -54,21 +53,26 @@ export const LoginPerspective: React.FC = () => {
     const { data, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
     if (loginError || !data.session) {
       setLoading(false);
-      setError(loginError?.message || "Incorrect email or password.");
+      const msg = loginError?.message || "Incorrect email or password.";
+      setError(msg);
+      showToast('error', msg);
       return;
     }
-    // Check role
     const roleRes = await fetch(`${API}/api/user/role-by-email?email=${encodeURIComponent(email)}`);
     if (!roleRes.ok) {
       setLoading(false);
-      setError('Account not found or not authorized.');
+      const msg = 'Account not found or not authorized.';
+      setError(msg);
+      showToast('error', msg);
       return;
     }
     const userData = await roleRes.json().catch(() => null);
     const normalizedRole = normalizeUserRole(userData?.role);
     if (!normalizedRole) {
       setLoading(false);
-      setError('Account not found or not authorized.');
+      const msg = 'Account not found or not authorized.';
+      setError(msg);
+      showToast('error', msg);
       return;
     }
     setUser({ role: normalizedRole, email });
@@ -82,11 +86,14 @@ export const LoginPerspective: React.FC = () => {
     if (!response.ok) {
       setLoading(false);
       const result = await response.json().catch(() => ({}));
-      setError(result.message || "Failed to store session");
+      const msg = result.message || "Failed to store session";
+      setError(msg);
+      showToast('error', msg);
       return;
     }
     localStorage.removeItem("sb-ddkkbtijqrgpitncxylx-auth-token");
     setLoading(false);
+    showToast('success', 'Signed in successfully!');
     if (normalizedRole === UserRole.ADMIN) {
       navigate('/dashboard');
     } else if (normalizedRole === UserRole.STAFF) {
