@@ -296,6 +296,92 @@ export const replyToSupportTicket = async (req, res) => {
   }
 };
 
+// Public contact form endpoint: thanks the sender and forwards to the admin mailbox.
+export const submitContactForm = async (req, res) => {
+  try {
+    const {
+      name,
+      occupation,
+      email,
+      mobileNumber,
+      inquiryType,
+      message
+    } = req.body || {};
+
+    if (!name || !email || !mobileNumber || !message) {
+      return res.status(400).json({ error: 'Name, email, mobile number, and message are required.' });
+    }
+
+    const adminSmtp = await getAdminSmtpConfig();
+    if (!adminSmtp) {
+      return res.status(500).json({ error: 'Email is not configured. Please try again later.' });
+    }
+
+    // Thank-you email to sender
+    const safeName = name || 'Guest';
+    const thankSubject = 'Thanks for contacting StartupLab Events Support';
+    const thankText = `Hi ${safeName},\n\nThanks for reaching out about your event needs. We received your message and will reply shortly.\n\nInquiry Type: ${inquiryType || 'General'}\nMobile: ${mobileNumber}\nOccupation: ${occupation || 'N/A'}\n\n${message}\n\n— StartupLab Support Team`;
+    const thankHtml = `
+      <p>Hi ${safeName},</p>
+      <p>Thanks for reaching out about your event needs. Our team has received your message and will reply shortly.</p>
+      <p><strong>What you sent:</strong></p>
+      <ul>
+        <li><strong>Inquiry Type:</strong> ${inquiryType || 'General'}</li>
+        <li><strong>Mobile:</strong> ${mobileNumber}</li>
+        ${occupation ? `<li><strong>Occupation:</strong> ${occupation}</li>` : ''}
+      </ul>
+      <p>${(message || '').replace(/\n/g, '<br/>')}</p>
+      <p>— StartupLab Support Team</p>
+    `;
+
+    await sendSmtpEmail({
+      to: email,
+      subject: thankSubject,
+      text: thankText,
+      html: thankHtml,
+      from: `StartupLab Support <${adminSmtp.fromAddress}>`,
+      config: adminSmtp,
+    });
+
+    // Forward to admin
+    const { data: adminUser } = await supabase
+      .from('users')
+      .select('email')
+      .eq('role', 'ADMIN')
+      .limit(1)
+      .maybeSingle();
+
+    if (adminUser?.email) {
+      const forwardSubject = `[Contact Form] ${inquiryType || 'General'} - ${safeName}`;
+      const forwardText = `${safeName} submitted the contact form.\nEmail: ${email}\nMobile: ${mobileNumber}\nOccupation: ${occupation || 'N/A'}\nInquiry Type: ${inquiryType || 'General'}\n\n${message}`;
+      const forwardHtml = `
+        <p><strong>Name:</strong> ${safeName}</p>
+        <p><strong>Occupation:</strong> ${occupation || '—'}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Mobile:</strong> ${mobileNumber}</p>
+        <p><strong>Inquiry Type:</strong> ${inquiryType || 'General'}</p>
+        <p><strong>Message:</strong></p>
+        <p>${(message || '').replace(/\n/g, '<br/>')}</p>
+      `;
+
+      await sendSmtpEmail({
+        to: adminUser.email,
+        subject: forwardSubject,
+        text: forwardText,
+        html: forwardHtml,
+        replyTo: email,
+        from: `Contact Form <${adminSmtp.fromAddress}>`,
+        config: adminSmtp,
+      });
+    }
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('[Contact] submitContactForm error:', err);
+    return res.status(500).json({ error: 'Failed to send your message. Please try again later.' });
+  }
+};
+
 export const getSupportMessages = async (req, res) => {
   try {
     const { id: ticketId } = req.params;

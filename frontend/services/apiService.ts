@@ -563,6 +563,28 @@ export const apiService = {
     return await res.json();
   },
 
+  // Public contact form
+  submitContactForm: async (payload: {
+    name: string;
+    occupation?: string;
+    email: string;
+    mobileNumber: string;
+    inquiryType: string;
+    message: string;
+  }) => {
+    const res = await fetch(`${API_BASE}/api/contact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      credentials: 'include'
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data?.error) {
+      throw new Error(data?.error || `Failed to send message (${res.status})`);
+    }
+    return data;
+  },
+
   // GET /api/tickets/:ticketId
   getTicketDetails: async (id: string): Promise<RegistrationView | null> => {
     const res = await fetch(`${API_BASE}/api/tickets/${encodeURIComponent(id)}`);

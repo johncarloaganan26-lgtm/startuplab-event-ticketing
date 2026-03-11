@@ -18,7 +18,8 @@ import {
   resolveSupportTicket,
   replyToSupportTicket,
   getSupportMessages,
-  getAllSupportMessages
+  getAllSupportMessages,
+  submitContactForm
 } from "../controller/supportController.js";
 
 const router = express.Router();
@@ -63,5 +64,6 @@ router.get('/admin/support/all-messages', authMiddleware, getAllSupportMessages)
 router.post('/admin/support/:id/resolve', authMiddleware, resolveSupportTicket);
 router.post('/admin/support/:id/reply', authMiddleware, replyToSupportTicket);
 router.get('/support/:id/messages', authMiddleware, getSupportMessages);
+router.post('/contact', submitContactForm);
 
 export default router;

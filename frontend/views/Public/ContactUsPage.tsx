@@ -1,5 +1,6 @@
 import React from 'react';
 import { ICONS } from '../../constants';
+import { apiService } from '../../services/apiService';
 
 type InquiryType = 'REGISTRATION' | 'BOOKING' | 'PARTNERSHIP' | 'GENERAL';
 
@@ -46,6 +47,8 @@ export const ContactUsPage: React.FC = () => {
   });
   const [errors, setErrors] = React.useState<Partial<Record<keyof FormState, string>>>({});
   const [submitted, setSubmitted] = React.useState(false);
+  const [submitting, setSubmitting] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
 
   const updateField = (field: keyof FormState, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -63,18 +66,34 @@ export const ContactUsPage: React.FC = () => {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!validate()) return;
-    setSubmitted(true);
-    setForm({
-      name: '',
-      occupation: '',
-      email: '',
-      mobileNumber: '',
-      inquiryType: 'GENERAL',
-      message: '',
-    });
+    setSubmitError(null);
+    setSubmitting(true);
+    try {
+      await apiService.submitContactForm({
+        name: form.name,
+        occupation: form.occupation,
+        email: form.email,
+        mobileNumber: form.mobileNumber,
+        inquiryType: form.inquiryType,
+        message: form.message,
+      });
+      setSubmitted(true);
+      setForm({
+        name: '',
+        occupation: '',
+        email: '',
+        mobileNumber: '',
+        inquiryType: 'GENERAL',
+        message: '',
+      });
+    } catch (err: any) {
+      setSubmitError(err?.message || 'Failed to send message. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const fieldClassName =
@@ -109,7 +128,12 @@ export const ContactUsPage: React.FC = () => {
 
             {submitted && (
               <div className="mt-5 rounded-xl border border-[#38BDF2]/45 bg-[#38BDF2]/10 px-4 py-3 text-sm font-semibold text-[#2E2E2F]">
-                Your message has been sent. Our support team will contact you soon.
+                Your message has been sent. We emailed you a confirmation and our support team will contact you soon.
+              </div>
+            )}
+            {submitError && (
+              <div className="mt-5 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                {submitError}
               </div>
             )}
 
@@ -200,9 +224,10 @@ export const ContactUsPage: React.FC = () => {
 
               <button
                 type="submit"
-                className="inline-flex items-center rounded-xl bg-[#38BDF2] px-6 py-3 text-sm font-black tracking-wide text-[#F2F2F2] transition-colors hover:bg-[#2E2E2F]"
+                disabled={submitting}
+                className={`inline-flex items-center rounded-xl px-6 py-3 text-sm font-black tracking-wide text-[#F2F2F2] transition-colors ${submitting ? 'bg-[#2E2E2F]/40 cursor-not-allowed' : 'bg-[#38BDF2] hover:bg-[#2E2E2F]'}`}
               >
-                Send Message
+                {submitting ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           </article>
