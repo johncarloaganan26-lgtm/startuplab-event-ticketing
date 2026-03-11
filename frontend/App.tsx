@@ -966,7 +966,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
   const [headerSearchTerm, setHeaderSearchTerm] = React.useState('');
   const [animatedPlaceholder, setAnimatedPlaceholder] = React.useState('');
-  const fullPlaceholder = 'Find your events';
+  const fullPlaceholder = 'Discover events near you';
   const [headerLocationTerm, setHeaderLocationTerm] = React.useState(DEFAULT_HEADER_LOCATION);
   const [headerLocationMenuOpen, setHeaderLocationMenuOpen] = React.useState(false);
   const [headerLocating, setHeaderLocating] = React.useState(false);
@@ -993,7 +993,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   // Typing animation for search placeholder
   React.useEffect(() => {
-    const text = 'Find your events';
+    const text = 'Discover events near you';
     let index = 0;
     let isDeleting = false;
     let timer: NodeJS.Timeout;
