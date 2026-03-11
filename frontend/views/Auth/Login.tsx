@@ -75,7 +75,8 @@ export const LoginPerspective: React.FC = () => {
       showToast('error', msg);
       return;
     }
-    setUser({ role: normalizedRole, email });
+    const isOnboarded = !!userData?.isOnboarded;
+    setUser({ role: normalizedRole, email, isOnboarded });
     const { access_token, refresh_token } = data.session;
     const response = await fetch(`${API}/api/auth/login`, {
       method: "POST",
@@ -99,7 +100,11 @@ export const LoginPerspective: React.FC = () => {
     } else if (normalizedRole === UserRole.STAFF) {
       navigate('/events');
     } else if (normalizedRole === UserRole.ORGANIZER) {
-      navigate('/user-home');
+      if (isOnboarded) {
+        navigate('/user-home');
+      } else {
+        navigate('/onboarding');
+      }
     } else if (normalizedRole === UserRole.ATTENDEE) {
       navigate('/browse-events');
     }

@@ -182,7 +182,7 @@ export const PricingPlansGrid: React.FC<PricingPlansGridProps> = ({
                     onClick={() => onPlanAction?.(plan)}
                     disabled={isCurrentPlan || (actionLoadingPlanId !== null && actionLoadingPlanId !== plan.planId)}
                     className={`w-full rounded-[1.5rem] py-5 font-black text-[12px] uppercase tracking-[0.2em] transition-all duration-300 ${isCurrentPlan
-                      ? '!bg-[#2E2E2F] !text-white opacity-30 cursor-default border-none'
+                      ? '!bg-[#2E2E2F]/10 !text-[#2E2E2F]/60 border-2 border-[#2E2E2F]/20 cursor-default shadow-none'
                       : 'bg-[#38BDF2] text-white hover:bg-[#2E2E2F] shadow-xl shadow-[#38BDF2]/20 hover:shadow-[#2E2E2F]/20 border-none'
                       }`}
                   >

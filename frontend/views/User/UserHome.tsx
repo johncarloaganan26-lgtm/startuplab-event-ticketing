@@ -379,6 +379,7 @@ export const UserHome: React.FC = () => {
                 isOpen={isUpgradeModalOpen}
                 onClose={() => setIsUpgradeModalOpen(false)}
                 organizerName={organizerProfile?.organizerName || ''}
+                currentPlanId={organizerProfile?.currentPlanId}
                 onSubscribeSuccess={() => {
                     setNotification({ message: 'Plan upgraded successfully!', type: 'success' });
                     // Refresh data after upgrade

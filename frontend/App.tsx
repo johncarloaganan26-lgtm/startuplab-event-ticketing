@@ -2381,9 +2381,10 @@ const roleHomePath = (role: UserRole): string => {
 };
 
 const RequireRoleRoute: React.FC<{ allow: UserRole[]; children: React.ReactElement }> = ({ allow, children }) => {
-  const { setUser, clearUser } = useUser();
+  const { setUser, clearUser, isOnboarded } = useUser();
   const [checking, setChecking] = React.useState(true);
   const [resolvedRole, setResolvedRole] = React.useState<UserRole | null>(null);
+  const location = useLocation();
 
   React.useEffect(() => {
     let cancelled = false;
@@ -2405,6 +2406,7 @@ const RequireRoleRoute: React.FC<{ allow: UserRole[]; children: React.ReactEleme
           canEditEvents: me.canEditEvents,
           canManualCheckIn: me.canManualCheckIn,
           canReceiveNotifications: me.canReceiveNotifications,
+          isOnboarded: me.isOnboarded,
         });
 
         if (!cancelled) setResolvedRole(role);
@@ -2423,6 +2425,12 @@ const RequireRoleRoute: React.FC<{ allow: UserRole[]; children: React.ReactEleme
   if (checking) return <PageLoader label="Checking access..." variant="page" />;
   if (!resolvedRole) return <Navigate to="/login" replace />;
   if (!allow.includes(resolvedRole)) return <Navigate to={roleHomePath(resolvedRole)} replace />;
+  
+  // Enforce onboarding for organizers
+  if (resolvedRole === UserRole.ORGANIZER && isOnboarded === false && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />;
+  }
+  
   return children;
 };
 

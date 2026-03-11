@@ -189,8 +189,20 @@ export const whoAmI = async (req, res) => {
     if (error) return res.status(500).json({ error: error.message });
     if (!data) return res.status(404).json({ error: 'User not found' });
 
-    const role = normalizeRole(data.role);
+    const role = normalizeRole(data.role || '');
     const defaultStaff = role === 'STAFF';
+
+    // If organizer, fetch onboarding status
+    let isOnboarded = false;
+    if (role === 'ORGANIZER') {
+      const { data: orgData } = await db
+        .from('organizers')
+        .select('isOnboarded')
+        .eq('ownerUserId', data.userId || data.id)
+        .maybeSingle();
+      isOnboarded = !!orgData?.isOnboarded;
+    }
+
     // Normalize response with permissive defaults for staff unless explicitly false
     return res.json({
       userId: data.userId || data.id,
@@ -198,6 +210,7 @@ export const whoAmI = async (req, res) => {
       email: data.email,
       role,
       imageUrl: data.imageUrl,
+      isOnboarded,
       canViewEvents: data.canviewevents === undefined || data.canviewevents === null ? defaultStaff : !!data.canviewevents,
       canEditEvents: data.caneditevents === undefined || data.caneditevents === null ? defaultStaff : !!data.caneditevents,
       canManualCheckIn: data.canmanualcheckin === undefined || data.canmanualcheckin === null ? defaultStaff : !!data.canmanualcheckin,
@@ -449,10 +462,22 @@ export const getRoleByEmail = async (req, res) => {
   try {
     const email = req.query.email;
     if (!email) return res.status(400).json({ error: "Email is required" });
-    const { data, error } = await db.from("users").select("role").eq("email", email).maybeSingle();
+    const { data, error } = await db.from("users").select("role, userId").eq("email", email).maybeSingle();
     if (error) return res.status(500).json({ error: error.message });
     if (!data) return res.status(404).json({ error: "User not found" });
-    return res.json({ role: normalizeRole(data.role) });
+    const role = normalizeRole(data.role);
+    let isOnboarded = false;
+    
+    if (role === 'ORGANIZER') {
+      const { data: orgData } = await db
+        .from('organizers')
+        .select('isOnboarded')
+        .eq('ownerUserId', data.userId)
+        .maybeSingle();
+      isOnboarded = !!orgData?.isOnboarded;
+    }
+
+    return res.json({ role, isOnboarded });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

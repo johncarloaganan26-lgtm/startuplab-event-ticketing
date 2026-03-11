@@ -12,13 +12,15 @@ type PlanUpgradeModalProps = {
   onClose: () => void;
   organizerName: string;
   onSubscribeSuccess: () => void;
+  currentPlanId?: string | null;
 };
 
 export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   isOpen,
   onClose,
   organizerName,
-  onSubscribeSuccess
+  onSubscribeSuccess,
+  currentPlanId = null
 }) => {
   const { showToast } = useToast();
   const [plans, setPlans] = useState<AdminPlan[]>([]);
@@ -113,7 +115,9 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                 Upgrade Plan for {organizerName || 'Company'}
               </h2>
               <p className="text-[#2E2E2F]/60 font-medium">
-                Select a new plan to unlock more features for your business.
+                {currentPlanId 
+                  ? "Manage your current plan or upgrade to unlock more features for your business."
+                  : "Select a new plan to unlock more features for your business."}
               </p>
             </div>
           </div>
@@ -160,6 +164,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                 onPlanAction={handleSubscribe}
                 actionLoadingPlanId={subscribingPlanId}
                 showBillingToggle={false}
+                currentPlanId={currentPlanId}
               />
             </div>
           )}
