@@ -398,7 +398,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     if (!role) return;
     const staffAllowed = ['/events', '/attendees', '/checkin', '/settings'];
     const adminAllowed = ['/dashboard', '/events', '/attendees', '/checkin', '/settings'];
-    const userAllowed = ['/user-home', '/my-events', '/user-settings', '/organizer-settings', '/account-settings', '/user/attendees', '/user/checkin', '/user/archive', '/user/reports', '/dashboard'];
+    const userAllowed = ['/user-home', '/my-events', '/user-settings', '/organizer-settings', '/account-settings', '/user/attendees', '/user/checkin', '/user/archive', '/user/reports', '/dashboard', '/organizer-support', '/subscription'];
 
     if (role === UserRole.ORGANIZER) {
       if (!userAllowed.includes(location.pathname)) {
@@ -446,6 +446,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
               { label: 'Team and Access', path: '/settings?tab=team', icon: <ICONS.Users className="w-6 h-6" /> },
               { label: 'Email Settings', path: '/settings?tab=email', icon: <ICONS.Mail className="w-6 h-6" /> },
               { label: 'Payment Settings', path: '/settings?tab=payments', icon: <ICONS.CreditCard className="w-6 h-6" /> },
+              { label: 'Support', path: '/settings?tab=support', icon: <ICONS.MessageSquare className="w-6 h-6" /> },
               { label: 'Account Settings', path: '/settings?tab=profile', icon: <ICONS.Settings className="w-6 h-6" />, separator: true },
             ]
             : [
@@ -459,6 +460,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
               { label: 'Team and Access', path: '/settings?tab=team', icon: <ICONS.Users className="w-6 h-6" /> },
               { label: 'Email Settings', path: '/settings?tab=email', icon: <ICONS.Mail className="w-6 h-6" /> },
               { label: 'Payment Settings', path: '/settings?tab=payments', icon: <ICONS.CreditCard className="w-6 h-6" /> },
+              { label: 'Support', path: '/organizer-support', icon: <ICONS.MessageSquare className="w-6 h-6" /> },
               { label: 'Account Settings', path: '/settings?tab=profile', icon: <ICONS.Settings className="w-6 h-6" />, separator: true },
             ]
   );
@@ -780,12 +782,12 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                         <button
                           className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
                           onClick={() => {
-                            navigate('/settings?tab=payments');
+                            navigate('/settings?tab=support');
                             setUserMenuOpen(false);
                           }}
                         >
-                          <ICONS.CreditCard className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                          <span>Payment Gateway</span>
+                          <ICONS.MessageSquare className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                          <span>Support Tickets</span>
                         </button>
                       </>
                     )}
@@ -1932,6 +1934,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             { label: 'Team and Access', path: '/user-settings?tab=team', icon: <ICONS.Users className="w-6 h-6" /> },
             { label: 'Email Settings', path: '/user-settings?tab=email', icon: <ICONS.Mail className="w-6 h-6" /> },
             { label: 'Payment Settings', path: '/user-settings?tab=payments', icon: <ICONS.CreditCard className="w-6 h-6" /> },
+            { label: 'Support', path: '/organizer-support', icon: <ICONS.MessageSquare className="w-6 h-6" /> },
             { label: 'Account Settings', path: '/user-settings?tab=account', icon: <ICONS.Settings className="w-6 h-6" />, separator: true },
           ]
   );
@@ -2255,6 +2258,16 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                   >
                     <ICONS.Settings className="w-4 h-4 opacity-70 group-hover:opacity-100" />
                     <span>Account Settings</span>
+                  </button>
+                  <button
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
+                    onClick={() => {
+                      navigate('/organizer-support');
+                      setUserMenuOpen(false);
+                    }}
+                  >
+                    <ICONS.MessageSquare className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                    <span>Support</span>
                   </button>
                   <button
                     className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-red-50 hover:text-red-500 transition-colors text-left group"

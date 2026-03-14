@@ -765,6 +765,11 @@ export const AdminDashboard: React.FC = () => {
           value={`${stats.paymentSuccessRate.toFixed(1)}%`}
           icon={<ICONS.TrendingUp className="w-6 h-6" />}
         />
+        <StatCard
+          title="Total Paid Events"
+          value={stats.totalPaidEvents ?? 0}
+          icon={<ICONS.CreditCard className="w-6 h-6" />}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

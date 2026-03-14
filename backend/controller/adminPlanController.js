@@ -12,6 +12,7 @@ const DEFAULT_LIMITS = {
   max_staff_accounts: 2,
   max_attendees_per_month: 100,
   email_quota_per_day: 500,
+  max_priced_events: 0,
 };
 
 const DEFAULT_PROMOTIONS = {
@@ -30,6 +31,7 @@ const LIMIT_KEYS = {
   max_staff_accounts: 'max_staff_accounts',
   max_attendees_per_month: 'max_attendees_per_month',
   email_quota_per_day: 'email_quota_per_day',
+  max_priced_events: 'max_priced_events',
 };
 
 const PROMOTION_KEYS = {
@@ -89,6 +91,7 @@ const normalizePlanInput = (body = {}) => {
     max_staff_accounts: body?.limits?.max_staff_accounts ?? DEFAULT_LIMITS.max_staff_accounts,
     max_attendees_per_month: body?.limits?.max_attendees_per_month ?? DEFAULT_LIMITS.max_attendees_per_month,
     email_quota_per_day: body?.limits?.email_quota_per_day ?? DEFAULT_LIMITS.email_quota_per_day,
+    max_priced_events: body?.limits?.max_priced_events ?? body?.max_priced_events ?? DEFAULT_LIMITS.max_priced_events,
   };
 
   const promotions = {
@@ -124,6 +127,7 @@ const buildFeatureRows = (planId, features, limits, promotions) => [
   { planId, key: LIMIT_KEYS.max_staff_accounts, value: String(limits.max_staff_accounts ?? DEFAULT_LIMITS.max_staff_accounts) },
   { planId, key: LIMIT_KEYS.max_attendees_per_month, value: String(limits.max_attendees_per_month ?? DEFAULT_LIMITS.max_attendees_per_month) },
   { planId, key: LIMIT_KEYS.email_quota_per_day, value: String(limits.email_quota_per_day ?? DEFAULT_LIMITS.email_quota_per_day) },
+  { planId, key: LIMIT_KEYS.max_priced_events, value: String(limits.max_priced_events ?? DEFAULT_LIMITS.max_priced_events) },
   { planId, key: PROMOTION_KEYS.max_promoted_events, value: String(promotions.max_promoted_events ?? DEFAULT_PROMOTIONS.max_promoted_events) },
   { planId, key: PROMOTION_KEYS.promotion_duration_days, value: String(promotions.promotion_duration_days ?? DEFAULT_PROMOTIONS.promotion_duration_days) },
 ];
@@ -150,6 +154,7 @@ const buildPlanResponse = (row, featureRows = []) => {
     if (item.key === LIMIT_KEYS.max_staff_accounts) limits.max_staff_accounts = coerceLimitValue(item.value);
     if (item.key === LIMIT_KEYS.max_attendees_per_month) limits.max_attendees_per_month = coerceLimitValue(item.value);
     if (item.key === LIMIT_KEYS.email_quota_per_day) limits.email_quota_per_day = coerceLimitValue(item.value);
+    if (item.key === LIMIT_KEYS.max_priced_events) limits.max_priced_events = coerceLimitValue(item.value);
     if (item.key === PROMOTION_KEYS.max_promoted_events) promotions.max_promoted_events = toNumber(item.value, DEFAULT_PROMOTIONS.max_promoted_events);
     if (item.key === PROMOTION_KEYS.promotion_duration_days) promotions.promotion_duration_days = toNumber(item.value, DEFAULT_PROMOTIONS.promotion_duration_days);
   });
@@ -268,6 +273,7 @@ export const createAdminPlan = async (req, res) => {
         isDefault: plan.isDefault,
         isRecommended: plan.isRecommended,
         isActive: plan.isActive,
+        maxPricedEvents: toNumber(limits.max_priced_events, 0), // Sync native column
         features, // Sync JSONB column
         limits,   // Sync JSONB column
         promotions, // Sync JSONB column
@@ -335,6 +341,7 @@ export const updateAdminPlan = async (req, res) => {
         isDefault: plan.isDefault,
         isRecommended: plan.isRecommended,
         isActive: plan.isActive,
+        maxPricedEvents: toNumber(limits.max_priced_events, 0), // Sync native column
         features, // Sync JSONB column
         limits,   // Sync JSONB column
         promotions, // Sync JSONB column

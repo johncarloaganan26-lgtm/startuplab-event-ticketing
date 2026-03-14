@@ -44,6 +44,8 @@ export const RegistrationForm: React.FC = () => {
     termsAccepted: false
   });
 
+  const [extraGuests, setExtraGuests] = useState<{ name: string; email: string }[]>([]);
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState<string | null>(null);
   const [paymentMethodId, setPaymentMethodId] = useState(PAYMENT_METHODS[0].id);
@@ -87,6 +89,22 @@ export const RegistrationForm: React.FC = () => {
 
   const subtotal = selectedItems.reduce((acc, item) => acc + (item.ticket.priceAmount * item.qty), 0);
   const totalQuantity = selectedItems.reduce((acc, item) => acc + item.qty, 0);
+  const totalGuests = selectedItems.reduce((acc, item) => acc + (item.qty * (item.ticket.capacityPerTicket || 1)), 0);
+
+  // Sync extraGuests array size with totalGuests - 1
+  useEffect(() => {
+    const needed = Math.max(0, totalGuests - 1);
+    if (extraGuests.length !== needed) {
+      setExtraGuests(prev => {
+        if (prev.length > needed) return prev.slice(0, needed);
+        const next = [...prev];
+        while (next.length < needed) {
+          next.push({ name: '', email: '' });
+        }
+        return next;
+      });
+    }
+  }, [totalGuests]);
 
   let discountAmount = 0;
   if (appliedPromo) {
@@ -157,7 +175,8 @@ export const RegistrationForm: React.FC = () => {
         items: selectedItems.map(i => ({ ticketTypeId: i.ticket.ticketTypeId, quantity: i.qty, price: i.ticket.priceAmount })),
         totalAmount: totalPayable,
         currency: selectedItems[0]?.ticket.currency || 'PHP',
-        promoCode: appliedPromo?.code || null
+        promoCode: appliedPromo?.code || null,
+        extraGuests: extraGuests // Pass extra guest details
       });
       if (!hasPaid) {
         navigate(`/payment/status?sessionId=${orderId}`); // Free order also goes to status page for confirmation
@@ -211,7 +230,7 @@ export const RegistrationForm: React.FC = () => {
           </h1>
           <div className="flex items-center gap-3">
             <span className="text-[#F2F2F2] text-[9px] font-semibold px-2.5 py-1 rounded-lg uppercase tracking-wide" style={{ backgroundColor: brandColor }}>
-              {totalQuantity} {totalQuantity === 1 ? 'Ticket' : 'Tickets'}
+              {totalGuests} {totalGuests === 1 ? 'Ticket' : 'Tickets'}
             </span>
             <p className="text-[#2E2E2F]/70 font-medium text-sm">
               for <span className="text-[#2E2E2F] font-semibold">{event.eventName}</span>
@@ -285,7 +304,63 @@ export const RegistrationForm: React.FC = () => {
                       />
                     </div>
 
-                    <div className="md:col-span-2 pt-4 border-t border-[#2E2E2F]/10 space-y-4">
+                    {/* Dynamic Guest Inputs for Bundles */}
+                    {extraGuests.length > 0 && (
+                      <div className="md:col-span-2 pt-8 border-t border-[#2E2E2F]/10 space-y-6">
+                        <div className="flex items-center justify-center gap-5">
+                          <div className="w-12 h-px bg-[#2E2E2F]/10"></div>
+                          <h3 className="text-[12px] font-semibold text-[#2E2E2F] uppercase tracking-wide whitespace-nowrap text-center">Guest Information ({extraGuests.length} additional)</h3>
+                          <div className="w-12 h-px bg-[#2E2E2F]/10"></div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          {extraGuests.map((guest, index) => (
+                            <div key={index} className="p-6 border border-[#2E2E2F]/10 rounded-[2rem] bg-[#F2F2F2] transition-all">
+                              <div className="flex items-center gap-3 mb-5">
+                                <div className="w-8 h-8 rounded-xl bg-[#2E2E2F]/10 flex items-center justify-center text-[11px] font-black text-[#2E2E2F]">
+                                  {index + 2}
+                                </div>
+                                <span className="text-[10px] font-black text-[#2E2E2F]/40 uppercase tracking-widest">Additional Guest</span>
+                              </div>
+                              
+                                <div className="space-y-4">
+                                  <div className="space-y-1.5">
+                                    <label className="text-[11px] font-medium text-[#2E2E2F]/70 ml-1">Guest Full Name</label>
+                                    <Input
+                                      placeholder="Full name as per identification"
+                                      className="py-3 sm:py-4 px-4 sm:px-5 rounded-[1rem] font-normal bg-[#F2F2F2] border border-[#2E2E2F]/20 focus:bg-[#F2F2F2] text-[#2E2E2F] placeholder:text-[#2E2E2F]/40 transition-colors text-[14px]"
+                                      style={{ '--tw-ring-color': brandColor } as any}
+                                      value={guest.name}
+                                      onChange={(e: any) => {
+                                        const newGuests = [...extraGuests];
+                                        newGuests[index] = { ...newGuests[index], name: e.target.value };
+                                        setExtraGuests(newGuests);
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="space-y-1.5">
+                                    <label className="text-[11px] font-medium text-[#2E2E2F]/70 ml-1">Guest Email Address</label>
+                                    <Input
+                                      type="email"
+                                      placeholder="name@organization.com"
+                                      className="py-3 sm:py-4 px-4 sm:px-5 rounded-[1rem] font-normal bg-[#F2F2F2] border border-[#2E2E2F]/20 focus:bg-[#F2F2F2] text-[#2E2E2F] placeholder:text-[#2E2E2F]/40 transition-colors text-[14px]"
+                                      style={{ '--tw-ring-color': brandColor } as any}
+                                      value={guest.email}
+                                      onChange={(e: any) => {
+                                        const newGuests = [...extraGuests];
+                                        newGuests[index] = { ...newGuests[index], email: e.target.value };
+                                        setExtraGuests(newGuests);
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="md:col-span-2 pt-8 border-t border-[#2E2E2F]/10 space-y-4">
                       <div className="flex items-center justify-between">
                         <p className="text-[12px] font-semibold text-[#2E2E2F] uppercase tracking-wide">Payment Method</p>
                       </div>
@@ -392,8 +467,13 @@ export const RegistrationForm: React.FC = () => {
                           <div className="flex items-center gap-2.5">
                             <span className="w-1.5 h-1.5 bg-[#38BDF2] rounded-full"></span>
                             <p className="text-[11px] font-medium text-[#2E2E2F]/60 uppercase tracking-wide">
-                              {item.qty} {item.qty === 1 ? 'Guest' : 'Guests'}
+                              {item.qty} {item.qty === 1 ? (item.ticket.capacityPerTicket && item.ticket.capacityPerTicket > 1 ? 'Bundle' : 'Ticket') : 'Units'}
                             </p>
+                            {item.ticket.capacityPerTicket && item.ticket.capacityPerTicket > 1 && (
+                              <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-[#2E2E2F]/5 text-[#2E2E2F]/40">
+                                {item.qty * item.ticket.capacityPerTicket} GUESTS
+                              </span>
+                            )}
                           </div>
                         </div>
                         <div className="text-right">
@@ -431,7 +511,7 @@ export const RegistrationForm: React.FC = () => {
                         <input
                           type="text"
                           placeholder="ENTER CODE"
-                          className="flex-1 bg-white border border-[#2E2E2F]/10 rounded-xl px-3 py-2 text-[12px] font-bold uppercase tracking-wider text-[#2E2E2F] focus:outline-none focus:ring-1"
+                          className="flex-1 bg-[#F2F2F2] border border-[#2E2E2F]/20 rounded-xl px-3 py-2 text-[12px] font-bold uppercase tracking-wider text-[#2E2E2F] focus:outline-none focus:ring-1"
                           style={{ '--tw-ring-color': brandColor } as any}
                           value={promoCode}
                           onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
@@ -451,6 +531,28 @@ export const RegistrationForm: React.FC = () => {
                   </div>
 
                   {/* Fee Breakdown */}
+                  <div className="mt-8 pt-6 border-t border-[#2E2E2F]/10 space-y-4">
+                    <div className="p-5 rounded-[1.5rem] flex flex-col gap-1 bg-[#F2F2F2] border border-[#2E2E2F]/10">
+                      <span className="text-[10px] font-black text-[#2E2E2F]/50 uppercase tracking-widest">Total Amount</span>
+                      <span className="text-2xl sm:text-3xl font-black text-[#2E2E2F] tracking-tighter">
+                        PHP {formatCurrency(totalPayable)}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-2 p-5 rounded-[1.5rem] border border-[#2E2E2F]/10 bg-[#F2F2F2]">
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-1.5 rounded-lg bg-[#2E2E2F]/5">
+                          <ICONS.Ticket className="w-4 h-4 text-[#2E2E2F]/60" />
+                        </div>
+                        <span className="text-[11px] font-black text-[#2E2E2F] uppercase tracking-[0.1em]">
+                          Issuing {totalGuests} Individual {totalGuests === 1 ? 'Ticket' : 'Tickets'}
+                        </span>
+                      </div>
+                      <p className="text-[9px] font-bold text-[#2E2E2F]/40 leading-relaxed uppercase tracking-wider">
+                        Every guest in your bundle will receive their own unique digital ticket and entry QR code.
+                      </p>
+                    </div>
+                  </div>
                   <div className="pt-5 sm:pt-6 border-t border-[#2E2E2F]/10 space-y-4">
                     <div className="flex justify-between items-center text-[#2E2E2F]/60">
                       <span className="text-[10px] font-medium uppercase tracking-wide">Platform Subtotal</span>

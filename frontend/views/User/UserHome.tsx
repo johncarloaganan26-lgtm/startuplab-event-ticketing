@@ -48,7 +48,7 @@ export const UserHome: React.FC = () => {
     };
 
     const [formData, setFormData] = useState(initialFormData);
-    const [stats, setStats] = useState({ liveEventsCount: 0, ticketsSold: 0 });
+    const [stats, setStats] = useState({ liveEventsCount: 0, ticketsSold: 0, paidEventsCount: 0 });
     const [loadingStats, setLoadingStats] = useState(true);
     const [organizerProfile, setOrganizerProfile] = useState<any>(null);
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
@@ -70,9 +70,16 @@ export const UserHome: React.FC = () => {
                     }),
                 ]);
                 const liveCount = events.filter(e => e.status === 'PUBLISHED').length;
+                
+                // Calculate paid events (all events with at least one paid ticket)
+                const paidCount = events.filter(e => 
+                    (e.ticketTypes || []).some((t: any) => (t.priceAmount || 0) > 0)
+                ).length;
+
                 setStats({
                     liveEventsCount: liveCount,
-                    ticketsSold: analytics.totalRegistrations || 0
+                    ticketsSold: analytics.totalRegistrations || 0,
+                    paidEventsCount: paidCount
                 });
                 setOrganizerProfile(organizer);
                 if (quota) setEmailQuota(quota);
@@ -208,67 +215,102 @@ export const UserHome: React.FC = () => {
                 </div>
             </div>
 
-            {/* Email Quota and Current Plan Section */}
-            {emailQuota && organizerProfile && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Limits and Current Plan Section */}
+            {organizerProfile && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* Current Plan Card */}
-                    {organizerProfile?.plan && (
-                        <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/10 rounded-[2rem] p-6">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-[#2E2E2F]/60 mb-2">Current Plan</p>
-                            <p className="text-2xl font-black text-[#2E2E2F] tracking-tight">{organizerProfile.plan.name}</p>
-                            <p className="text-[10px] text-[#2E2E2F]/60 font-medium mt-2">{organizerProfile.plan.description}</p>
-                        </div>
-                    )}
-
-                    {/* Email Quota Widget */}
-                    <div className={`${organizerProfile?.currentPlanId ? 'bg-[#F2F2F2] border-[#2E2E2F]/10' : 'bg-red-50 border-red-200'} border-2 rounded-[2rem] p-6 h-fit`}>
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className={`p-2 ${organizerProfile?.currentPlanId ? 'bg-[#2E2E2F]/10' : 'bg-red-200'} rounded-lg`}>
-                                <ICONS.Mail className={`w-5 h-5 ${organizerProfile?.currentPlanId ? 'text-[#2E2E2F]' : 'text-red-600'}`} strokeWidth={2} />
-                            </div>
-                            <div>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-[#2E2E2F]/60">Email Quota</p>
-                                <p className={`text-lg font-black ${organizerProfile?.currentPlanId ? 'text-[#2E2E2F]' : 'text-red-600'}`}>
-                                    {organizerProfile?.currentPlanId ? emailQuota.remaining : '0'}
-                                </p>
-                            </div>
-                        </div>
-
+                    <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/10 rounded-[2rem] p-6 flex flex-col justify-between">
                         <div>
-                            <p className="text-[10px] font-black text-[#2E2E2F]/60 mb-2">
-                                {organizerProfile?.currentPlanId ? `${emailQuota.sent}/${emailQuota.limit}` : 'No Active Plan'}
-                            </p>
-                            {organizerProfile?.currentPlanId ? (
-                                <div className="w-full h-2 bg-[#2E2E2F]/10 rounded-full overflow-hidden">
-                                    <div 
-                                        className={`h-full rounded-full transition-all ${emailQuota.canSend ? 'bg-[#2E2E2F]/40' : 'bg-red-500'}`}
-                                        style={{ width: `${(emailQuota.sent / emailQuota.limit) * 100}%` }}
-                                    />
-                                </div>
-                            ) : (
-                                <div className="w-full h-2 bg-red-200 rounded-full overflow-hidden">
-                                    <div className="h-full rounded-full bg-red-500 w-full" />
-                                </div>
-                            )}
+                            <p className="text-[9px] font-black uppercase tracking-widest text-[#2E2E2F]/60 mb-2">Current Plan</p>
+                            <p className="text-2xl font-black text-[#2E2E2F] tracking-tight">{organizerProfile.plan?.name || 'Free'}</p>
+                            <p className="text-[10px] text-[#2E2E2F]/60 font-medium mt-2">{organizerProfile.plan?.description || 'Basic events only'}</p>
                         </div>
-
                         {!organizerProfile?.currentPlanId && (
-                            <button 
+                            <Button 
                                 onClick={() => setIsUpgradeModalOpen(true)}
-                                className="mt-4 w-full px-4 py-2 rounded-xl bg-[#2E2E2F] text-white font-black text-[10px] uppercase tracking-wider hover:opacity-90 transition-all shadow-lg shadow-[#2E2E2F]/10"
+                                className="mt-4 w-full bg-[#38BDF2] text-white font-black text-[10px] uppercase tracking-wider"
                             >
-                                Subscribe
-                            </button>
-                        )}
-                        {organizerProfile?.currentPlanId && !emailQuota.canSend && (
-                            <button 
-                                onClick={() => setIsUpgradeModalOpen(true)}
-                                className="mt-4 w-full px-4 py-2 rounded-xl bg-[#2E2E2F] text-white font-black text-[10px] uppercase tracking-wider hover:opacity-90 transition-all shadow-lg shadow-[#2E2E2F]/10"
-                            >
-                                Upgrade
-                            </button>
+                                Upgrade Plan
+                            </Button>
                         )}
                     </div>
+
+                    {/* Paid Events Limit Widget */}
+                    <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/10 rounded-[2rem] p-6">
+                        {organizerProfile && (() => {
+                            const pricedLimit = Number(organizerProfile.plan?.limits?.max_priced_events || organizerProfile.plan?.max_priced_events || organizerProfile.plan?.maxPricedEvents || 0);
+                            const usedCount = stats.paidEventsCount;
+                            
+                            return (
+                                <>
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="p-2.5 bg-[#F2F2F2] rounded-xl border border-[#2E2E2F]/5">
+                                            <ICONS.CreditCard className="w-5 h-5 text-[#2E2E2F]" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-[#2E2E2F]/60">Paid Events Used</p>
+                                            <p className="text-lg font-black text-[#2E2E2F]">
+                                                {usedCount} / {pricedLimit}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div className="w-full h-2 bg-[#2E2E2F]/10 rounded-full overflow-hidden">
+                                            <div 
+                                                className={`h-full rounded-full transition-all ${
+                                                    usedCount >= pricedLimit
+                                                    ? 'bg-red-500' 
+                                                    : 'bg-[#38BDF2]'
+                                                }`}
+                                                style={{ width: `${Math.min(100, (usedCount / (pricedLimit || 1)) * 100)}%` }}
+                                            />
+                                        </div>
+                                        <p className="text-[9px] font-bold text-[#2E2E2F]/40 mt-2 uppercase tracking-tight">
+                                            {pricedLimit === 0 
+                                                ? 'No paid events allowed on current plan' 
+                                                : `${Math.max(0, pricedLimit - usedCount)} paid events remaining`}
+                                        </p>
+                                    </div>
+                                </>
+                            );
+                        })()}
+                    </div>
+
+                    {/* Email Quota Widget */}
+                    {emailQuota && (
+                        <div className={`${organizerProfile?.currentPlanId ? 'bg-[#F2F2F2] border-[#2E2E2F]/10' : 'bg-red-50 border-red-200'} border-2 rounded-[2rem] p-6 h-fit`}>
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className={`p-2 ${organizerProfile?.currentPlanId ? 'bg-[#2E2E2F]/10' : 'bg-red-200'} rounded-lg`}>
+                                    <ICONS.Mail className={`w-5 h-5 ${organizerProfile?.currentPlanId ? 'text-[#2E2E2F]' : 'text-red-600'}`} strokeWidth={2} />
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-[#2E2E2F]/60">Email Quota</p>
+                                    <p className={`text-lg font-black ${organizerProfile?.currentPlanId ? 'text-[#2E2E2F]' : 'text-red-600'}`}>
+                                        {organizerProfile?.currentPlanId ? emailQuota.remaining : '0'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p className="text-[10px] font-black text-[#2E2E2F]/60 mb-2">
+                                    {organizerProfile?.currentPlanId ? `${emailQuota.sent}/${emailQuota.limit}` : 'No Active Plan'}
+                                </p>
+                                {organizerProfile?.currentPlanId ? (
+                                    <div className="w-full h-2 bg-[#2E2E2F]/10 rounded-full overflow-hidden">
+                                        <div 
+                                            className={`h-full rounded-full transition-all ${emailQuota.canSend ? 'bg-[#2E2E2F]/40' : 'bg-red-500'}`}
+                                            style={{ width: `${(emailQuota.sent / emailQuota.limit) * 100}%` }}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="w-full h-2 bg-red-200 rounded-full overflow-hidden">
+                                        <div className="h-full rounded-full bg-red-500 w-full" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -305,6 +347,23 @@ export const UserHome: React.FC = () => {
                     </p>
                     <div className="flex items-center gap-2 text-[10px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em] group-hover:text-[#2E2E2F] transition-colors">
                         Open Library <ICONS.ChevronRight className="w-4 h-4" />
+                    </div>
+                </div>
+
+                {/* Help & Support Card */}
+                <div
+                    className="group relative bg-[#F2F2F2] border-2 border-[#2E2E2F]/5 rounded-[2.5rem] p-8 flex flex-col items-start transition-all duration-300 hover:border-[#2E2E2F]/20 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.05)] hover:-translate-y-1"
+                    onClick={() => navigate('/organizer-support')}
+                >
+                    <div className="w-14 h-14 rounded-2xl bg-[#2E2E2F]/10 text-[#2E2E2F] flex items-center justify-center mb-8 group-hover:bg-[#2E2E2F] group-hover:text-white transition-all">
+                        <ICONS.MessageSquare className="w-7 h-7 stroke-[2]" />
+                    </div>
+                    <h2 className="text-2xl font-black text-[#2E2E2F] tracking-tight mb-3">Help & Support</h2>
+                    <p className="text-[#2E2E2F]/60 font-medium leading-relaxed mb-8 flex-1">
+                        Need assistance? Our support team is here to help you optimize your event operations and resolve any technical issues.
+                    </p>
+                    <div className="flex items-center gap-2 text-[10px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em] group-hover:text-[#2E2E2F] transition-colors">
+                        Open Support <ICONS.ChevronRight className="w-4 h-4" />
                     </div>
                 </div>
             </div>

@@ -109,18 +109,19 @@ export const OrganizerSupport: React.FC = () => {
 
   if (loading) return <PageLoader label="Loading support center..." />;
 
-  // Check if user has priority support feature - if not, redirect to subscription
+  // Check if user has priority support feature
   const hasPrioritySupport = Boolean(profile?.plan?.features?.priority_support) || Boolean(profile?.plan?.features?.enable_advanced_reports);
   
-  if (!hasPrioritySupport) {
+  // Only lock if they have NO plan at all (they must choose a plan first)
+  if (!profile?.plan) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center">
         <div className="w-20 h-20 bg-[#2E2E2F]/5 rounded-full flex items-center justify-center mb-8 text-[#2E2E2F]/20">
           <ICONS.Lock className="w-10 h-10" />
         </div>
-        <h2 className="text-3xl font-black text-[#2E2E2F] mb-3 uppercase tracking-tight">Access Restricted</h2>
+        <h2 className="text-3xl font-black text-[#2E2E2F] mb-3 uppercase tracking-tight">Support Restricted</h2>
         <p className="text-[#2E2E2F]/60 max-w-[320px] mx-auto mb-10 text-base font-medium leading-relaxed">
-          Priority Support is only available with specific subscription plans. Upgrade your plan to unlock this feature.
+          Access to the Support Center requires an active subscription. Please choose a plan to continue.
         </p>
         <div className="flex gap-4">
           <button
@@ -128,12 +129,6 @@ export const OrganizerSupport: React.FC = () => {
             className="px-10 py-4 bg-[#38BDF2] text-white rounded-[20px] font-black uppercase tracking-widest text-[10px] shadow-lg hover:bg-[#2E2E2F] transition-all"
           >
             View Plans
-          </button>
-          <button
-            onClick={() => navigate('/home')}
-            className="px-10 py-4 bg-[#F2F2F2] text-[#2E2E2F] rounded-[20px] font-black uppercase tracking-widest text-[10px] border border-[#2E2E2F]/20 hover:bg-[#2E2E2F]/5 transition-all"
-          >
-            Go Back
           </button>
         </div>
       </div>

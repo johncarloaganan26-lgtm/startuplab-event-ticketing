@@ -327,11 +327,26 @@ export const getSummary = async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const startIso = today.toISOString();
-
-    const ticketsSoldToday = (tickets || []).filter(t => t.issuedAt && t.issuedAt >= startIso).length;
+    const ticketsSoldToday = (tickets || []).filter(t => t.issuedAt && t.issuedAt >= startIso).length;
     const revenueToday = paidOrders
       .filter(o => o.created_at && o.created_at >= startIso)
       .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+    // To accurately count "paid" events, we need to know which events have paid tickets.
+    const { data: ticketTypes, error: ttErr } = await supabase
+      .from('ticketTypes')
+      .select('eventId, priceAmount')
+      .in('eventId', filteredEventIds);
+
+    let totalPaidEvents = 0;
+    if (!ttErr && ticketTypes) {
+      const paidEventIds = new Set(
+        ticketTypes
+          .filter(tt => (tt.priceAmount || 0) > 0)
+          .map(tt => tt.eventId)
+      );
+      totalPaidEvents = paidEventIds.size;
+    }
 
     return res.json({
       totalRegistrations,
@@ -340,6 +355,7 @@ export const getSummary = async (req, res) => {
       revenueToday,
       attendanceRate,
       paymentSuccessRate,
+      totalPaidEvents,
     });
   } catch (err) {
     logAnalyticsError('getSummary.catch', err, { requesterId: req.user?.id });

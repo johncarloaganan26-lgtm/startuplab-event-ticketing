@@ -47,10 +47,15 @@ async function syncPlans() {
 
                 if (key === 'max_events' && !limits['max_active_events']) limits['max_active_events'] = numericVal;
                 if (key === 'max_active_events' && !limits['max_events']) limits['max_events'] = numericVal;
-                if (key === 'max_attendees_per_month' && !limits['monthly_attendees']) limits['monthly_attendees'] = numericVal;
+                if (key === 'max_attendees_per_month' && !limits['max_attendees_per_month']) limits['max_attendees_per_month'] = numericVal;
                 if (key === 'monthly_attendees' && !limits['max_attendees_per_month']) limits['max_attendees_per_month'] = numericVal;
             }
         });
+
+        // Sync native columns to JSONB limits if present
+        if (plan.maxPricedEvents !== undefined && !limits.max_priced_events) {
+            limits.max_priced_events = plan.maxPricedEvents;
+        }
 
         const { error: updateError } = await supabase
             .from('plans')

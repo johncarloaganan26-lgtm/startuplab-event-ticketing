@@ -150,6 +150,52 @@ export const checkPlanLimits = async (organizerId, featureKey, requestedValue = 
                 break;
             }
 
+            case 'max_priced_events': {
+                // Count events that have at least one paid ticket type (priceAmount > 0)
+                const { data: events } = await supabase
+                    .from('events')
+                    .select('eventId')
+                    .eq('organizerId', organizerId);
+
+                if (!events || events.length === 0) break;
+
+                const eventIds = events.map(e => e.eventId);
+                if (excludeId && eventIds.includes(excludeId)) {
+                    eventIds.splice(eventIds.indexOf(excludeId), 1);
+                }
+
+                // Find events that have at least one ticket type with price > 0
+                const { data: pricedEvents } = await supabase
+                    .from('ticketTypes')
+                    .select('eventId')
+                    .in('eventId', eventIds)
+                    .gt('priceAmount', 0);
+
+                const uniquePricedEventIds = [...new Set((pricedEvents || []).map(t => t.eventId))];
+                const pricedEventCount = uniquePricedEventIds.length;
+
+                const limitValue = Number(limits.max_priced_events || 0);
+
+                if (limitValue === 0) {
+                    return {
+                        allowed: false,
+                        message: `Paid events are not allowed on your current plan. Please upgrade to create paid events.`,
+                        limit: 0,
+                        current: pricedEventCount
+                    };
+                }
+
+                if (pricedEventCount >= limitValue) {
+                    return {
+                        allowed: false,
+                        message: `Paid events limit reached. Your current plan allows up to ${limitValue} paid events.`,
+                        limit: limitValue,
+                        current: pricedEventCount
+                    };
+                }
+                break;
+            }
+
             case 'max_staff_accounts': {
                 const ownerUserId = organizer.ownerUserId;
 

@@ -876,7 +876,14 @@ export const EventDetails: React.FC = () => {
                           style={{ borderColor: qty > 0 ? brandColor : '#2E2E2F1A' }}
                         >
                           <div className="flex justify-between items-start mb-2">
-                            <span className="text-[#2E2E2F] text-[13px] uppercase tracking-wider">{ticket.name}</span>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[#2E2E2F] text-[13px] uppercase tracking-wider font-bold">{ticket.name}</span>
+                              {ticket.capacityPerTicket && ticket.capacityPerTicket > 1 && (
+                                <span className="text-[9px] font-black text-[#38BDF2] uppercase tracking-widest">
+                                  Bundle — Covers {ticket.capacityPerTicket} Guests
+                                </span>
+                              )}
+                            </div>
                             <span
                               className="text-[8px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest text-[#F2F2F2]"
                               style={{ backgroundColor: isSoldOut ? '#2E2E2F' : brandColor }}
@@ -884,6 +891,13 @@ export const EventDetails: React.FC = () => {
                               {isSoldOut ? 'SOLD OUT' : 'AVAILABLE'}
                             </span>
                           </div>
+                          
+                          {ticket.description && (
+                            <p className="text-[11px] text-[#2E2E2F]/60 mb-4 font-medium leading-relaxed">
+                              {ticket.description}
+                            </p>
+                          )}
+
                           <div className="text-xl font-black text-[#2E2E2F] mb-6 tracking-tighter">
                             {ticket.priceAmount === 0 ? 'FREE' : <><span className="">PHP</span> <span className="font-black">{ticket.priceAmount.toLocaleString()}.00</span></>}
                           </div>

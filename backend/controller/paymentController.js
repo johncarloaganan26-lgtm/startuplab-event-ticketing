@@ -844,24 +844,41 @@ export const hitpayWebhook = async (req, res) => {
         let issuedCount = 0
         const notificationPromises = []
 
-        // 1. Fetch event details ONCE outside the loops
+        // 1. Fetch event details and ticket types to get bundle capacities
         const { data: event } = await supabase
           .from('events')
           .select('eventName, description, startAt, endAt, locationText, locationType, imageUrl, streamingPlatform, organizerId')
           .eq('eventId', order.eventId)
           .maybeSingle()
 
+        const ttIds = [...new Set((orderItems || []).map(oi => oi.ticketTypeId))]
+        const { data: ticketTypes } = await supabase
+          .from('ticketTypes')
+          .select('ticketTypeId, capacity_per_ticket')
+          .in('ticketTypeId', ttIds)
+        const ttMap = new Map((ticketTypes || []).map(tt => [tt.ticketTypeId, tt]))
+
+        let guestIdx = 0
+        const extraGuests = order.metadata?.extraGuests || []
+
         for (const item of orderItems || []) {
           const { ticketTypeId, quantity } = item
-          for (let i = 0; i < quantity; i++) {
+          const tt = ttMap.get(ticketTypeId)
+          const capacityPerTicket = tt?.capacity_per_ticket || 1
+          const totalGuestsToIssue = quantity * capacityPerTicket
+
+          for (let i = 0; i < totalGuestsToIssue; i++) {
+            const isPrimary = guestIdx === 0
+            const guestInfo = isPrimary ? null : (extraGuests[guestIdx - 1])
+
             const { data: attendee, error: attErr } = await supabase
               .from('attendees')
               .insert({
                 eventId: order.eventId,
                 orderId: order.orderId,
-                name: order.buyerName,
-                email: order.buyerEmail,
-                phoneNumber: order.buyerPhone || null,
+                name: isPrimary ? order.buyerName : (guestInfo?.name || `${order.buyerName} (Guest ${guestIdx + 1})`),
+                email: isPrimary ? order.buyerEmail : (guestInfo?.email || order.buyerEmail),
+                phoneNumber: isPrimary ? (order.buyerPhone || null) : null,
                 company: order.metadata?.company || null,
                 consent: true
               })
@@ -889,21 +906,28 @@ export const hitpayWebhook = async (req, res) => {
               actionType: 'TICKET_ISSUED',
               orderId: order.orderId,
               ticketId: ticketData?.ticketId || null,
-              details: { ticketTypeId, source: 'PAID_ORDER' },
+              details: { 
+                ticketTypeId, 
+                source: 'PAID_ORDER',
+                guestIndex: guestIdx + 1,
+                isBundle: capacityPerTicket > 1
+              },
               req
             })
 
             issuedCount += 1
+            guestIdx++
 
             // 2. Queue notifications to be sent in parallel
+            // Send to the Attendee (Guest or Buyer)
             const deliveryPromise = notifyUserByPreference({
-              name: order.buyerName,
-              recipientFallbackEmail: order.buyerEmail,
+              name: attendee.name,
+              recipientFallbackEmail: attendee.email,
               eventId: order.eventId,
               organizerId: event?.organizerId,
               type: 'TICKET_DELIVERY',
               title: `Your Ticket Confirmed: ${event?.eventName || 'the event'}!`,
-              message: `Thank you for your order! Your tickets for "${event?.eventName}" are attached below.`,
+              message: `Thank you for your order! Your ticket for "${event?.eventName}" is attached below.`,
               metadata: {
                 eventId: order.eventId,
                 orderId: order.orderId,
@@ -921,13 +945,39 @@ export const hitpayWebhook = async (req, res) => {
               console.error('[Payments] Attendee notification failed:', err.message);
             });
             notificationPromises.push(deliveryPromise);
+
+            // Also send a copy to the Buyer if it's a guest
+            if (attendee.email !== order.buyerEmail) {
+              const buyerCopyPromise = notifyUserByPreference({
+                name: order.buyerName,
+                recipientFallbackEmail: order.buyerEmail,
+                eventId: order.eventId,
+                organizerId: event?.organizerId,
+                type: 'TICKET_DELIVERY',
+                title: `Guest Ticket: ${attendee.name} - ${event?.eventName}`,
+                message: `This is a copy of the ticket sent to your guest, ${attendee.name}.`,
+                metadata: {
+                  eventId: order.eventId,
+                  orderId: order.orderId,
+                  eventName: event?.eventName || '',
+                  eventDescription: event?.description || '',
+                  eventStartAt: event?.startAt ? new Date(event.startAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : '',
+                  eventEndAt: event?.endAt ? new Date(event.endAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : '',
+                  eventLocation: event?.locationText || '',
+                  locationType: event?.locationType || '',
+                  eventImageUrl: event?.imageUrl || '',
+                  streamingPlatform: event?.streamingPlatform || '',
+                  ticket: { ticketCode, qrPayload: ticketCode, status: 'ISSUED' }
+                }
+              }).catch(err => {
+                console.error('[Payments] Buyer copy notification failed:', err.message);
+              });
+              notificationPromises.push(buyerCopyPromise);
+            }
           }
         }
 
-        // Wait for all notifications to complete (or fail) before responding, or fire-and-forget
-        // Recommending waiting for a few seconds max or fire-and-forget for better UX.
-        // Let's fire-and-forget to keep the webhook response FAST, but we can also wait with Promise.all
-        // Using Promise.all here but since we caught the errors, it won't crash.
+        // Wait for all notifications to complete
         await Promise.all(notificationPromises);
 
         if (issuedCount > 0) {

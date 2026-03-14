@@ -38,6 +38,7 @@ const defaultDraft: PlanDraft = {
     max_staff_accounts: 2,
     max_attendees_per_month: 100,
     email_quota_per_day: 500,
+    max_priced_events: 0,
   },
   promotions: {
     max_promoted_events: 0,
@@ -80,6 +81,7 @@ const toDraft = (plan: AdminPlan): PlanDraft => ({
     max_staff_accounts: plan.limits?.max_staff_accounts ?? 0,
     max_attendees_per_month: plan.limits?.max_attendees_per_month ?? 0,
     email_quota_per_day: plan.limits?.email_quota_per_day ?? 500,
+    max_priced_events: plan.limits?.max_priced_events ?? 0,
   },
   promotions: {
     max_promoted_events: (plan as any)?.promotions?.max_promoted_events ?? 0,
@@ -110,6 +112,7 @@ const toPayload = (draft: PlanDraft): Partial<AdminPlan> => ({
     max_staff_accounts: draft.limits.max_staff_accounts,
     max_attendees_per_month: draft.limits.max_attendees_per_month,
     email_quota_per_day: draft.limits.email_quota_per_day,
+    max_priced_events: draft.limits.max_priced_events,
   },
   promotions: {
     max_promoted_events: Math.max(0, Math.floor(draft.promotions?.max_promoted_events ?? 0)),
@@ -360,6 +363,7 @@ export const SubscriptionPlans: React.FC = () => {
                       {[
                         { label: 'Promoted Events', val: (plan as any)?.promotions?.max_promoted_events || 0, icon: <ICONS.TrendingUp /> },
                         { label: 'Promo Duration', val: ((plan as any)?.promotions?.promotion_duration_days || 7) + ' days', icon: <ICONS.Calendar /> },
+                        { label: 'Paid Events Limit', val: plan.limits?.max_priced_events || 0, icon: <ICONS.Zap /> },
                         { label: 'Staff Accounts', val: plan.limits?.max_staff_accounts || 0, icon: <ICONS.Users /> },
                         { label: 'Monthly Attendees', val: plan.limits?.monthly_attendees || plan.limits?.max_attendees_per_month || 0, icon: <ICONS.Users /> },
                         { label: 'Daily Email Quota', val: (plan.limits?.email_quota_per_day || 0) + ' emails/day', icon: <ICONS.Mail /> },
@@ -466,6 +470,7 @@ export const SubscriptionPlans: React.FC = () => {
                   <Input label="Max Promoted Events" type="number" value={draft.promotions?.max_promoted_events || 0} onChange={(e: any) => setDraft((prev) => ({ ...prev, promotions: { ...prev.promotions, max_promoted_events: Math.max(0, parseNumeric(e.target.value, 0)) } }))} />
                   <Input label="Promotion Duration (Days)" type="number" value={draft.promotions?.promotion_duration_days || 7} onChange={(e: any) => setDraft((prev) => ({ ...prev, promotions: { ...prev.promotions, promotion_duration_days: Math.max(1, parseNumeric(e.target.value, 7)) } }))} />
                   <Input label="Max Staff Accounts" type="number" value={draft.limits.max_staff_accounts} onChange={(e: any) => setDraft((prev) => ({ ...prev, limits: { ...prev.limits, max_staff_accounts: parseNumeric(e.target.value, 0) } }))} />
+                  <Input label="Max Paid Events" type="number" value={draft.limits.max_priced_events} onChange={(e: any) => setDraft((prev) => ({ ...prev, limits: { ...prev.limits, max_priced_events: Math.max(0, parseNumeric(e.target.value, 0)) } }))} />
                   <Input label="Monthly Attendees" type="number" value={draft.limits.max_attendees_per_month} onChange={(e: any) => setDraft((prev) => ({ ...prev, limits: { ...prev.limits, max_attendees_per_month: parseNumeric(e.target.value, 0) } }))} />
                   <Input label="Free Trial Days" type="number" value={draft.trialDays} onChange={(e: any) => setDraft((prev) => ({ ...prev, trialDays: Math.max(0, Math.floor(parseNumeric(e.target.value, 0))) }))} />
                   <Input label="Daily Email Quota" type="number" value={(draft.limits.email_quota_per_day as any) || 500} onChange={(e: any) => setDraft((prev) => ({ ...prev, limits: { ...prev.limits, email_quota_per_day: Math.max(0, parseNumeric(e.target.value, 500)) } }))} />

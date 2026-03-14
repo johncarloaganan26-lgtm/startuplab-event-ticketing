@@ -6,6 +6,7 @@ import { UserRole } from '../../types';
 import { apiService } from '../../services/apiService';
 import { AdminPaymentSettings } from './AdminPaymentSettings';
 import { SubscriptionPlans } from './SubscriptionPlans';
+import { SupportTickets } from './SupportTickets';
 import { useUser } from '../../context/UserContext';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
@@ -68,10 +69,11 @@ export const SettingsView: React.FC = () => {
     { id: 'plans', label: 'Subscription Plans', description: 'Tier configuration' },
     { id: 'email', label: 'Email Configuration', description: 'SMTP server settings' },
     { id: 'payments', label: 'Payment Gateway', description: 'HitPay credentials' },
+    { id: 'support', label: 'Support Tickets', description: 'Organizer inquiries' },
     { id: 'profile', label: 'Profile & Security', description: 'Personal security' }
   ];
 
-  type SettingsTab = 'team' | 'plans' | 'email' | 'payments' | 'profile';
+  type SettingsTab = 'team' | 'plans' | 'email' | 'payments' | 'support' | 'profile';
 
   const requestedTab = searchParams.get('tab');
   const activeTab = (TABS.some((tab) => tab.id === requestedTab) ? requestedTab : (role === UserRole.STAFF ? 'profile' : 'team')) as SettingsTab;
@@ -394,6 +396,7 @@ export const SettingsView: React.FC = () => {
         {activeTab === 'plans' && <SubscriptionPlans />}
         {activeTab === 'email' && <AdminEmailSettings setNotification={setNotification} />}
         {activeTab === 'payments' && <AdminPaymentSettings />}
+        {activeTab === 'support' && <SupportTickets />}
         {activeTab === 'profile' && (
           <div className="space-y-8 max-w-2xl">
             <Card className="p-10 border-[#2E2E2F]/10 rounded-[2.5rem] bg-[#F2F2F2]">

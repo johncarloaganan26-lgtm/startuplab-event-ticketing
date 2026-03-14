@@ -79,6 +79,7 @@ export const PricingPlansGrid: React.FC<PricingPlansGridProps> = ({
             { label: 'Promo Duration', val: ((plan as any)?.promotions?.promotion_duration_days || 7) + ' days', icon: <ICONS.Calendar /> },
             { label: 'Staff Accounts', val: plan.limits?.max_staff_accounts || 0, icon: <ICONS.Users /> },
             { label: 'Monthly Attendees', val: plan.limits?.monthly_attendees || plan.limits?.max_attendees_per_month || 0, icon: <ICONS.Users /> },
+            { label: 'Paid Events Limit', val: plan.limits?.max_priced_events || 0, icon: <ICONS.Zap /> },
             { label: 'Daily Email Quota', val: (plan.limits?.email_quota_per_day || 0) + ' emails/day', icon: <ICONS.Mail /> },
           ];
 

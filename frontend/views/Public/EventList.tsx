@@ -853,7 +853,7 @@ todayEnd.setHours(23, 59, 59, 999);
                   Organizers
                 </h1>
 
-                <p className="text-[#0B1A2E]/75 text-base sm:text-lg font-bold leading-relaxed max-w-[550px] mb-12">
+                <p className="text-[#0B1A2E]/75 text-base sm:text-lg font-medium leading-relaxed max-w-[550px] mb-12">
                   Manage registrations, tickets, attendee check-ins, and performance in one simple, compliance-ready event platform — built for organizers in the Philippines.
                 </p>
 
@@ -883,7 +883,7 @@ todayEnd.setHours(23, 59, 59, 999);
                   <h4 className="text-[32px] lg:text-[42px] leading-[1.05] font-[900] text-[#0B1A2E] tracking-tighter text-left mb-2">
                     6+ Core<br />Event<br />Modules
                   </h4>
-                  <p className="text-[14px] text-[#0B1A2E]/80 font-bold text-left leading-relaxed">
+                  <p className="text-[14px] text-[#0B1A2E]/80 font-medium text-left leading-relaxed">
                     Ticketing, Registration,<br />Check-in, Analytics,<br />Seats, Reports
                   </p>
                 </div>
@@ -892,7 +892,7 @@ todayEnd.setHours(23, 59, 59, 999);
                   <h4 className="text-[32px] lg:text-[42px] leading-[1.05] font-[900] text-[#0B1A2E] tracking-tighter text-left mb-2">
                     {organizerCount > 3 ? organizerCount : '3'}+ Active<br />Event<br />Organizers
                   </h4>
-                  <p className="text-[14px] text-[#0B1A2E]/80 font-bold text-left leading-relaxed">
+                  <p className="text-[14px] text-[#0B1A2E]/80 font-medium text-left leading-relaxed">
                     Built with real-world<br />organizer experience
                   </p>
                 </div>
@@ -901,7 +901,7 @@ todayEnd.setHours(23, 59, 59, 999);
                   <h4 className="text-[32px] lg:text-[42px] leading-[1.05] font-[900] text-[#0B1A2E] tracking-tighter text-left mb-2">
                     {(pagination?.total || 0) > 8 ? pagination.total : '8'}+ Hosted<br />Event<br />Workflows
                   </h4>
-                  <p className="text-[14px] text-[#0B1A2E]/80 font-bold text-left leading-relaxed">
+                  <p className="text-[14px] text-[#0B1A2E]/80 font-medium text-left leading-relaxed">
                     From event planning to<br />secure payouts
                   </p>
                 </div>

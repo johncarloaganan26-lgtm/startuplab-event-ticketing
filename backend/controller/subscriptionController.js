@@ -731,23 +731,48 @@ export const handleSubscriptionWebhook = async (req, res) => {
 
 export const cancelSubscription = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    const { organizerId } = req.params;
+    const { subscriptionId } = req.params;
 
-    const { error } = await supabase
+    if (!subscriptionId || subscriptionId === 'undefined') {
+      return res.status(400).json({ error: 'Subscription ID is required' });
+    }
+
+    // 1. Find the subscription to get the organizerId
+    const { data: sub, error: subFetchError } = await supabase
       .from('organizersubscriptions')
-      .update({ status: 'cancelled' })
-      .eq('organizerId', organizerId)
-      .eq('status', 'active');
+      .select('organizerId')
+      .eq('subscriptionId', subscriptionId)
+      .maybeSingle();
 
-    if (error) throw error;
+    if (subFetchError) throw subFetchError;
+    if (!sub) return res.status(404).json({ error: 'Subscription not found' });
 
-    await supabase.from('organizers').update({ subscriptionStatus: 'cancelled' }).eq('organizerId', organizerId);
+    const organizerId = sub.organizerId;
 
-    return res.json({ success: true });
+    // 2. Update the subscription status
+    const { error: updateError } = await supabase
+      .from('organizersubscriptions')
+      .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+      .eq('subscriptionId', subscriptionId);
+
+    if (updateError) throw updateError;
+
+    // 3. Update the organizer's status
+    // We set currentPlanId to null if they are cancelling (returning to a 'no plan' state)
+    await supabase
+      .from('organizers')
+      .update({ 
+        subscriptionStatus: 'cancelled',
+        currentPlanId: null,
+        planExpiresAt: null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('organizerId', organizerId);
+
+    return res.json({ success: true, message: 'Subscription cancelled successfully' });
   } catch (error) {
     console.error('cancelSubscription error:', error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message || 'Failed to cancel subscription' });
   }
 };
 

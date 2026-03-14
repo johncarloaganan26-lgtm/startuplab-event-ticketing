@@ -46,6 +46,10 @@ const normalizeHitPaySettingsPayload = (data: any): HitPaySettings | null => {
 };
 
 export const apiService = {
+  _mapTicketType: (t: any): TicketType => ({
+    ...t,
+    capacityPerTicket: t.capacity_per_ticket || t.capacityPerTicket || 1
+  }),
   // PATCH /api/user/name
   updateUserName: async (name: string) => {
     const res = await fetch(`${API_BASE}/api/user/name`, {
@@ -481,7 +485,11 @@ export const apiService = {
     });
     if (!res.ok) throw new Error(`Failed to load live events: ${res.status}`);
     const data = await res.json();
-    return Array.isArray(data?.data) ? data.data : [];
+    const events = Array.isArray(data?.data) ? data.data : [];
+    return events.map((ev: Event) => ({
+      ...ev,
+      ticketTypes: ev.ticketTypes?.map(apiService._mapTicketType) || []
+    }));
   },
 
   // GET /api/events
@@ -505,7 +513,14 @@ export const apiService = {
       headers: { 'Content-Type': 'application/json' }
     });
     if (!res.ok) throw new Error(`Failed to load events: ${res.status}`);
-    return await res.json();
+    const data = await res.json();
+    if (data.events) {
+      data.events = data.events.map((ev: Event) => ({
+        ...ev,
+        ticketTypes: ev.ticketTypes?.map(apiService._mapTicketType) || []
+      }));
+    }
+    return data;
   },
 
   // GET /api/events/:slug
@@ -515,8 +530,11 @@ export const apiService = {
     });
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`Failed to load event: ${res.status}`);
-    const data = await res.json();
-    return data as Event;
+    const data = await res.json() as Event;
+    if (data.ticketTypes) {
+      data.ticketTypes = data.ticketTypes.map(apiService._mapTicketType);
+    }
+    return data;
   },
 
   // GET /api/events/feed
@@ -532,7 +550,14 @@ export const apiService = {
       headers: { 'Content-Type': 'application/json' }
     });
     if (!res.ok) throw new Error(`Failed to load events feed: ${res.status}`);
-    return await res.json();
+    const data = await res.json();
+    if (data.events) {
+      data.events = data.events.map((ev: Event) => ({
+        ...ev,
+        ticketTypes: ev.ticketTypes?.map(apiService._mapTicketType)
+      }));
+    }
+    return data;
   },
 
   // GET /api/events/:id/details
@@ -542,7 +567,11 @@ export const apiService = {
     });
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`Failed to load event details: ${res.status}`);
-    return await res.json();
+    const data = await res.json();
+    if (data.ticketTypes) {
+      data.ticketTypes = data.ticketTypes.map(apiService._mapTicketType);
+    }
+    return data;
   },
 
   // POST /api/orders (Creates Order -> OrderItems -> Attendees -> Tickets)
@@ -556,6 +585,7 @@ export const apiService = {
     totalAmount: number;
     currency: string;
     promoCode?: string | null;
+    extraGuests?: { name: string; email?: string }[];
   }): Promise<{ orderId: string }> => {
     const res = await fetch(`${API_BASE}/api/orders`, {
       method: 'POST',
@@ -661,7 +691,8 @@ export const apiService = {
   getTicketTypes: async (eventId: string): Promise<TicketType[]> => {
     const res = await fetch(`${API_BASE}/api/ticket-types?eventId=${encodeURIComponent(eventId)}`);
     if (!res.ok) throw new Error(`Failed to load ticket types: ${res.status}`);
-    return await res.json();
+    const data = await res.json();
+    return data.map(apiService._mapTicketType);
   },
 
   // POST /api/ticket-types
@@ -676,7 +707,8 @@ export const apiService = {
 
     });
     if (!res.ok) throw new Error(`Failed to create ticket type: ${res.status}`);
-    return await res.json();
+    const result = await res.json();
+    return apiService._mapTicketType(result);
   },
 
   // PUT /api/ticket-types/:id
@@ -688,7 +720,8 @@ export const apiService = {
       body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error(`Failed to update ticket type: ${res.status}`);
-    return await res.json();
+    const result = await res.json();
+    return apiService._mapTicketType(result);
   },
 
   // DELETE /api/ticket-types/:id
@@ -729,7 +762,10 @@ export const apiService = {
     });
     if (!res.ok) throw new Error(`Failed to load admin events: ${res.status}`);
     const data = await res.json();
-    return (data || []).map((event: Event) => ({ ...event, ticketTypes: event.ticketTypes || [] }));
+    return (data || []).map((event: Event) => ({
+      ...event,
+      ticketTypes: event.ticketTypes?.map(apiService._mapTicketType) || []
+    }));
   },
 
   // User-specific events (only events created by the logged-in user)
@@ -741,7 +777,10 @@ export const apiService = {
     });
     if (!res.ok) throw new Error(`Failed to load user events: ${res.status}`);
     const data = await res.json();
-    return (data || []).map((event: Event) => ({ ...event, ticketTypes: event.ticketTypes || [] }));
+    return (data || []).map((event: Event) => ({
+      ...event,
+      ticketTypes: event.ticketTypes?.map(apiService._mapTicketType) || []
+    }));
   },
 
   createUserEvent: async (eventData: Partial<Event>): Promise<Event> => {

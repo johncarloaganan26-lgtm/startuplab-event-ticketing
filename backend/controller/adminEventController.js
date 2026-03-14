@@ -161,7 +161,7 @@ export const listAdminEvents = async (req, res) => {
     // 2) Query events and then enforce creator-role filtering in code
     let query = supabase
       .from('events')
-      .select('*')
+      .select('*, ticketTypes(*)')
       .order('created_at', { ascending: false });
 
     if (search) {
@@ -187,7 +187,7 @@ export const listUserEvents = async (req, res) => {
     const search = (req.query?.search || '').toString().trim();
     let query = supabase
       .from('events')
-      .select('*')
+      .select('*, ticketTypes(*)')
       .eq('createdBy', userId)
       .eq('is_archived', false) // Exclude archived events
       .order('created_at', { ascending: false });
@@ -724,6 +724,24 @@ export const publishEvent = async (req, res) => {
           error: eventLimit.message,
           code: 'PLAN_LIMIT_REACHED'
         });
+      }
+
+      // Check if event has paid tickets, and if so, validate paid event limit
+      const { data: ticketTypes } = await supabase
+        .from('ticketTypes')
+        .select('ticketTypeId')
+        .eq('eventId', id)
+        .gt('priceAmount', 0)
+        .limit(1);
+
+      if (ticketTypes && ticketTypes.length > 0) {
+        const pricedEventLimit = await checkPlanLimits(event.organizerId, 'max_priced_events', 1, { excludeId: id });
+        if (!pricedEventLimit.allowed) {
+          return res.status(403).json({
+            error: pricedEventLimit.message,
+            code: 'PAID_EVENT_LIMIT_REACHED'
+          });
+        }
       }
     }
 

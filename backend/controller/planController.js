@@ -12,6 +12,7 @@ const LIMIT_KEYS = {
   max_active_events: 'max_active_events',
   max_staff_accounts: 'max_staff_accounts',
   max_attendees_per_month: 'max_attendees_per_month',
+  max_priced_events: 'max_priced_events',
 };
 
 const PROMOTION_KEYS = {
@@ -54,6 +55,7 @@ const mapPlan = (row, featureRows = []) => {
     max_staff_accounts: 0,
     max_attendees_per_month: 0,
     email_quota_per_day: 500,
+    max_priced_events: 0,
   };
   const promotions = {
     max_promoted_events: 0,
@@ -71,6 +73,7 @@ const mapPlan = (row, featureRows = []) => {
     if (item.key === LIMIT_KEYS.max_active_events) limits.max_active_events = coerceLimitValue(item.value);
     if (item.key === LIMIT_KEYS.max_staff_accounts) limits.max_staff_accounts = coerceLimitValue(item.value);
     if (item.key === LIMIT_KEYS.max_attendees_per_month) limits.max_attendees_per_month = coerceLimitValue(item.value);
+    if (item.key === LIMIT_KEYS.max_priced_events) limits.max_priced_events = coerceLimitValue(item.value);
     if (item.key === 'email_quota_per_day') limits.email_quota_per_day = coerceLimitValue(item.value);
 
     if (item.key === PROMOTION_KEYS.max_promoted_events) promotions.max_promoted_events = toNumber(item.value, 0);

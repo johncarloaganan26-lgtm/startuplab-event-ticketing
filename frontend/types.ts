@@ -103,11 +103,14 @@ export interface AdminPlan {
     max_events?: number | string;
     max_active_events?: number | string;
     max_total_events?: number | string;
+    max_priced_events?: number | string; // Max number of paid events organizer can create
   };
   promotions?: {
     max_promoted_events: number;
     promotion_duration_days: number;
   };
+  max_priced_events?: number; // Legacy/DB field support
+  maxPricedEvents?: number;   // Legacy/Native field support
   created_at?: string;
   updated_at?: string;
 }
@@ -160,6 +163,7 @@ export interface TicketType {
   currency: string;
   quantityTotal: number;
   quantitySold: number;
+  capacityPerTicket?: number; // How many people 1 ticket covers (e.g. 5 for a bundle)
   salesStartAt?: string;
   salesEndAt?: string;
   status: TicketTypeStatus;
@@ -257,4 +261,5 @@ export interface AnalyticsSummary {
   revenueToday: number;
   attendanceRate: number;
   paymentSuccessRate: number;
+  totalPaidEvents?: number;
 }

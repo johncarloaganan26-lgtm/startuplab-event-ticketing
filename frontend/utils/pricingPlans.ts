@@ -41,6 +41,9 @@ export const getPlanValueItems = (plan: AdminPlan): string[] => {
     items.push(`${formatLimitValue(plan.limits.max_active_events)} Active Events`);
     items.push(`${formatLimitValue(plan.limits.max_staff_accounts)} Staff Accounts`);
     items.push(`${formatLimitValue(plan.limits.max_attendees_per_month)} Monthly Attendees`);
+    if (plan.limits.max_priced_events !== undefined) {
+      items.push(`${formatLimitValue(plan.limits.max_priced_events)} Paid Events`);
+    }
   }
 
   // Features
