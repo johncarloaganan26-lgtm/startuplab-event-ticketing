@@ -34,7 +34,22 @@ const initializeData = () => {
 
 initializeData();
 
-const API_BASE = import.meta.env.VITE_API_BASE;
+// Helper to determine the best API base URL
+const getApiBase = () => {
+  const envBase = import.meta.env.VITE_API_BASE;
+  if (!envBase) return '';
+  // If we're on a hosted site (not localhost) and the env says localhost,
+  // we should probably use relative URLs to avoid "Failed to fetch"
+  if (typeof window !== 'undefined' && 
+      window.location.hostname !== 'localhost' && 
+      envBase.includes('localhost')) {
+    console.warn(`[API] Deployment mismatch: VITE_API_BASE is set to localhost but site is hosted at ${window.location.hostname}. Falling back to relative paths.`);
+    return '';
+  }
+  return envBase.replace(/\/$/, '');
+};
+
+const API_BASE = getApiBase();
 
 const normalizeHitPaySettingsPayload = (data: any): HitPaySettings | null => {
   if (!data) return null;
@@ -50,9 +65,21 @@ export const apiService = {
     ...t,
     capacityPerTicket: t.capacity_per_ticket || t.capacityPerTicket || 1
   }),
+  
+  // Wrapper for fetch with better error logging
+  _fetch: async (url: string, options: RequestInit = {}) => {
+    try {
+      const res = await fetch(url, options);
+      return res;
+    } catch (err) {
+      console.error(`[API] Global fetch error for ${url}:`, err);
+      throw err;
+    }
+  },
+
   // PATCH /api/user/name
   updateUserName: async (name: string) => {
-    const res = await fetch(`${API_BASE}/api/user/name`, {
+    const res = await apiService._fetch(`${API_BASE}/api/user/name`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -64,7 +91,7 @@ export const apiService = {
 
   // --- SMTP Settings APIs ---
   getSmtpSettings: async () => {
-    const res = await fetch(`${API_BASE}/api/settings/smtp`, {
+    const res = await apiService._fetch(`${API_BASE}/api/settings/smtp`, {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       cache: 'no-store'
@@ -74,7 +101,7 @@ export const apiService = {
   },
 
   updateSmtpSettings: async (payload: any) => {
-    const res = await fetch(`${API_BASE}/api/settings/smtp`, {
+    const res = await apiService._fetch(`${API_BASE}/api/settings/smtp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -85,7 +112,7 @@ export const apiService = {
   },
 
   testSmtpSettings: async (payload: any) => {
-    const res = await fetch(`${API_BASE}/api/settings/smtp/test`, {
+    const res = await apiService._fetch(`${API_BASE}/api/settings/smtp/test`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -99,7 +126,7 @@ export const apiService = {
   },
 
   getHitPaySettings: async (scope: 'admin' | 'organizer'): Promise<HitPaySettingsResponse> => {
-    const res = await fetch(`${API_BASE}/api/settings/hitpay?scope=${encodeURIComponent(scope)}`, {
+    const res = await apiService._fetch(`${API_BASE}/api/settings/hitpay?scope=${encodeURIComponent(scope)}`, {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       cache: 'no-store'
@@ -122,7 +149,7 @@ export const apiService = {
     scope: 'admin' | 'organizer',
     payload: Partial<HitPaySettings>
   ): Promise<HitPaySettingsResponse> => {
-    const res = await fetch(`${API_BASE}/api/settings/hitpay?scope=${encodeURIComponent(scope)}`, {
+    const res = await apiService._fetch(`${API_BASE}/api/settings/hitpay?scope=${encodeURIComponent(scope)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -143,7 +170,7 @@ export const apiService = {
   },
 
   getAdminPlans: async (): Promise<AdminPlan[]> => {
-    const res = await fetch(`${API_BASE}/api/admin/plans`, {
+    const res = await apiService._fetch(`${API_BASE}/api/admin/plans`, {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       cache: 'no-store'
@@ -157,7 +184,7 @@ export const apiService = {
   },
 
   createAdminPlan: async (payload: Partial<AdminPlan>): Promise<AdminPlan> => {
-    const res = await fetch(`${API_BASE}/api/admin/plans`, {
+    const res = await apiService._fetch(`${API_BASE}/api/admin/plans`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -169,7 +196,7 @@ export const apiService = {
   },
 
   updateAdminPlan: async (planId: string, payload: Partial<AdminPlan>): Promise<AdminPlan> => {
-    const res = await fetch(`${API_BASE}/api/admin/plans/${encodeURIComponent(planId)}`, {
+    const res = await apiService._fetch(`${API_BASE}/api/admin/plans/${encodeURIComponent(planId)}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -181,7 +208,7 @@ export const apiService = {
   },
 
   updateAdminPlanStatus: async (planId: string, isActive: boolean): Promise<{ planId: string; isActive: boolean }> => {
-    const res = await fetch(`${API_BASE}/api/admin/plans/${encodeURIComponent(planId)}/status`, {
+    const res = await apiService._fetch(`${API_BASE}/api/admin/plans/${encodeURIComponent(planId)}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -193,7 +220,7 @@ export const apiService = {
   },
 
   deleteAdminPlan: async (planId: string): Promise<void> => {
-    const res = await fetch(`${API_BASE}/api/admin/plans/${encodeURIComponent(planId)}`, {
+    const res = await apiService._fetch(`${API_BASE}/api/admin/plans/${encodeURIComponent(planId)}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include'
@@ -204,7 +231,7 @@ export const apiService = {
 
   // --- Organizer APIs ---
   getMyOrganizer: async (): Promise<OrganizerProfile | null> => {
-    const res = await fetch(`${API_BASE}/api/organizer/me`, {
+    const res = await apiService._fetch(`${API_BASE}/api/organizer/me`, {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       cache: 'no-store'
@@ -215,7 +242,7 @@ export const apiService = {
   },
 
   getEmailQuotaStatus: async (): Promise<{ remaining: number; limit: number; sent: number; canSend: boolean; quotaStatus: string }> => {
-    const res = await fetch(`${API_BASE}/api/organizer/email-quota`, {
+    const res = await apiService._fetch(`${API_BASE}/api/organizer/email-quota`, {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       cache: 'no-store'
@@ -228,7 +255,7 @@ export const apiService = {
   },
 
   getOrganizerById: async (id: string): Promise<OrganizerProfile | null> => {
-    const res = await fetch(`${API_BASE}/api/organizer/${encodeURIComponent(id)}`, {
+    const res = await apiService._fetch(`${API_BASE}/api/organizer/${encodeURIComponent(id)}`, {
       headers: { 'Content-Type': 'application/json' },
       cache: 'no-store'
     });
@@ -238,7 +265,7 @@ export const apiService = {
   },
 
   upsertOrganizer: async (payload: Partial<OrganizerProfile>): Promise<OrganizerProfile> => {
-    const res = await fetch(`${API_BASE}/api/organizer`, {
+    const res = await apiService._fetch(`${API_BASE}/api/organizer`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -255,7 +282,7 @@ export const apiService = {
     const formData = new FormData();
     formData.append('image', file);
 
-    const res = await fetch(`${API_BASE}/api/organizer/image`, {
+    const res = await apiService._fetch(`${API_BASE}/api/organizer/image`, {
       method: 'POST',
       credentials: 'include',
       body: formData
@@ -272,7 +299,7 @@ export const apiService = {
     const formData = new FormData();
     formData.append('image', file);
 
-    const res = await fetch(`${API_BASE}/api/organizer/cover`, {
+    const res = await apiService._fetch(`${API_BASE}/api/organizer/cover`, {
       method: 'POST',
       credentials: 'include',
       body: formData
@@ -286,7 +313,7 @@ export const apiService = {
   },
 
   getMyFollowingOrganizerIds: async (): Promise<string[]> => {
-    const res = await fetch(`${API_BASE}/api/organizer/followings`, {
+    const res = await apiService._fetch(`${API_BASE}/api/organizer/followings`, {
       credentials: 'include',
       cache: 'no-store'
     });
@@ -300,7 +327,7 @@ export const apiService = {
   },
 
   getOrganizers: async (): Promise<OrganizerProfile[]> => {
-    const res = await fetch(`${API_BASE}/api/organizers/all`, {
+    const res = await apiService._fetch(`${API_BASE}/api/organizers/all`, {
       cache: 'no-store'
     });
     if (!res.ok) throw new Error(`Failed to load organizers: ${res.status}`);
@@ -308,7 +335,7 @@ export const apiService = {
   },
 
   getMyLikedEventIds: async (): Promise<string[]> => {
-    const res = await fetch(`${API_BASE}/api/events/likes/me`, {
+    const res = await apiService._fetch(`${API_BASE}/api/events/likes/me`, {
       credentials: 'include',
       cache: 'no-store'
     });
@@ -322,7 +349,7 @@ export const apiService = {
   },
 
   likeEvent: async (eventId: string): Promise<{ eventId: string; liked: boolean; likesCount: number }> => {
-    const res = await fetch(`${API_BASE}/api/events/${encodeURIComponent(eventId)}/like`, {
+    const res = await apiService._fetch(`${API_BASE}/api/events/${encodeURIComponent(eventId)}/like`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -335,7 +362,7 @@ export const apiService = {
   },
 
   unlikeEvent: async (eventId: string): Promise<{ eventId: string; liked: boolean; likesCount: number }> => {
-    const res = await fetch(`${API_BASE}/api/events/${encodeURIComponent(eventId)}/like`, {
+    const res = await apiService._fetch(`${API_BASE}/api/events/${encodeURIComponent(eventId)}/like`, {
       method: 'DELETE',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -348,7 +375,7 @@ export const apiService = {
   },
 
   followOrganizer: async (organizerId: string): Promise<{ organizerId: string; following: boolean; followersCount: number; confirmationEmailSent: boolean }> => {
-    const res = await fetch(`${API_BASE}/api/organizer/${encodeURIComponent(organizerId)}/follow`, {
+    const res = await apiService._fetch(`${API_BASE}/api/organizer/${encodeURIComponent(organizerId)}/follow`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -361,7 +388,7 @@ export const apiService = {
   },
 
   unfollowOrganizer: async (organizerId: string): Promise<{ organizerId: string; following: boolean; followersCount: number }> => {
-    const res = await fetch(`${API_BASE}/api/organizer/${encodeURIComponent(organizerId)}/follow`, {
+    const res = await apiService._fetch(`${API_BASE}/api/organizer/${encodeURIComponent(organizerId)}/follow`, {
       method: 'DELETE',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -375,7 +402,7 @@ export const apiService = {
 
   // --- User Orders ---
   getMyOrders: async (): Promise<{ orders: any[]; count: number }> => {
-    const res = await fetch(`${API_BASE}/api/orders/my`, {
+    const res = await apiService._fetch(`${API_BASE}/api/orders/my`, {
       credentials: 'include',
       cache: 'no-store'
     });
@@ -389,7 +416,7 @@ export const apiService = {
 
   // --- Public APIs ---
   getPublicPlans: async (): Promise<AdminPlan[]> => {
-    const res = await fetch(`${API_BASE}/api/plans`, {
+    const res = await apiService._fetch(`${API_BASE}/api/plans`, {
       headers: { 'Content-Type': 'application/json' },
       cache: 'no-store'
     });
@@ -404,7 +431,7 @@ export const apiService = {
   // --- Subscription APIs ---
   getCurrentSubscription: async (): Promise<{ subscription: any; organizer: any }> => {
     const { data: { session } } = await supabase.auth.getSession();
-    const res = await fetch(`${API_BASE}/api/subscriptions/current`, {
+    const res = await apiService._fetch(`${API_BASE}/api/subscriptions/current`, {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` }
     });
     if (!res.ok) {
@@ -416,7 +443,7 @@ export const apiService = {
 
   getSubscriptionPlans: async (): Promise<AdminPlan[]> => {
     const { data: { session } } = await supabase.auth.getSession();
-    const res = await fetch(`${API_BASE}/api/subscriptions/plans`, {
+    const res = await apiService._fetch(`${API_BASE}/api/subscriptions/plans`, {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` }
     });
     if (!res.ok) {
@@ -429,7 +456,7 @@ export const apiService = {
 
   createSubscription: async (planId: string, billingInterval: string): Promise<{ subscription: any; plan: AdminPlan; paymentUrl?: string; free?: boolean }> => {
     const { data: { session } } = await supabase.auth.getSession();
-    const res = await fetch(`${API_BASE}/api/subscriptions`, {
+    const res = await apiService._fetch(`${API_BASE}/api/subscriptions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
       body: JSON.stringify({ planId, billingInterval })
@@ -443,7 +470,7 @@ export const apiService = {
 
   cancelSubscription: async (subscriptionId: string): Promise<{ success: boolean; message: string }> => {
     const { data: { session } } = await supabase.auth.getSession();
-    const res = await fetch(`${API_BASE}/api/subscriptions/${encodeURIComponent(subscriptionId)}`, {
+    const res = await apiService._fetch(`${API_BASE}/api/subscriptions/${encodeURIComponent(subscriptionId)}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` }
     });
@@ -456,7 +483,7 @@ export const apiService = {
 
   getSubscriptionHistory: async (): Promise<{ subscriptions: any[] }> => {
     const { data: { session } } = await supabase.auth.getSession();
-    const res = await fetch(`${API_BASE}/api/subscriptions/history`, {
+    const res = await apiService._fetch(`${API_BASE}/api/subscriptions/history`, {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` }
     });
     if (!res.ok) {
@@ -468,7 +495,7 @@ export const apiService = {
 
   verifySubscription: async (subscriptionId: string): Promise<{ success: boolean; status: string }> => {
     const { data: { session } } = await supabase.auth.getSession();
-    const res = await fetch(`${API_BASE}/api/subscriptions/verify/${encodeURIComponent(subscriptionId)}`, {
+    const res = await apiService._fetch(`${API_BASE}/api/subscriptions/verify/${encodeURIComponent(subscriptionId)}`, {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` }
     });
     if (!res.ok) {
@@ -480,7 +507,7 @@ export const apiService = {
 
   // GET /api/events/live
   getLiveEvents: async (): Promise<Event[]> => {
-    const res = await fetch(`${API_BASE}/api/events/live`, {
+    const res = await apiService._fetch(`${API_BASE}/api/events/live`, {
       headers: { 'Content-Type': 'application/json' }
     });
     if (!res.ok) throw new Error(`Failed to load live events: ${res.status}`);
@@ -509,7 +536,7 @@ export const apiService = {
       }
     });
 
-    const res = await fetch(`${API_BASE}/api/events?${query}`, {
+    const res = await apiService._fetch(`${API_BASE}/api/events?${query}`, {
       headers: { 'Content-Type': 'application/json' }
     });
     if (!res.ok) throw new Error(`Failed to load events: ${res.status}`);
@@ -525,7 +552,7 @@ export const apiService = {
 
   // GET /api/events/:slug
   getEventBySlug: async (slug: string): Promise<Event | null> => {
-    const res = await fetch(`${API_BASE}/api/events/${encodeURIComponent(slug)}`, {
+    const res = await apiService._fetch(`${API_BASE}/api/events/${encodeURIComponent(slug)}`, {
       headers: { 'Content-Type': 'application/json' }
     });
     if (res.status === 404) return null;
@@ -546,7 +573,7 @@ export const apiService = {
     if (location) query.append('location', location);
     if (category) query.append('category', category);
 
-    const res = await fetch(`${API_BASE}/api/events/feed?${query}`, {
+    const res = await apiService._fetch(`${API_BASE}/api/events/feed?${query}`, {
       headers: { 'Content-Type': 'application/json' }
     });
     if (!res.ok) throw new Error(`Failed to load events feed: ${res.status}`);
@@ -562,7 +589,7 @@ export const apiService = {
 
   // GET /api/events/:id/details
   getEventDetails: async (id: string) => {
-    const res = await fetch(`${API_BASE}/api/events/${encodeURIComponent(id)}/details`, {
+    const res = await apiService._fetch(`${API_BASE}/api/events/${encodeURIComponent(id)}/details`, {
       headers: { 'Content-Type': 'application/json' }
     });
     if (res.status === 404) return null;
@@ -587,13 +614,18 @@ export const apiService = {
     promoCode?: string | null;
     extraGuests?: { name: string; email?: string }[];
   }): Promise<{ orderId: string }> => {
-    const res = await fetch(`${API_BASE}/api/orders`, {
+    const res = await apiService._fetch(`${API_BASE}/api/orders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify(data)
     });
-    if (!res.ok) throw new Error(`Order failed: ${(await res.json()).error || res.status}`);
+    if (!res.ok) {
+      const errorData = await res.json();
+      const err = new Error(errorData.error || `Order failed: ${res.status}`);
+      (err as any).response = { data: errorData };
+      throw err;
+    }
     return await res.json();
   },
 
@@ -601,7 +633,7 @@ export const apiService = {
   createHitpayCheckoutSession: async (
     orderId: string
   ): Promise<{ checkoutUrl: string | null; status?: string; mock?: boolean }> => {
-    const res = await fetch(`${API_BASE}/api/payments/hitpay/checkout-session`, {
+    const res = await apiService._fetch(`${API_BASE}/api/payments/hitpay/checkout-session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

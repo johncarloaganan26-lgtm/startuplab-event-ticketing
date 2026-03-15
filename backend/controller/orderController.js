@@ -85,7 +85,7 @@ export const createOrder = async (req, res) => {
     // 0) Validate registration window
     const { data: event, error: eventErr } = await supabase
       .from('events')
-      .select('eventId, regOpenAt, regCloseAt, eventName')
+      .select('eventId, regOpenAt, regCloseAt, eventName, timezone')
       .eq('eventId', eventId)
       .maybeSingle();
     
@@ -129,12 +129,30 @@ export const createOrder = async (req, res) => {
       
       const ticketSalesStart = tt.salesStartAt ? new Date(tt.salesStartAt) : null;
       
-      // Only reject if sales HAVEN'T STARTED yet
-      // Sales ending just reverts price to full amount, doesn't block purchase
-      if (ticketSalesStart && now < ticketSalesStart) {
+      // Add a small grace period (e.g., 5 minutes) to account for clock skew between servers/clients
+      // and prevent frustrating "too early" errors when it's just a matter of seconds.
+      const GRACE_PERIOD_MS = 5 * 60 * 1000;
+      const isTooEarly = ticketSalesStart && (now.getTime() + GRACE_PERIOD_MS) < ticketSalesStart.getTime();
+
+      // Log comparison for debugging
+      console.log(`[Orders] Checking ticket sales start for ${tt.ticketTypeId}:`, {
+        now: now.toISOString(),
+        ticketSalesStart: ticketSalesStart ? ticketSalesStart.toISOString() : 'None',
+        isStarted: !ticketSalesStart || !isTooEarly,
+        eventTimezone: event.timezone,
+        gracePeriodMs: GRACE_PERIOD_MS
+      });
+
+      // Only reject if sales HAVEN'T STARTED yet (past the grace period)
+      if (isTooEarly) {
         return res.status(400).json({ 
           error: 'Ticket sales have not started yet',
-          message: `Sales available from ${ticketSalesStart.toISOString()}`
+          message: `Sales available from ${ticketSalesStart.toLocaleString()} (Current server time: ${now.toLocaleString()})`,
+          debug: {
+            serverTime: now.toISOString(),
+            startTime: ticketSalesStart.toISOString(),
+            timezone: event.timezone
+          }
         });
       }
     }

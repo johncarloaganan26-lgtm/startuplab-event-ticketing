@@ -10,8 +10,9 @@ async function checkCols() {
         process.exit(1);
     }, 5000);
 
+    const tableName = process.argv[2] || 'events';
     try {
-        const { data, error } = await supabase.from('events').select('*').limit(1);
+        const { data, error } = await supabase.from(tableName).select('*').limit(1);
         clearTimeout(timeout);
         if (error) {
             console.error('Database Error:', error);

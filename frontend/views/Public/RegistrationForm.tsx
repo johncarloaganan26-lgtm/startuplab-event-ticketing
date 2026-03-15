@@ -222,7 +222,11 @@ export const RegistrationForm: React.FC = () => {
       }
     } catch (err: any) {
       console.error('[Registration] Error:', err);
-      const message = err.response?.data?.error || err.message || 'Registration failed. Please try again.';
+      const data = err.response?.data;
+      let message = data?.error || err.message || 'Registration failed. Please try again.';
+      if (data?.message) {
+        message = `${message}: ${data.message}`;
+      }
       setApiError(message);
     } finally {
       setSubmitting(false);

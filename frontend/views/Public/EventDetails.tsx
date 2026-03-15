@@ -259,7 +259,7 @@ const CompactEventRow: React.FC<{ event: Event; brandColor: string }> = ({ event
       }}
     >
       <div className="flex-1 pr-6 min-w-0">
-        <h4 className="text-[17px] font-black text-[#2E2E2F] mb-1 leading-tight group-hover:text-[#38BDF2] transition-colors line-clamp-1">
+        <h4 className="text-[17px] font-black text-[#2E2E2F] mb-1 leading-tight transition-colors line-clamp-1" style={{ '--hover-color': brandColor } as any}>
           {event.eventName}
         </h4>
         <p className="text-[13px] font-bold text-[#2E2E2F]/60 mb-0.5">
@@ -284,9 +284,9 @@ const CompactEventRow: React.FC<{ event: Event; brandColor: string }> = ({ event
         </div>
         {(event.is_promoted || (event as any).isPromoted) && (
           <div className="mt-2 flex items-center gap-1.5 opacity-80">
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#38BDF2]/10 border border-[#38BDF2]/20">
-              <ICONS.Info className="w-2.5 h-2.5 text-[#38BDF2]" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-[#38BDF2]">Promoted</span>
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border" style={{ backgroundColor: `${brandColor}1A`, borderColor: `${brandColor}33` }}>
+              <ICONS.Info className="w-2.5 h-2.5" style={{ color: brandColor }} />
+              <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: brandColor }}>Promoted</span>
             </div>
           </div>
         )}
@@ -973,7 +973,7 @@ export const EventDetails: React.FC = () => {
                             <div className="flex flex-col gap-1">
                               <span className="text-[#2E2E2F] text-[13px] uppercase tracking-wider font-bold">{ticket.name}</span>
                               {ticket.capacityPerTicket && ticket.capacityPerTicket > 1 && (
-                                <span className="text-[9px] font-black text-[#38BDF2] uppercase tracking-widest">
+                                <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: brandColor }}>
                                   Bundle — Covers {ticket.capacityPerTicket} Guests
                                 </span>
                               )}
@@ -1000,10 +1000,10 @@ export const EventDetails: React.FC = () => {
                                     <span className="line-through text-sm text-[#2E2E2F]/50">
                                       PHP {ticket.priceAmount.toLocaleString()}.00
                                     </span>
-                                    <span className="text-[#38BDF2] font-black">
+                                    <span className="font-black" style={{ color: brandColor }}>
                                       PHP {Math.round(ticket.priceAmount * (100 - ticket.saleDiscountPercent) / 100).toLocaleString()}.00
                                     </span>
-                                    <span className="text-xs bg-[#38BDF2] text-white px-2 py-0.5 rounded font-bold">
+                                    <span className="text-xs text-white px-2 py-0.5 rounded font-bold" style={{ backgroundColor: brandColor }}>
                                       {ticket.saleDiscountPercent}% OFF
                                     </span>
                                   </div>
@@ -1020,12 +1020,12 @@ export const EventDetails: React.FC = () => {
                           </div>
 
                           {salesNotStarted && ticket.salesStartAt && (
-                            <div className="mb-4 p-3 rounded-lg bg-[#38BDF2]/10 border border-[#38BDF2]/30">
-                              <div className="text-xs font-semibold text-[#38BDF2]">
+                            <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: `${brandColor}1A`, borderColor: `${brandColor}4D`, borderWidth: '1px', borderStyle: 'solid' }}>
+                              <div className="text-xs font-semibold" style={{ color: brandColor }}>
                                 Sale begins soon
                               </div>
                               {timeRemaining[`${ticket.ticketTypeId}_start`] && (
-                                <div className="text-xs text-[#38BDF2] font-semibold mt-1">
+                                <div className="text-xs font-semibold mt-1" style={{ color: brandColor }}>
                                   Sale begins in: {timeRemaining[`${ticket.ticketTypeId}_start`]}
                                 </div>
                               )}
