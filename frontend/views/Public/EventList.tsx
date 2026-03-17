@@ -1212,7 +1212,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
       )}
 
       {isLanding && !isSpecialListing && (
-        <section className="mb-0 px-0 pt-0 pb-4">
+        <section className="mb-0 px-0 pt-0 pb-4 order-2 lg:order-1">
           <BrowseEventsNavigator
             activeTab={activeBrowseTab}
             onTabChange={setActiveBrowseTab}
@@ -1238,7 +1238,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
         </section>
       )}
 
-      <div className={`flex flex-col sm:flex-row items-center justify-between gap-6 px-0 ${isLanding ? 'mb-6 mt-0 !justify-start' : 'mb-8 mt-2'}`}>
+      <div className={`flex flex-col ${isLanding && !isSpecialListing ? 'order-1 lg:order-2' : ''} sm:flex-row items-center justify-between gap-6 px-0 ${isLanding ? 'mb-6 mt-0 !justify-start' : 'mb-8 mt-2'}`}>
         {!isLanding && !isSpecialListing && (
           <div className="flex items-center gap-4 w-full sm:w-auto">
             {/* Hide Sidebar Toggle */}

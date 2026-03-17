@@ -122,7 +122,7 @@ export const register = async (req, res) => {
     if (defaultPlan) {
       currentPlanId = defaultPlan.planId;
       // Trial logic removed - organizations default to free or pending status
-      if (monthlyPrice === 0) {
+      if (defaultPlan.monthlyPrice === 0) {
         subscriptionStatus = 'active';
         // Permanent free plans have no natural expiry, or we can set it to 10 years out.
         const longFuture = new Date();

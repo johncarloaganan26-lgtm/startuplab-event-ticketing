@@ -484,19 +484,30 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       await fetch(`${API}/api/auth/logout`, {
         method: "POST",
         credentials: "include"
-      });
+      }).catch(() => {});
 
       // 2. Sign out from Supabase
-      await supabase.auth.signOut();
+      await supabase.auth.signOut().catch(() => {});
 
       // 3. Clear any local tokens/storage
-      localStorage.removeItem('sb-ddkkbtijqrgpitncxylx-auth-token');
+      try {
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(k => localStorage.removeItem(k));
+      } catch (e) {}
+      
       clearUser();
 
       // 4. Navigate to login
       navigate('/');
     } catch {
       // Still navigate to login even if there was an error
+      clearUser();
       navigate('/');
     }
   };
@@ -1231,194 +1242,18 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           ? 'bg-[#F2F2F2] shadow-[0_10px_30px_-10px_rgba(46,46,47,0.1)] border-b border-[#2E2E2F]/5' 
           : 'bg-transparent border-b border-transparent'
       }`}>
-        <div className="max-w-[88rem] mx-auto h-20 w-full px-2 sm:px-6 flex items-center gap-2 sm:gap-4">
-          {/* Left: Branding Segment - Logo on mobile, hidden on lg */}
-          <div className="flex lg:hidden flex-none items-center">
-            <Link to="/" className="shrink-0 flex items-center gap-2">
-              {/* Mobile logo - shown only on mobile */}
-              <img src="/lgo-clean.png" alt="Logo" className="h-8 w-8 object-contain" />
-            </Link>
-          </div>
-          <div className="hidden lg:flex flex-none items-center flex-none">
+        {/* Top Row Container - Logo + Menu Button */}
+        <div className="max-w-[88rem] mx-auto w-full px-2 sm:px-6 flex flex-col lg:flex-row items-center gap-2 sm:gap-4">
+          {/* Mobile Row - Logo (left) + Burger Menu (right) */}
+          <div className="h-16 sm:h-20 lg:hidden w-full flex items-center justify-between">
+            {/* Left: Logo */}
             <Link to="/" className="shrink-0 flex items-center gap-3">
-              {/* Desktop logo - shown only on desktop */}
-              <span className="hidden lg:block">
-                <Branding />
-              </span>
+              <Branding />
             </Link>
-          </div>
 
-          {/* Center Segment: Search bar centered */}
-          <div className="flex flex-1 min-w-0 justify-center px-1 sm:px-4">
-            {showHeaderSearchBar && (
-              <form onSubmit={handleHeaderSearchSubmit} className="w-full">
-                <div className="flex items-center h-12 rounded-2xl border border-[#2E2E2F]/10 bg-[#F2F2F2] overflow-hidden shadow-[0_10px_30px_-15px_rgba(46,46,47,0.1)] focus-within:border-[#38BDF2]/50 focus-within:shadow-[0_15px_35px_-12px_rgba(56,189,242,0.15)] transition-all duration-300">
-                  <label className="flex items-center gap-3 px-5 py-3 min-w-0 flex-1 border-r border-[#2E2E2F]/5 hover:bg-[#38BDF2]/5 transition-colors">
-                    <ICONS.Search className="w-4 h-4 text-[#2E2E2F] shrink-0" />
-                    <input
-                      type="text"
-                      value={headerSearchTerm}
-                      onChange={(event) => setHeaderSearchTerm(event.target.value)}
-                      placeholder={animatedPlaceholder || 'Find your events'}
-                      className="w-full bg-transparent text-[12px] font-bold text-[#2E2E2F] placeholder:text-[#2E2E2F]/40 outline-none"
-                    />
-                  </label>
-                  <div
-                    className="relative min-w-0 flex-1 border-r border-[#2E2E2F]/5 bg-[#F2F2F2] hover:bg-[#38BDF2]/5 transition-colors"
-                    ref={headerLocationMenuRef}
-                  >
-                    <div className="w-full h-full flex items-center">
-                      <div className="flex-1 min-w-0 flex items-center gap-3 px-5 py-3 cursor-text" onClick={() => setHeaderLocationMenuOpen(true)}>
-                        <ICONS.MapPin className="w-4 h-4 text-[#2E2E2F] shrink-0" />
-                        <input
-                          type="text"
-                          value={hasHeaderExplicitLocation ? headerLocationTerm : ''}
-                          onChange={(event) => {
-                            const next = event.target.value;
-                            setHeaderLocationTerm(next || DEFAULT_HEADER_LOCATION);
-                            setHeaderLocationError('');
-                          }}
-                          onFocus={() => setHeaderLocationMenuOpen(true)}
-                          placeholder="Your Location"
-                          className="w-full bg-transparent text-[12px] font-bold text-[#2E2E2F] placeholder:text-[#2E2E2F]/40 outline-none"
-                          aria-label="Search location"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        className={`w-11 h-11 flex items-center justify-center transition-all ${headerLocating
-                          ? 'text-[#38BDF2] animate-pulse'
-                          : 'text-[#2E2E2F]/40 hover:text-[#38BDF2] hover:bg-[#38BDF2]/8'
-                          } rounded-xl mr-1 group/gps`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUseCurrentLocationInHeader();
-                        }}
-                        disabled={headerLocating}
-                        title="Search near me"
-                      >
-                        {headerLocating ? (
-                          <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full inline-block animate-spin" />
-                        ) : (
-                          <div className="relative">
-                            <svg fill="none" stroke="currentColor" strokeWidth={2.4} viewBox="0 0 24 24" className="w-5 h-5 group-hover/gps:scale-110 transition-transform">
-                              <circle cx="12" cy="12" r="3" />
-                              <path strokeLinecap="round" d="M12 2v3m0 14v3M2 12h3m14 0h3" />
-                            </svg>
-                            <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#38BDF2] rounded-full opacity-0 group-hover/gps:opacity-100 transition-opacity animate-ping" />
-                          </div>
-                        )}
-                      </button>
-                    </div>
-
-                    {headerLocationMenuOpen && (
-                      <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 w-[320px] rounded-2xl border border-[#2E2E2F]/10 bg-white shadow-[0_24px_48px_-20px_rgba(46,46,47,0.35)] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                        <button
-                          type="button"
-                          className="w-full px-5 py-4 flex items-center gap-4 text-left text-[#2E2E2F] hover:bg-[#38BDF2]/5 transition-colors border-b border-[#2E2E2F]/5 disabled:opacity-60 group/btn"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleUseCurrentLocationInHeader();
-                          }}
-                          disabled={headerLocating}
-                        >
-                          <div className={`w-10 h-10 rounded-full border border-[#38BDF2]/30 flex items-center justify-center text-[#38BDF2] group-hover/btn:bg-[#38BDF2] group-hover/btn:text-[#F2F2F2] transition-all shadow-sm ${headerLocating ? 'animate-pulse' : ''}`}>
-                            {headerLocating ? (
-                              <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full inline-block animate-spin" />
-                            ) : (
-                              <svg fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24" className="w-5 h-5">
-                                <circle cx="12" cy="12" r="3" />
-                                <path strokeLinecap="round" d="M12 2v3m0 14v3M2 12h3m14 0h3" />
-                              </svg>
-                            )}
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-black text-[#2E2E2F]">Detect My Location</span>
-                            <span className="text-[10px] text-[#2E2E2F]/40 font-bold uppercase tracking-wider">Fast GPS Search</span>
-                          </div>
-                        </button>
-
-                        <button
-                          type="button"
-                          className="w-full px-5 py-4 flex items-center gap-4 text-left text-[#2E2E2F] hover:bg-[#38BDF2]/5 transition-colors group/online border-b border-[#2E2E2F]/5"
-                          onClick={() => handleSelectHeaderLocation(ONLINE_LOCATION_VALUE)}
-                        >
-                          <div className="w-10 h-10 rounded-xl border border-[#38BDF2]/30 flex items-center justify-center text-[#38BDF2] group-hover/online:bg-[#38BDF2] group-hover/online:text-[#F2F2F2] transition-all shadow-sm">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16v12H4z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M10 9l5 3-5 3V9z" />
-                            </svg>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-black text-[#2E2E2F]">Online Events</span>
-                            <span className="text-[10px] text-[#2E2E2F]/40 font-bold uppercase tracking-wider">Virtual Experiences</span>
-                          </div>
-                        </button>
-
-                        <button
-                          type="button"
-                          className="w-full px-5 py-3 flex items-center gap-4 text-left text-[#2E2E2F]/60 hover:bg-red-50 hover:text-red-500 transition-colors group/reset"
-                          onClick={() => handleSelectHeaderLocation(DEFAULT_HEADER_LOCATION)}
-                        >
-                          <div className="w-10 h-10 rounded-full border border-current opacity-20 flex items-center justify-center transition-opacity group-hover/reset:opacity-100">
-                            <ICONS.Trash className="w-4 h-4" />
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-[11px] font-black uppercase tracking-widest">Clear Location</span>
-                            <span className="text-[9px] font-bold opacity-70">Reset to all areas</span>
-                          </div>
-                        </button>
-
-                        {headerLocationError && (
-                          <div className="px-5 py-3 text-[11px] font-bold text-red-500 bg-red-50 border-t border-red-100 flex items-center gap-2">
-                            <ICONS.AlertTriangle className="w-3.5 h-3.5" />
-                            {headerLocationError}
-                          </div>
-                        )}
-
-                        <div className="px-5 py-4 bg-[#F8F9FA] border-t border-[#2E2E2F]/5">
-                          <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#2E2E2F]/30 italic leading-relaxed">Tip: Type any city name in the input field above for custom filtering.</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    type="submit"
-                    className="w-12 h-11 flex items-center justify-center transition-colors text-[#2E2E2F] hover:bg-[#38BDF2]/12 hover:text-[#38BDF2]"
-                    aria-label="Find events"
-                  >
-                    <ICONS.Search className="w-4 h-4" />
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-
-          {/* Right Segment: Nav Links and Auth Actions */}
-          <div className="flex items-center justify-end gap-10 ml-auto min-w-fit">
-            {/* Nav Links */}
-            <div className="hidden lg:flex items-center gap-8">
-              {navLinks.map((link: any) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className="text-[11px] font-black uppercase tracking-[0.15em] text-[#2E2E2F]/60 hover:text-[#38BDF2] transition-colors relative group whitespace-nowrap"
-                >
-                  {link.label}
-                  {link.isLive && (
-                    <span className="relative flex h-2 w-2 ml-1 inline-block -top-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                    </span>
-                  )}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#38BDF2] transition-all group-hover:w-full" />
-                </Link>
-              ))}
-            </div>
-
-            {/* Mobile Menu Button - Shown only on mobile */}
+            {/* Right: Mobile Menu Button */}
             <button
-              className="lg:hidden p-2 rounded-lg text-[#2E2E2F] hover:bg-[#38BDF2]/10 transition-colors"
+              className="p-2 rounded-lg text-[#2E2E2F] hover:bg-[#38BDF2]/10 transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle menu"
             >
@@ -1432,42 +1267,219 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 </svg>
               )}
             </button>
+          </div>
 
-            <div className="flex items-center gap-1 shrink-0">
-            {isAuthenticated ? (
-              <>
-                <Link to="/live" className="hidden lg:flex items-center gap-2 px-6 py-2.5 bg-[#38BDF2] border border-[#38BDF2] text-white hover:bg-[#2E2E2F] hover:border-[#2E2E2F] rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-[#38BDF2]/20">
-                  Watch Live
-                  {hasLiveEvents && (
-                    <span className="relative flex h-2 w-2 ml-0.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
-                    </span>
-                  )}
-                </Link>
+          {/* Desktop Row - Logo (left) + Search (center) + Auth (right) */}
+          <div className="hidden lg:flex h-20 w-full items-center lg:gap-4">
+            {/* Left: Logo */}
+            <div className="flex flex-none items-center">
+              <Link to="/" className="shrink-0 flex items-center gap-3">
+                <span>
+                  <Branding />
+                </span>
+              </Link>
+            </div>
 
-                <div className="relative">
-                  <button
-                    className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 transition-colors"
-                    onClick={() => setUserMenuOpen((v) => !v)}
-                  >
-                    <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#38BDF2]/20 text-[#2E2E2F] flex items-center justify-center">
-                      {imageUrl ? (
-                        <img src={imageUrl} alt="Profile" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-xs font-medium tracking-tight text-[#2E2E2F]">{initials}</span>
+            {/* Center: Search bar (hidden on mobile, shown on lg) - Expands to push login right */}
+            <div className="hidden lg:flex flex-1 min-w-0 px-1 sm:px-4">
+              {showHeaderSearchBar && (
+                <form onSubmit={handleHeaderSearchSubmit} className="w-full">
+                  <div className="flex items-center h-12 rounded-2xl border border-[#2E2E2F]/10 bg-[#F2F2F2] overflow-hidden shadow-[0_10px_30px_-15px_rgba(46,46,47,0.1)] focus-within:border-[#38BDF2]/50 focus-within:shadow-[0_15px_35px_-12px_rgba(56,189,242,0.15)] transition-all duration-300">
+                    <label className="flex items-center gap-3 px-5 py-3 min-w-0 flex-1 border-r border-[#2E2E2F]/5 hover:bg-[#38BDF2]/5 transition-colors">
+                      <ICONS.Search className="w-4 h-4 text-[#2E2E2F] shrink-0" />
+                      <input
+                        type="text"
+                        value={headerSearchTerm}
+                        onChange={(event) => setHeaderSearchTerm(event.target.value)}
+                        placeholder={animatedPlaceholder || 'Find your events'}
+                        className="w-full bg-transparent text-[12px] font-bold text-[#2E2E2F] placeholder:text-[#2E2E2F]/40 outline-none"
+                      />
+                    </label>
+                    <div
+                      className="relative min-w-0 flex-1 border-r border-[#2E2E2F]/5 bg-[#F2F2F2] hover:bg-[#38BDF2]/5 transition-colors"
+                      ref={headerLocationMenuRef}
+                    >
+                      <div className="w-full h-full flex items-center">
+                        <div className="flex-1 min-w-0 flex items-center gap-3 px-5 py-3 cursor-text" onClick={() => setHeaderLocationMenuOpen(true)}>
+                          <ICONS.MapPin className="w-4 h-4 text-[#2E2E2F] shrink-0" />
+                          <input
+                            type="text"
+                            value={hasHeaderExplicitLocation ? headerLocationTerm : ''}
+                            onChange={(event) => {
+                              const next = event.target.value;
+                              setHeaderLocationTerm(next || DEFAULT_HEADER_LOCATION);
+                              setHeaderLocationError('');
+                            }}
+                            onFocus={() => setHeaderLocationMenuOpen(true)}
+                            placeholder="Your Location"
+                            className="w-full bg-transparent text-[12px] font-bold text-[#2E2E2F] placeholder:text-[#2E2E2F]/40 outline-none"
+                            aria-label="Search location"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className={`w-11 h-11 flex items-center justify-center transition-all ${headerLocating
+                            ? 'text-[#38BDF2] animate-pulse'
+                            : 'text-[#2E2E2F]/40 hover:text-[#38BDF2] hover:bg-[#38BDF2]/8'
+                            } rounded-xl mr-1 group/gps`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUseCurrentLocationInHeader();
+                          }}
+                          disabled={headerLocating}
+                          title="Search near me"
+                        >
+                          {headerLocating ? (
+                            <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full inline-block animate-spin" />
+                          ) : (
+                            <div className="relative">
+                              <svg fill="none" stroke="currentColor" strokeWidth={2.4} viewBox="0 0 24 24" className="w-5 h-5 group-hover/gps:scale-110 transition-transform">
+                                <circle cx="12" cy="12" r="3" />
+                                <path strokeLinecap="round" d="M12 2v3m0 14v3M2 12h3m14 0h3" />
+                              </svg>
+                              <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#38BDF2] rounded-full opacity-0 group-hover/gps:opacity-100 transition-opacity animate-ping" />
+                            </div>
+                          )}
+                        </button>
+                      </div>
+
+                      {headerLocationMenuOpen && (
+                        <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 w-[320px] rounded-2xl border border-[#2E2E2F]/10 bg-white shadow-[0_24px_48px_-20px_rgba(46,46,47,0.35)] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                          <button
+                            type="button"
+                            className="w-full px-5 py-4 flex items-center gap-4 text-left text-[#2E2E2F] hover:bg-[#38BDF2]/5 transition-colors border-b border-[#2E2E2F]/5 disabled:opacity-60 group/btn"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleUseCurrentLocationInHeader();
+                            }}
+                            disabled={headerLocating}
+                          >
+                            <div className={`w-10 h-10 rounded-full border border-[#38BDF2]/30 flex items-center justify-center text-[#38BDF2] group-hover/btn:bg-[#38BDF2] group-hover/btn:text-[#F2F2F2] transition-all shadow-sm ${headerLocating ? 'animate-pulse' : ''}`}>
+                              {headerLocating ? (
+                                <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full inline-block animate-spin" />
+                              ) : (
+                                <svg fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24" className="w-5 h-5">
+                                  <circle cx="12" cy="12" r="3" />
+                                  <path strokeLinecap="round" d="M12 2v3m0 14v3M2 12h3m14 0h3" />
+                                </svg>
+                              )}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-black text-[#2E2E2F]">Detect My Location</span>
+                              <span className="text-[10px] text-[#2E2E2F]/40 font-bold uppercase tracking-wider">Fast GPS Search</span>
+                            </div>
+                          </button>
+
+                          <button
+                            type="button"
+                            className="w-full px-5 py-3 flex items-center gap-4 text-left text-[#2E2E2F]/60 hover:bg-[#38BDF2]/5 transition-colors border-b border-[#2E2E2F]/5"
+                            onClick={() => handleSelectHeaderLocation('online')}
+                          >
+                            <div className="w-10 h-10 rounded-full border border-[#38BDF2]/30 flex items-center justify-center text-[#38BDF2]">
+                              <ICONS.Globe className="w-4 h-4" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-black text-[#2E2E2F]">Online Events</span>
+                              <span className="text-[10px] text-[#2E2E2F]/40 font-bold uppercase tracking-wider">Virtual Experiences</span>
+                            </div>
+                          </button>
+
+                          <button
+                            type="button"
+                            className="w-full px-5 py-3 flex items-center gap-4 text-left text-[#2E2E2F]/60 hover:bg-red-50 hover:text-red-500 transition-colors group/reset"
+                            onClick={() => handleSelectHeaderLocation(DEFAULT_HEADER_LOCATION)}
+                          >
+                            <div className="w-10 h-10 rounded-full border border-current opacity-20 flex items-center justify-center transition-opacity group-hover/reset:opacity-100">
+                              <ICONS.Trash className="w-4 h-4" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[11px] font-black uppercase tracking-widest">Clear Location</span>
+                              <span className="text-[9px] font-bold opacity-70">Reset to all areas</span>
+                            </div>
+                          </button>
+
+                          {headerLocationError && (
+                            <div className="px-5 py-3 text-[11px] font-bold text-red-500 bg-red-50 border-t border-red-100 flex items-center gap-2">
+                              <ICONS.AlertTriangle className="w-3.5 h-3.5" />
+                              {headerLocationError}
+                            </div>
+                          )}
+
+                          <div className="px-5 py-4 bg-[#F8F9FA] border-t border-[#2E2E2F]/5">
+                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#2E2E2F]/30 italic leading-relaxed">Tip: Type any city name in the input field above for custom filtering.</p>
+                          </div>
+                        </div>
                       )}
                     </div>
-                    <div className="hidden sm:block text-left leading-tight">
-                      <p className="text-xs font-medium tracking-tight text-[#2E2E2F] truncate max-w-[120px]">{displayName}</p>
-                      <p className="text-[10px] font-medium tracking-tight text-[#2E2E2F]/45 mt-0.5">{roleLabel}</p>
-                    </div>
-                    <svg className="w-4 h-4 text-[#2E2E2F]/50" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  {userMenuOpen && (
-                    <>
+                    <button
+                      type="submit"
+                      className="w-12 h-11 flex items-center justify-center transition-colors text-[#2E2E2F] hover:bg-[#38BDF2]/12 hover:text-[#38BDF2]"
+                      aria-label="Find events"
+                    >
+                      <ICONS.Search className="w-4 h-4" />
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+
+            {/* Right Segment: Nav Links, Mobile Menu Button, and Auth Actions - Top Row */}
+            <div className="flex items-center justify-end gap-4 lg:gap-6 ml-auto flex-none">
+              {/* Nav Links */}
+              <div className="hidden lg:flex items-center gap-8">
+                {navLinks.map((link: any) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className="text-[11px] font-black uppercase tracking-[0.15em] text-[#2E2E2F]/60 hover:text-[#38BDF2] transition-colors relative group whitespace-nowrap"
+                  >
+                    {link.label}
+                    {link.isLive && (
+                      <span className="relative flex h-2 w-2 ml-1 inline-block -top-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                      </span>
+                    )}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#38BDF2] transition-all group-hover:w-full" />
+                  </Link>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-1 shrink-0">
+              {isAuthenticated ? (
+                <>
+                  <Link to="/live" className="hidden lg:flex items-center gap-2 px-6 py-2.5 bg-[#38BDF2] border border-[#38BDF2] text-white hover:bg-[#2E2E2F] hover:border-[#2E2E2F] rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-[#38BDF2]/20">
+                    Watch Live
+                    {hasLiveEvents && (
+                      <span className="relative flex h-2 w-2 ml-0.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                      </span>
+                    )}
+                  </Link>
+
+                  <div className="relative">
+                    <button
+                      className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 transition-colors"
+                      onClick={() => setUserMenuOpen((v) => !v)}
+                    >
+                      <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#38BDF2]/20 text-[#2E2E2F] flex items-center justify-center">
+                        {imageUrl ? (
+                          <img src={imageUrl} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-xs font-medium tracking-tight text-[#2E2E2F]">{initials}</span>
+                        )}
+                      </div>
+                      <div className="hidden sm:block text-left leading-tight">
+                        <p className="text-xs font-medium tracking-tight text-[#2E2E2F] truncate max-w-[120px]">{displayName}</p>
+                        <p className="text-[10px] font-medium tracking-tight text-[#2E2E2F]/45 mt-0.5">{roleLabel}</p>
+                      </div>
+                      <svg className="w-4 h-4 text-[#2E2E2F]/50" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {userMenuOpen && (
+                      <>
                       <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
                       <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-2xl shadow-xl z-50 p-2 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
                         <div className="px-4 py-3 border-b border-[#2E2E2F]/5 mb-1">
@@ -1663,6 +1675,34 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             </div>
           </div>
         </div>
+
+          {/* Bottom Row: Mobile Search (only visible on mobile) */}
+          <div className="lg:hidden w-full px-2 sm:px-6 py-3 border-t border-[#2E2E2F]/5">
+            {showHeaderSearchBar && (
+              <form onSubmit={handleHeaderSearchSubmit} className="w-full">
+                <div className="flex items-center h-12 rounded-full border border-[#2E2E2F]/10 bg-[#F2F2F2] overflow-hidden shadow-sm focus-within:border-[#38BDF2]/50 focus-within:shadow-[0_0_0_3px_rgba(56,189,242,0.1)] transition-all">
+                  <label className="flex items-center gap-3 px-4 py-3 min-w-0 flex-1">
+                    <ICONS.Search className="w-4 h-4 text-[#2E2E2F] shrink-0" />
+                    <input
+                      type="text"
+                      value={headerSearchTerm}
+                      onChange={(event) => setHeaderSearchTerm(event.target.value)}
+                      placeholder={animatedPlaceholder || 'Find your events'}
+                      className="w-full bg-transparent text-sm font-semibold text-[#2E2E2F] placeholder:text-[#2E2E2F]/40 outline-none"
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    className="px-3 py-3 flex items-center justify-center transition-colors text-[#2E2E2F] hover:text-[#38BDF2]"
+                    aria-label="Search"
+                  >
+                    <ICONS.Search className="w-4 h-4" />
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
       </header>
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
@@ -1813,6 +1853,49 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                   </svg>
                   <span>Logout</span>
                 </button>
+
+                {/* Mobile Search at Bottom */}
+                {showHeaderSearchBar && (
+                  <div className="border-t border-[#2E2E2F]/5 mt-2">
+                    <button
+                      onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left text-xs font-semibold"
+                    >
+                      <ICONS.Search className="w-4 h-4 opacity-70" />
+                      <span>Search Events</span>
+                      <svg className={`w-3 h-3 ml-auto transition-transform ${mobileSearchOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                      </svg>
+                    </button>
+                    {mobileSearchOpen && (
+                      <div className="p-3 bg-[#F2F2F2] border-t border-[#2E2E2F]/5">
+                        <form onSubmit={handleHeaderSearchSubmit} className="w-full">
+                          <div className="flex items-center h-10 rounded-xl border border-[#2E2E2F]/10 bg-white overflow-hidden">
+                            <label className="flex items-center gap-2 px-3 min-w-0 flex-1">
+                              <ICONS.Search className="w-4 h-4 text-[#2E2E2F]/50 shrink-0" />
+                              <input
+                                type="text"
+                                value={headerSearchTerm}
+                                onChange={(event) => setHeaderSearchTerm(event.target.value)}
+                                placeholder="Find your events"
+                                className="w-full bg-transparent text-sm text-[#2E2E2F] placeholder:text-[#2E2E2F]/40 outline-none"
+                              />
+                            </label>
+                            <button
+                              type="submit"
+                              className="w-10 h-10 flex items-center justify-center text-[#2E2E2F]/50 hover:text-[#38BDF2] transition-colors"
+                              aria-label="Search"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                              </svg>
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -2140,19 +2223,19 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
         className={`bg-[#F2F2F2] border-r border-[#2E2E2F]/10 hidden md:flex flex-col fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-64' : 'w-20'}`}
         style={{ overflow: desktopSidebarOpen ? 'hidden' : 'visible' }}
       >
-        <div className={`py-6 px-4 flex items-center justify-center border-b border-[#2E2E2F]/5 shrink-0 ${desktopSidebarOpen ? 'min-h-[140px]' : 'min-h-[100px]'}`}>
+        <div className={`py-6 px-4 flex items-center justify-center border-b border-[#2E2E2F]/5 shrink-0 ${desktopSidebarOpen ? 'min-h-[160px]' : 'min-h-[120px]'}`}>
           <Link to="/user-home" className="flex items-center justify-center group transition-all duration-500 transform hover:scale-[1.05] active:scale-[0.95]">
             {organizerSidebarLogoUrl ? (
               <img
                 src={organizerSidebarLogoUrl}
                 alt={organizerSidebarLogoAlt}
-                className={desktopSidebarOpen ? "h-16 w-auto max-w-full object-contain group-hover:rotate-1 transition-transform" : "h-11 w-11 object-contain group-hover:rotate-6 transition-transform rounded-xl shadow-lg border-2 border-[#38BDF2]/20"}
+                className={desktopSidebarOpen ? "h-20 w-auto max-w-full object-contain group-hover:rotate-1 transition-transform" : "h-14 w-14 object-contain group-hover:rotate-6 transition-transform rounded-xl border-2 border-[#38BDF2]/20"}
               />
             ) : (
               desktopSidebarOpen ? (
-                <Branding className="h-14 w-auto" />
+                <Branding className="h-16 w-auto" />
               ) : (
-                <img src="/lgo.webp" alt="Logo" className="h-10 w-10 object-contain group-hover:rotate-6 transition-transform" />
+                <img src="/lgo.webp" alt="Logo" className="h-12 w-12 object-contain group-hover:rotate-6 transition-transform" />
               )
             )}
           </Link>
@@ -2335,7 +2418,6 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                 )}
               </div>
             )}
-          </div>
 
           <div className="relative">
             <button
@@ -2464,9 +2546,8 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
               </>
             )}
           </div>
-        </header>
-
-
+        </div>
+      </header>
 
         {sidebarOpen && (
           <div className="fixed inset-0 z-[100] flex lg:hidden">

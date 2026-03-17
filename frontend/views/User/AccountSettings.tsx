@@ -214,7 +214,7 @@ export const AccountSettings: React.FC = () => {
             {/* Security Section */}
             <Card className="p-10 border-[#2E2E2F]/10 rounded-[2.5rem] bg-[#F2F2F2]">
                 <div className="flex items-center gap-3 mb-10">
-                    <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[#38BDF2]/10 text-[#38BDF2] flex items-center justify-center">
                         <ShieldIcon className="w-5 h-5" strokeWidth={2.5} />
                     </div>
                     <div>
@@ -231,7 +231,7 @@ export const AccountSettings: React.FC = () => {
                         </div>
                         <Button
                             variant="outline"
-                            className="rounded-xl px-5 py-2 text-[10px] font-black uppercase tracking-widest border-[#2E2E2F]/10"
+                            className="rounded-xl px-5 py-2 text-[10px] font-black uppercase tracking-widest border-[#2E2E2F]/10 hover:border-[#38BDF2] hover:text-[#38BDF2] transition-colors"
                             onClick={handleResetPassword}
                             disabled={passwordLoading}
                         >
@@ -239,9 +239,9 @@ export const AccountSettings: React.FC = () => {
                         </Button>
                     </div>
 
-                    <div className="flex gap-3 items-start p-4 bg-orange-50/50 border border-orange-100 rounded-2xl">
-                        <AlertIcon className="w-4 h-4 text-orange-500 mt-0.5 shrink-0" />
-                        <p className="text-[10px] text-orange-800 font-medium leading-relaxed">
+                    <div className="flex gap-3 items-start p-4 bg-[#38BDF2]/5 border border-[#38BDF2]/20 rounded-2xl">
+                        <AlertIcon className="w-4 h-4 text-[#38BDF2] mt-0.5 shrink-0" />
+                        <p className="text-[10px] text-[#2E2E2F]/70 font-medium leading-relaxed">
                             Clicking "Change Password" will send a secure reset link to your email ({email}).
                             This link is powered by the system's professional SMTP configuration.
                         </p>
