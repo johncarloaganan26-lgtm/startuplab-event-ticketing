@@ -104,30 +104,14 @@ export const EventCard: React.FC<EventCardProps> = ({
   listing = 'all'
 }) => {
   const navigate = useNavigate();
-  const { isAuthenticated, role, name, email } = useUser();
+  const { isAuthenticated, role } = useUser();
   const {
     canLikeFollow,
     isAttendingView,
     isLiked,
-    toggleLike,
-    isFollowing,
-    toggleFollowing
+    toggleLike
   } = useEngagement();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [likeCount, setLikeCount] = useState<number>(Number(event.likesCount || 0));
-  const menuRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handleOutside = (event: MouseEvent) => {
-      if (!menuRef.current) return;
-      if (!menuRef.current.contains(event.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleOutside);
-    return () => document.removeEventListener('mousedown', handleOutside);
-  }, [menuOpen]);
 
   useEffect(() => {
     setLikeCount(Number(event.likesCount || 0));
@@ -146,9 +130,7 @@ export const EventCard: React.FC<EventCardProps> = ({
   }, [event.organizer, organizers, organizerId]);
 
   const organizerName = resolvedOrganizer?.organizerName || 'Organization';
-  const pageName = (name || email?.split('@')[0] || 'My Page').trim();
   const liked = isLiked(event.eventId);
-  const following = organizerId ? isFollowing(organizerId) : false;
   const organizerRestricted = isAuthenticated && role === UserRole.ORGANIZER && !isAttendingView;
 
   // Registration window label
@@ -214,43 +196,11 @@ export const EventCard: React.FC<EventCardProps> = ({
     }
   };
 
-  const handleFollow = async (eventClick: React.MouseEvent<HTMLButtonElement>) => {
-    eventClick.stopPropagation();
-    if (!isAuthenticated) {
-      gotoSignup();
-      return;
-    }
-    if (!canLikeFollow) {
-      onActionNotice?.('Switch to Attending mode to follow organizations.');
-      return;
-    }
-    if (!organizerId) {
-      onActionNotice?.('Organization profile is not available yet.');
-      return;
-    }
-    try {
-      const { following: nextFollowing, confirmationEmailSent } = await toggleFollowing(organizerId);
-      setMenuOpen(false);
-      const msg = nextFollowing
-        ? (confirmationEmailSent ? 'Following! Check your email for confirmation.' : 'Following!')
-        : 'Removed from followings.';
-      onActionNotice?.(msg);
-    } catch (error) {
-      const message = error instanceof Error && error.message
-        ? error.message
-        : 'Unable to update following state.';
-      onActionNotice?.(message);
-    }
-  };
-
   const likeLabel = liked
     ? (likeCount <= 1
       ? 'You liked this'
       : `You and ${formatCompactCount(likeCount - 1)} others`)
     : `${formatCompactCount(likeCount)} likes`;
-
-  // Brand Color fallback
-  const brandColor = event.organizer?.brandColor || '#38BDF2';
 
   // Completion calculation
   const eventStart = event.startAt ? new Date(event.startAt) : null;
@@ -259,16 +209,9 @@ export const EventCard: React.FC<EventCardProps> = ({
 
   // Branding Restriction for Trending Landing Cards
   const isTrendingLanding = isLanding && listing === 'all';
-  const effectiveBrandColor = isTrendingLanding ? '#2E2E2F' : brandColor;
-
   return (
     <Card
       className="group flex flex-col h-full border border-transparent hover:border-[#2E2E2F]/10 rounded-[1.35rem] overflow-hidden bg-[#F2F2F2] transition-all duration-300 cursor-pointer hover:shadow-xl"
-      style={{
-        borderColor: menuOpen ? `${effectiveBrandColor}40` : undefined,
-      }}
-      onMouseEnter={(e: any) => e.currentTarget.style.borderColor = `${effectiveBrandColor}60`}
-      onMouseLeave={(e: any) => e.currentTarget.style.borderColor = menuOpen ? `${effectiveBrandColor}40` : 'transparent'}
       onClick={() => navigate(`/events/${event.slug}`)}
     >
       {/* Image Section - Responsive Height: Mobile 40, SM 48, MD 64 */}
@@ -289,22 +232,20 @@ export const EventCard: React.FC<EventCardProps> = ({
           </div>
         )}
         {/* Top Left: Badges */}
-        <div className="absolute top-3 left-0 flex flex-col gap-2 z-10">
+        <div className="absolute top-3 left-3 z-10">
           {trendingRank && (isLanding && listing === 'all') ? (
             <div
-              className="rounded-r-full px-2.5 py-1 bg-[#38BDF2] text-white text-[10px] font-black uppercase tracking-[0.15em] shadow-lg shadow-black/10 transition-transform active:scale-95"
+              className="inline-flex items-center rounded-full px-3.5 py-1.5 bg-[#38BDF2] text-white text-[10px] font-black uppercase tracking-[0.15em] shadow-lg shadow-black/10 transition-transform active:scale-95"
             >
               #{trendingRank} Trending
             </div>
           ) : (event.isPromoted || (event as any).is_promoted) ? (
             <div className="group/promoted relative">
                 <div
-                  className="flex items-center gap-2 px-3.5 py-1.5 rounded-r-full bg-[#38BDF2] animate-in fade-in zoom-in duration-500 cursor-help"
+                  className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 bg-[#38BDF2] animate-in fade-in zoom-in duration-500 cursor-help"
                 >
                   <ICONS.Info className="w-4 h-4 text-white" strokeWidth={2.5} />
-                  {!isLanding && (
-                    <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white">Promoted</span>
-                  )}
+                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white">Promoted</span>
                 </div>
               <div className="absolute left-0 top-full mt-2 w-56 p-4 bg-[#2E2E2F] text-white text-[10px] font-bold rounded-2xl shadow-2xl opacity-0 translate-y-1 pointer-events-none group-hover/promoted:opacity-100 group-hover/promoted:translate-y-0 transition-all z-50 leading-relaxed ring-1 ring-white/10">
                 This event is highlighted by the organizer as a premium featured session on StartupLab.
@@ -313,7 +254,7 @@ export const EventCard: React.FC<EventCardProps> = ({
             </div>
           ) : trendingRank ? (
             <div
-              className="rounded-full px-2.5 py-1 bg-[#38BDF2] text-white text-[10px] font-black uppercase tracking-[0.15em] shadow-lg shadow-black/10 transition-transform active:scale-95"
+              className="inline-flex items-center rounded-full px-3.5 py-1.5 bg-[#38BDF2] text-white text-[10px] font-black uppercase tracking-[0.15em] shadow-lg shadow-black/10 transition-transform active:scale-95"
             >
               #{trendingRank} Trending
             </div>
@@ -339,67 +280,6 @@ export const EventCard: React.FC<EventCardProps> = ({
           >
             <ICONS.Download className="w-4 h-4" />
           </button>
-          <div className="relative" ref={menuRef}>
-            <button
-              type="button"
-              onClick={(eventClick) => {
-                eventClick.stopPropagation();
-                setMenuOpen((prev) => !prev);
-              }}
-              className={`w-9 h-9 rounded-xl border bg-white/90 text-[#2E2E2F] border-[#2E2E2F]/20 backdrop-blur-sm flex items-center justify-center ${isTrendingLanding ? 'hover:bg-[#2E2E2F]/10' : 'hover:bg-[#38BDF2]/20'} transition-colors`}
-              title="More options"
-            >
-              <ICONS.MoreHorizontal className="w-4 h-4" />
-            </button>
-            {menuOpen && (
-              <div
-                className="absolute right-0 mt-2 min-w-[220px] rounded-2xl border border-[#2E2E2F]/10 bg-[#F2F2F2] shadow-xl z-20 overflow-hidden"
-                onClick={(eventClick) => eventClick.stopPropagation()}
-              >
-                <div className="px-4 py-3 border-b border-[#2E2E2F]/10">
-                  <p className="text-[10px] uppercase tracking-widest font-black text-[#2E2E2F]/50">Page</p>
-                  <p className="text-xs font-semibold text-[#2E2E2F]">{pageName}</p>
-                </div>
-                <div className="px-4 py-3 border-b border-[#2E2E2F]/10">
-                  <p className="text-[10px] uppercase tracking-widest font-black text-[#2E2E2F]/50">Organization</p>
-                  <p className="text-xs font-semibold text-[#2E2E2F]">{organizerName}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMenuOpen(false);
-                    navigate(`/organizer/${organizerId}`);
-                  }}
-                  className="w-full text-left px-4 py-3 text-xs font-semibold text-[#2E2E2F] hover:bg-[#38BDF2]/10 transition-colors disabled:text-[#2E2E2F]/40 disabled:cursor-not-allowed"
-                  disabled={!organizerId}
-                >
-                  View Profile
-                </button>
-                <button
-                  type="button"
-                  onClick={handleFollow}
-                  className="w-full text-left px-4 py-3 text-xs font-semibold text-[#2E2E2F] hover:bg-[#38BDF2]/10 transition-colors disabled:text-[#2E2E2F]/40 disabled:cursor-not-allowed"
-                  disabled={!organizerId}
-                >
-                  {following ? 'Following' : 'Follow organization'}
-                </button>
-                {following && (
-                  <button
-                    type="button"
-                    onClick={(eventClick) => {
-                      eventClick.stopPropagation();
-                      setMenuOpen(false);
-                      navigate('/followings');
-                    }}
-                    className="w-full text-left px-4 py-3 text-xs font-semibold text-[#2E2E2F] hover:bg-[#38BDF2]/10 transition-colors border-t border-[#2E2E2F]/10"
-                  >
-                    Following list
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
         </div>
       </div>
       {/* Content Section */}

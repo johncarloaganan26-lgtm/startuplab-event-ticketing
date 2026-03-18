@@ -7,14 +7,14 @@ export const Badge: React.FC<{
   className?: string
 }> = ({ children, type = 'neutral', className = '' }) => {
   const styles = {
-    success: 'bg-[#38BDF2]/20 text-[#2E2E2F]',
-    danger: 'bg-[#2E2E2F]/10 text-[#2E2E2F]',
-    warning: 'bg-[#38BDF2]/20 text-[#2E2E2F]',
-    info: 'bg-[#38BDF2]/20 text-[#2E2E2F]',
-    neutral: 'bg-[#F2F2F2] text-[#2E2E2F]',
+    success: 'bg-green-100 text-green-700',
+    danger: 'bg-red-100 text-red-700',
+    warning: 'bg-amber-100 text-amber-700',
+    info: 'bg-[#38BDF2]/20 text-[#38BDF2]',
+    neutral: 'bg-[#2E2E2F]/10 text-[#2E2E2F]',
   };
   return (
-    <span className={`px-2 py-0.5 rounded-full text-[13px] font-medium ${styles[type]} ${className}`}>
+    <span className={`px-2.5 py-1 rounded-full text-[11px] sm:text-[12px] font-bold uppercase tracking-wide ${styles[type]} inline-block ${className}`}>
       {children}
     </span>
   );
@@ -30,7 +30,7 @@ export const Card: React.FC<{
   <div
     onClick={onClick}
     style={style}
-    className={`bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl overflow-hidden ${className} shadow-none`}
+    className={`bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-2xl overflow-hidden ${className} shadow-sm hover:shadow-md transition-shadow`}
     {...props}
   >
     {children}
@@ -56,20 +56,20 @@ export const Button: React.FC<{
   style,
   onClick
 }) => {
-    const base = 'inline-flex items-center justify-center font-semibold tracking-wide rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]';
+    const base = 'inline-flex items-center justify-center font-bold tracking-wide rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] sm:min-h-[44px] active:scale-95';
 
     const variants = {
       primary: 'bg-[#38BDF2] text-[#F2F2F2] hover:bg-[#2E2E2F] hover:text-[#F2F2F2] active:bg-[#2E2E2F] focus:ring-[#38BDF2]',
       secondary: 'bg-[#38BDF2] text-[#F2F2F2] hover:bg-[#2E2E2F] hover:text-[#F2F2F2] active:bg-[#2E2E2F] focus:ring-[#38BDF2]',
-      outline: 'bg-[#38BDF2] text-[#F2F2F2] hover:bg-[#2E2E2F] hover:text-[#F2F2F2] active:bg-[#2E2E2F] focus:ring-[#38BDF2]',
-      ghost: 'bg-[#38BDF2] text-[#F2F2F2] hover:bg-[#2E2E2F] hover:text-[#F2F2F2] active:bg-[#2E2E2F] focus:ring-[#38BDF2]',
-      danger: 'bg-[#38BDF2] text-[#F2F2F2] hover:bg-[#2E2E2F] hover:text-[#F2F2F2] active:bg-[#2E2E2F] focus:ring-[#38BDF2]'
+      outline: 'bg-transparent border-2 border-[#38BDF2] text-[#38BDF2] hover:bg-[#38BDF2]/10 active:bg-[#38BDF2]/20 focus:ring-[#38BDF2]',
+      ghost: 'bg-transparent text-[#38BDF2] hover:bg-[#38BDF2]/10 active:bg-[#38BDF2]/20 focus:ring-[#38BDF2]',
+      danger: 'bg-red-500 text-[#F2F2F2] hover:bg-red-600 active:bg-red-700 focus:ring-red-500'
     };
 
     const sizes = {
-      sm: 'px-3 py-2 text-[13px] min-h-[36px]',
-      md: 'px-4 py-2.5 text-[14px] min-h-[44px]',
-      lg: 'px-6 py-3 text-[15px] min-h-[48px]',
+      sm: 'px-3 py-2 text-[12px] sm:text-[13px] min-h-[40px] sm:min-h-[36px]',
+      md: 'px-4 sm:px-4 py-3 sm:py-2.5 text-[13px] sm:text-[14px] min-h-[48px] sm:min-h-[44px]',
+      lg: 'px-6 py-3 text-[14px] sm:text-[15px] min-h-[52px] sm:min-h-[48px]',
     };
 
     return (
@@ -96,13 +96,13 @@ export const Input: React.FC<{
   }
 
   return (
-    <div className="space-y-1.5 w-full">
-      {label && <label className="block text-sm font-medium text-[#2E2E2F]/70 mb-1">{label}</label>}
+    <div className="space-y-2 w-full">
+      {label && <label className="block text-xs sm:text-sm font-semibold text-[#2E2E2F]/70 mb-1">{label}</label>}
       <input
-        className={`block w-full px-3 py-3 sm:py-2 bg-[#F2F2F2] border text-base sm:text-sm min-h-[44px] sm:min-h-auto ${error ? 'border-[#2E2E2F]' : 'border-[#2E2E2F]/20'} rounded-lg focus:outline-none focus:ring-2 ${error ? 'focus:ring-[#2E2E2F]/40' : 'focus:ring-[#38BDF2]/40'} transition-colors font-normal ${className}`}
+        className={`block w-full px-4 py-3 bg-[#F2F2F2] border text-base sm:text-sm min-h-[48px] sm:min-h-[44px] ${error ? 'border-red-500' : 'border-[#2E2E2F]/20'} rounded-xl focus:outline-none focus:ring-2 ${error ? 'focus:ring-red-300/40' : 'focus:ring-[#38BDF2]/40'} transition-colors font-normal ${className}`}
         {...inputProps}
       />
-      {error && <p className="text-xs text-[#2E2E2F] mt-1">{error}</p>}
+      {error && <p className="text-xs text-red-500 font-medium mt-1">{error}</p>}
     </div>
   );
 };
@@ -138,12 +138,12 @@ export const PasswordInput: React.FC<{
         value={value}
         onChange={onChange}
         required={required}
-        className={`w-full min-h-[44px] sm:min-h-auto text-base sm:text-[14px] ${icon ? 'pl-12' : 'pl-4'} pr-12 py-3 sm:py-2 bg-[#F2F2F2] border border-[#2E2E2F]/20 rounded-xl text-[#2E2E2F] placeholder-[#2E2E2F]/40 focus:outline-none focus:ring-2 focus:ring-[#38BDF2]/40 focus:border-[#38BDF2] transition-colors font-normal`}
+        className={`w-full min-h-[48px] sm:min-h-[44px] text-base sm:text-[14px] ${icon ? 'pl-12' : 'pl-4'} pr-12 py-3 sm:py-2 bg-[#F2F2F2] border border-[#2E2E2F]/20 rounded-xl text-[#2E2E2F] placeholder-[#2E2E2F]/40 focus:outline-none focus:ring-2 focus:ring-[#38BDF2]/40 focus:border-[#38BDF2] transition-colors font-normal`}
       />
       <button
         type="button"
         onClick={() => setShowPassword(!showPassword)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#2E2E2F]/50 hover:text-[#2E2E2F] transition-colors p-2 z-10 min-h-[44px] w-auto flex items-center justify-center"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#2E2E2F]/50 hover:text-[#2E2E2F] transition-colors p-2 z-10 min-h-[48px] sm:min-h-[44px] w-auto flex items-center justify-center active:scale-95"
       >
         {showPassword ? <EyeOffIcon /> : <EyeIcon />}
       </button>

@@ -833,7 +833,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                   </svg>
                 </button>
               </div>
-              <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+              <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto scrollbar-none">
                 {menuItems.map((item) => {
                   const isActive = checkIsActiveAdmin(item.path);
                   return (
@@ -2202,14 +2202,14 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             { label: 'Attendees', path: '/user/attendees', icon: <ICONS.Users className="w-6 h-6" /> },
             { label: 'Check In', path: '/user/checkin', icon: <ICONS.CheckCircle className="w-6 h-6" /> },
             { label: 'Reports', path: '/user/reports', icon: <ICONS.BarChart className="w-6 h-6" /> },
-            { label: 'Archive', path: '/user/archive', icon: <ICONS.Archive className="w-6 h-6" />, separator: true },
+            { label: 'Archive', path: '/user/archive', icon: <ICONS.Archive className="w-6 h-6" /> },
             { label: 'Plans', path: '/subscription', icon: <ICONS.Layout className="w-6 h-6" /> },
             { label: 'Organization Profile', path: '/user-settings?tab=organizer', icon: <ICONS.Users className="w-6 h-6" /> },
             { label: 'Team and Access', path: '/user-settings?tab=team', icon: <ICONS.Users className="w-6 h-6" /> },
             { label: 'Email Settings', path: '/user-settings?tab=email', icon: <ICONS.Mail className="w-6 h-6" /> },
             { label: 'Payment Settings', path: '/user-settings?tab=payments', icon: <ICONS.CreditCard className="w-6 h-6" /> },
             { label: 'Support', path: '/organizer-support', icon: <ICONS.MessageSquare className="w-6 h-6" /> },
-            { label: 'Account Settings', path: '/user-settings?tab=account', icon: <ICONS.Settings className="w-6 h-6" />, separator: true },
+            { label: 'Account Settings', path: '/user-settings?tab=account', icon: <ICONS.Settings className="w-6 h-6" /> },
           ]
   );
 
@@ -2241,10 +2241,10 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     <div className="min-h-screen flex bg-[#F2F2F2]">
       {/* Sidebar for desktop */}
       <aside
-        className={`bg-[#F2F2F2] border-r-[3px] border-[#2E2E2F]/30 hidden md:flex flex-col fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-64' : 'w-20'}`}
+        className={`bg-[#F2F2F2] border-r-[3px] border-[#111111]/35 hidden md:flex flex-col fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-64' : 'w-20'}`}
         style={{ overflow: desktopSidebarOpen ? 'hidden' : 'visible' }}
       >
-        <div className={`py-6 px-4 flex items-center justify-center border-b-[3px] border-[#2E2E2F]/30 shrink-0 ${desktopSidebarOpen ? 'min-h-[152px]' : 'min-h-[108px]'}`}>
+        <div className={`py-6 px-4 flex items-center justify-center border-b-[3px] border-[#111111]/35 shrink-0 ${desktopSidebarOpen ? 'min-h-[152px]' : 'min-h-[108px]'}`}>
           <Link to="/user-home" className="flex items-center justify-center group transition-all duration-500 transform hover:scale-[1.05] active:scale-[0.95]">
             {organizerSidebarLogoUrl ? (
               <img
@@ -2328,7 +2328,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
               </svg>
             </button>
             <div className="ml-1 hidden sm:block">
-              <p className="text-[10px] uppercase font-black text-[#2E2E2F]/50 tracking-[0.2em]">
+              <p className="text-[10px] uppercase font-black text-[#111111] tracking-[0.2em]">
                 Organizer Portal
               </p>
             </div>
@@ -2575,8 +2575,8 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
         {sidebarOpen && (
           <div className="fixed inset-0 z-[100] flex lg:hidden">
             <div className="fixed inset-0 bg-[#2E2E2F]/70 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-            <aside className="relative w-[min(18.5rem,calc(100vw-1rem))] bg-[#F2F2F2] border-r-[3px] border-[#2E2E2F]/30 flex flex-col h-full z-50 animate-in slide-in-from-left duration-300 shadow-[12px_0_36px_-24px_rgba(46,46,47,0.3)]">
-              <div className="p-8 pb-3 flex items-center justify-between border-b-[3px] border-[#2E2E2F]/30">
+            <aside className="relative w-[min(18.5rem,calc(100vw-1rem))] bg-[#F2F2F2] border-r-[3px] border-[#111111]/35 flex flex-col h-full z-50 animate-in slide-in-from-left duration-300 shadow-[12px_0_36px_-24px_rgba(46,46,47,0.3)]">
+              <div className="p-8 pb-3 flex items-center justify-between border-b-[3px] border-[#111111]/35">
                 <Link to="/user-home" onClick={() => setSidebarOpen(false)} className="flex flex-col items-start gap-2 group transition-all duration-500">
                   {organizerSidebarLogoUrl ? (
                     <img
@@ -2605,7 +2605,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" d="M4 6h16M4 12h16M4 18h16" /></svg>
                 </button>
               </div>
-              <nav className="flex-1 px-4 pt-1 pb-24 space-y-0 overflow-y-auto">
+              <nav className="flex-1 px-4 pt-1 pb-24 space-y-0 overflow-y-auto scrollbar-none">
                 {menuItems.map((item: any) => {
                   const isActive = checkIsActive(item.path);
                   return (
