@@ -217,8 +217,8 @@ export const TeamSettings: React.FC = () => {
         <div className="space-y-8 animate-in fade-in duration-500 pb-20">
             {notification && (
                 <div className="fixed top-24 right-8 z-[120]">
-                    <Card className={`flex items-center gap-4 px-6 py-4 rounded-2xl border ${notification.type === 'success' ? 'bg-[#F2F2F2] border-green-200 text-[#2E2E2F]' : 'bg-[#F2F2F2] border-red-200 text-[#2E2E2F]'}`}>
-                        <div className={`p-2 rounded-xl ${notification.type === 'success' ? 'bg-[#38BDF2]/10 text-[#2E2E2F]' : 'bg-[#2E2E2F]/20 text-[#2E2E2F]'}`}>
+                    <Card className={`flex items-center gap-4 px-6 py-4 rounded-2xl border-2 shadow-xl ${notification.type === 'success' ? 'bg-[#F2F2F2] border-[#38BDF2]/40 text-[#2E2E2F]' : 'bg-[#F2F2F2] border-red-500/30 text-[#2E2E2F]'}`}>
+                        <div className={`p-2 rounded-xl border-2 ${notification.type === 'success' ? 'bg-[#38BDF2]/10 border-[#38BDF2]/20 text-[#2E2E2F]' : 'bg-red-50 border-red-200 text-[#2E2E2F]'}`}>
                             {notification.type === 'success' ? <ICONS.CheckCircle className="w-5 h-5" /> : <ICONS.Layout className="w-5 h-5" />}
                         </div>
                         <p className="font-bold text-sm tracking-tight">{notification.message}</p>
@@ -227,8 +227,8 @@ export const TeamSettings: React.FC = () => {
                 </div>
             )}
 
-            <div className="flex justify-end pb-2 border-b border-[#2E2E2F]/10">
-                <div className="flex bg-[#F2F2F2] p-1 rounded-2xl border border-[#2E2E2F]/10 shrink-0">
+            <div className="flex justify-end pb-2 border-b-2 border-[#2E2E2F]/10">
+                <div className="flex bg-[#F2F2F2] p-1 rounded-2xl border-2 border-[#2E2E2F]/15 shrink-0">
                     {[
                         { id: 'directory', label: 'Directory' },
                         { id: 'permissions', label: 'Access Control' }
@@ -253,7 +253,7 @@ export const TeamSettings: React.FC = () => {
                                 onClick={() => setIsInviteModalOpen(true)}
                                 disabled={staffLimit?.allowed === false}
                                 variant={staffLimit?.allowed === false ? 'outline' : 'primary'}
-                                className={staffLimit?.allowed === false ? 'opacity-50 cursor-not-allowed border-[#2E2E2F]/10' : ''}
+                                className={staffLimit?.allowed === false ? 'opacity-50 cursor-not-allowed border-2 border-[#2E2E2F]/15' : ''}
                             >
                                 <span className={`text-[9px] font-black uppercase tracking-widest flex items-center gap-2 ${staffLimit?.allowed === false ? 'text-[#2E2E2F]' : 'text-white'}`}>
                                     {staffLimit?.allowed === false ? (
@@ -265,16 +265,16 @@ export const TeamSettings: React.FC = () => {
                                 </span>
                             </Button>
                         </div>
-                        <Card className="overflow-hidden border-[#2E2E2F]/10 rounded-[2.5rem] bg-[#F2F2F2]">
+                        <Card className="overflow-hidden border-2 border-[#2E2E2F]/15 rounded-[2.5rem] bg-[#F2F2F2] shadow-sm">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-[#F2F2F2] border-b border-[#2E2E2F]/10">
+                                    <thead className="bg-[#F2F2F2] border-b-2 border-[#2E2E2F]/10">
                                         <tr>
                                             <th className="px-10 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em]">Name</th>
                                             <th className="px-10 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em]">Position</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-[#2E2E2F]/10">
+                                    <tbody className="divide-y-2 divide-[#2E2E2F]/10">
                                         {teamMembers.map((member) => (
                                             <tr key={member.id} className="hover:bg-[#38BDF2]/10 transition-colors group">
                                                 <td className="px-10 py-8">
@@ -316,10 +316,10 @@ export const TeamSettings: React.FC = () => {
                             <label className="block text-[10px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] mb-1 ml-1">Access Control</label>
                             <Badge type="info" className="font-black text-[9px] tracking-widest uppercase bg-[#38BDF2]/20 text-[#2E2E2F]">Manage Team Permissions</Badge>
                         </div>
-                        <Card className="overflow-hidden border-[#2E2E2F]/10 rounded-[2.5rem] bg-[#F2F2F2]">
+                        <Card className="overflow-hidden border-2 border-[#2E2E2F]/15 rounded-[2.5rem] bg-[#F2F2F2] shadow-sm">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-[#F2F2F2] border-b border-[#2E2E2F]/10">
+                                    <thead className="bg-[#F2F2F2] border-b-2 border-[#2E2E2F]/10">
                                         <tr>
                                             <th className="px-10 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em]">Name</th>
                                             <th className="px-6 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] text-center">View Events</th>
@@ -328,7 +328,7 @@ export const TeamSettings: React.FC = () => {
                                             <th className="px-6 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] text-center">Notify</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-[#2E2E2F]/10">
+                                    <tbody className="divide-y-2 divide-[#2E2E2F]/10">
                                         {teamMembers.map((member) => (
                                             <tr key={member.id} className="hover:bg-[#38BDF2]/10 transition-colors group">
                                                 <td className="px-10 py-8">
@@ -381,8 +381,8 @@ export const TeamSettings: React.FC = () => {
             <Modal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} title="Invite Team Member" size="lg">
                 <form onSubmit={handleInviteSubmit} className="space-y-10 px-2">
                     <div className="space-y-6">
-                        <Input label="Work Email" type="email" placeholder="j.miller@startuplab.co" required className="w-full py-5 px-6 rounded-2xl bg-[#F2F2F2] border-[#2E2E2F]/20 text-base" value={inviteData.email} onChange={(e: any) => setInviteData({ ...inviteData, email: e.target.value })} />
-                        <Input label="Assigned Position" value="STAFF" disabled className="w-full py-5 px-6 rounded-2xl bg-[#F2F2F2] border-[#2E2E2F]/20 text-[#2E2E2F]/60 text-base" />
+                        <Input label="Work Email" type="email" placeholder="j.miller@startuplab.co" required className="w-full py-5 px-6 rounded-2xl bg-[#F2F2F2] border-2 border-[#2E2E2F]/20 text-base" value={inviteData.email} onChange={(e: any) => setInviteData({ ...inviteData, email: e.target.value })} />
+                        <Input label="Assigned Position" value="STAFF" disabled className="w-full py-5 px-6 rounded-2xl bg-[#F2F2F2] border-2 border-[#2E2E2F]/20 text-[#2E2E2F]/60 text-base" />
                     </div>
                     <div className="pt-8 flex flex-col sm:flex-row gap-4">
                         <Button className="flex-1" onClick={() => setIsInviteModalOpen(false)} disabled={isInviting}>Cancel</Button>

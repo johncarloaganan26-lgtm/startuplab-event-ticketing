@@ -147,7 +147,7 @@ export const BrowseEventsNavigator: React.FC<BrowseEventsNavigatorProps> = ({
   return (
     <section className={`px-0 ${className}`}>
       <div>
-        <p className="text-2xl lg:text-3xl font-black text-[#2E2E2F] tracking-tight leading-[1.12]">
+        <p className="text-[22px] sm:text-[25px] md:text-[28px] font-black text-[#2E2E2F] tracking-tight leading-tight">
           Browsing events in{' '}
           <span className="relative inline-block" ref={dropdownRef}>
             <button
@@ -235,7 +235,7 @@ export const BrowseEventsNavigator: React.FC<BrowseEventsNavigatorProps> = ({
                 key={tab.key}
                 type="button"
                 onClick={() => onTabChange(tab.key)}
-                className={`relative pb-3 text-[clamp(0.98rem,1.35vw,1.45rem)] font-semibold tracking-tight transition-all duration-300 ease-in-out ${isActive ? 'text-[#38BDF2] font-bold' : 'text-[#2E2E2F]/65 hover:text-[#38BDF2]'}`}
+                className={`relative pb-3 text-lg sm:text-xl font-semibold tracking-tight transition-all duration-300 ease-in-out ${isActive ? 'text-[#38BDF2] font-bold' : 'text-[#2E2E2F]/65 hover:text-[#38BDF2]'}`}
                 aria-current={isActive ? 'page' : undefined}
               >
                 {tab.label}

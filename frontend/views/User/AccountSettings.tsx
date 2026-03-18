@@ -137,7 +137,7 @@ export const AccountSettings: React.FC = () => {
             )}
 
             {/* Profile Section */}
-            <Card className="p-10 border-[#2E2E2F]/10 rounded-[2.5rem] bg-[#F2F2F2]">
+            <Card className="p-10 border-2 border-[#2E2E2F]/15 rounded-[2.5rem] bg-[#F2F2F2] shadow-sm">
                 <div className="flex items-center gap-3 mb-10">
                     <div className="w-10 h-10 rounded-xl bg-[#38BDF2]/10 text-[#38BDF2] flex items-center justify-center">
                         <UserIcon className="w-5 h-5" strokeWidth={2.5} />
@@ -181,7 +181,7 @@ export const AccountSettings: React.FC = () => {
                         <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleAvatarUpload} />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-[#2E2E2F]/5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t-2 border-[#2E2E2F]/10">
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-black text-[#2E2E2F]/30 uppercase tracking-[0.2em] ml-1">Full Name</label>
                             <Input
@@ -193,7 +193,7 @@ export const AccountSettings: React.FC = () => {
                         </div>
                         <div className="space-y-1.5 opacity-60">
                             <label className="text-[10px] font-black text-[#2E2E2F]/30 uppercase tracking-[0.2em] ml-1">Email Address</label>
-                            <div className="px-5 py-3.5 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl text-xs text-[#2E2E2F] font-bold">
+                            <div className="px-5 py-3.5 bg-[#F2F2F2] border-2 border-[#2E2E2F]/10 rounded-xl text-xs text-[#2E2E2F] font-bold">
                                 {email}
                             </div>
                         </div>
@@ -212,7 +212,7 @@ export const AccountSettings: React.FC = () => {
             </Card>
 
             {/* Security Section */}
-            <Card className="p-10 border-[#2E2E2F]/10 rounded-[2.5rem] bg-[#F2F2F2]">
+            <Card className="p-10 border-2 border-[#2E2E2F]/15 rounded-[2.5rem] bg-[#F2F2F2] shadow-sm">
                 <div className="flex items-center gap-3 mb-10">
                     <div className="w-10 h-10 rounded-xl bg-[#38BDF2]/10 text-[#38BDF2] flex items-center justify-center">
                         <ShieldIcon className="w-5 h-5" strokeWidth={2.5} />
@@ -224,7 +224,7 @@ export const AccountSettings: React.FC = () => {
                 </div>
 
                 <div className="space-y-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 rounded-3xl bg-[#F2F2F2] border border-[#2E2E2F]/5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 rounded-3xl bg-[#F2F2F2] border-2 border-[#2E2E2F]/10">
                         <div className="space-y-1">
                             <h4 className="text-xs font-bold text-[#2E2E2F]">Password</h4>
                             <p className="text-[11px] text-[#2E2E2F]/50 font-medium">Last changed: (Not recorded)</p>
@@ -239,7 +239,7 @@ export const AccountSettings: React.FC = () => {
                         </Button>
                     </div>
 
-                    <div className="flex gap-3 items-start p-4 bg-[#38BDF2]/5 border border-[#38BDF2]/20 rounded-2xl">
+                    <div className="flex gap-3 items-start p-4 bg-[#38BDF2]/5 border-2 border-[#38BDF2]/20 rounded-2xl">
                         <AlertIcon className="w-4 h-4 text-[#38BDF2] mt-0.5 shrink-0" />
                         <p className="text-[10px] text-[#2E2E2F]/70 font-medium leading-relaxed">
                             Clicking "Change Password" will send a secure reset link to your email ({email}).

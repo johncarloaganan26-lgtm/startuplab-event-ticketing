@@ -128,7 +128,7 @@ export const OrganizerReports: React.FC = () => {
   return (
     <div className="space-y-6 pb-20">
       {/* Page Header */}
-      <div className="bg-transparent border border-[#2E2E2F]/5 rounded-2xl p-6 md:p-8 mb-4">
+      <div className="bg-transparent border-2 border-[#2E2E2F]/10 rounded-2xl p-6 md:p-8 mb-4">
         <div className="flex flex-col md:flex-row justify-between gap-6">
           <div className="max-w-2xl">
             <h1 className="text-2xl md:text-3xl font-bold text-[#2E2E2F] tracking-tight mb-2">
@@ -158,17 +158,17 @@ export const OrganizerReports: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="group bg-transparent border border-[#2E2E2F]/5 rounded-2xl p-6 transition-all duration-300 hover:border-[#38BDF2] hover:shadow-sm">
+        <div className="group bg-transparent border-2 border-[#2E2E2F]/10 rounded-2xl p-6 transition-all duration-300 hover:border-[#38BDF2] hover:shadow-sm">
           <p className="text-xs font-bold text-[#38BDF2] uppercase tracking-widest mb-3">Total Transactions</p>
           <p className="text-3xl font-extrabold text-[#2E2E2F] leading-none mb-1">{transactions.length}</p>
         </div>
 
-        <div className="group bg-transparent border border-[#2E2E2F]/5 rounded-2xl p-6 transition-all duration-300 hover:border-green-500 hover:shadow-sm">
+        <div className="group bg-transparent border-2 border-[#2E2E2F]/10 rounded-2xl p-6 transition-all duration-300 hover:border-green-500 hover:shadow-sm">
           <p className="text-xs font-bold text-green-500 uppercase tracking-widest mb-3">Completed Revenue</p>
           <p className="text-3xl font-extrabold text-[#2E2E2F] leading-none mb-1">{formatCurrency(completedAmount)}</p>
         </div>
 
-        <div className={`relative group bg-transparent border border-[#2E2E2F]/5 rounded-2xl p-6 transition-all duration-300 ${!hasAdvancedReports ? 'cursor-not-allowed border-[#2E2E2F]/10' : 'hover:border-[#2E2E2F] hover:shadow-sm'}`}>
+        <div className={`relative group bg-transparent border-2 border-[#2E2E2F]/10 rounded-2xl p-6 transition-all duration-300 ${!hasAdvancedReports ? 'cursor-not-allowed border-[#2E2E2F]/20' : 'hover:border-[#2E2E2F] hover:shadow-sm'}`}>
           <p className="text-xs font-bold text-[#2E2E2F]/50 uppercase tracking-widest mb-3">Total Pending & Failed</p>
           <div className={`${!hasAdvancedReports ? 'blur-md select-none opacity-50' : ''}`}>
              <p className="text-3xl font-extrabold text-[#2E2E2F]/50 leading-none mb-1">{formatCurrency(totalAmount - completedAmount)}</p>
@@ -210,11 +210,11 @@ export const OrganizerReports: React.FC = () => {
       )}
 
       {/* Transactions Table */}
-      <div className="bg-transparent border rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-transparent border-2 border-[#2E2E2F]/10 rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-transparent border-b border-[#2E2E2F]/5">
+              <tr className="bg-transparent border-b-2 border-[#2E2E2F]/10">
                 <th className="px-6 py-4 text-xs font-bold text-[#2E2E2F]/60 uppercase tracking-widest whitespace-nowrap">Order ID</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#2E2E2F]/60 uppercase tracking-widest whitespace-nowrap">Event</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#2E2E2F]/60 uppercase tracking-widest whitespace-nowrap">Attendee</th>

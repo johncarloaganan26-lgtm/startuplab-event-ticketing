@@ -20,6 +20,20 @@ const getImageUrl = (img: any): string => {
   return img.url || img.path || img.publicUrl || BRAND_LOGO_URL;
 };
 
+// Helper to generate default avatar for organizers without profile images
+const generateDefaultAvatarDataUri = (initials: string, bgColor: string): string => {
+  const svg = `
+    <svg width="36" height="36" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <rect width="36" height="36" rx="8" fill="${bgColor}"/>
+      <text x="18" y="20" font-size="14" font-weight="900" font-family="sans-serif" fill="white" text-anchor="middle">${initials}</text>
+    </svg>
+  `.trim();
+  return `data:image/svg+xml;base64,${btoa(svg)}`;
+};
+
+// Color palette for default avatars
+const defaultAvatarColors = ['#38BDF2', '#38BDF2', '#38BDF2'];
+
 // Date/time formatting with event timezone
 const formatDate = (iso: string, timezone?: string, opts?: Intl.DateTimeFormatOptions) => {
   try {
@@ -422,13 +436,11 @@ export const EventCard: React.FC<EventCardProps> = ({
         <h4 className="text-[#2E2E2F] text-lg sm:text-xl font-bold tracking-tight leading-tight mb-3 line-clamp-2">
           {event.eventName}
         </h4>
-        <div className="flex items-center gap-2 text-[12px] sm:text-[13px] font-semibold text-[#2E2E2F]/70 mb-3">
-          <span className={`w-6 h-6 rounded-full flex items-center justify-center ${liked ? 'bg-[#38BDF2] text-white' : 'bg-[#2E2E2F]/10 text-[#2E2E2F]/65'}`}>
-            <ICONS.Heart className="w-3.5 h-3.5" />
-          </span>
-          <span>{likeLabel}</span>
-        </div>
         <div className="flex flex-col gap-1.5 text-[12px] sm:text-[13px] font-medium text-[#2E2E2F]/70 mb-4">
+          <div className="flex items-center gap-2">
+            <ICONS.Heart className={`w-4 h-4 ${liked ? 'text-[#38BDF2]' : 'text-[#2E2E2F]'}`} />
+            <span className={liked ? 'text-[#38BDF2] font-semibold' : ''}>{likeLabel}</span>
+          </div>
           <div className="flex items-center gap-2">
             <ICONS.Users className="w-4 h-4 text-[#2E2E2F]" />
             <span className="text-[#2E2E2F]">
@@ -653,9 +665,16 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
 
   const organizerLogos = useMemo(() => {
     return organizers
-      .filter(org => org.profileImageUrl)
       .slice(0, 3)
-      .map(org => getImageUrl(org.profileImageUrl));
+      .map((org, index) => {
+        if (org.profileImageUrl) {
+          return getImageUrl(org.profileImageUrl);
+        }
+        // Generate default avatar for organizers without profile images
+        const initials = (org.organizerName || 'O').charAt(0).toUpperCase();
+        const bgColor = defaultAvatarColors[index % defaultAvatarColors.length];
+        return generateDefaultAvatarDataUri(initials, bgColor);
+      });
   }, [organizers]);
 
   const organizerCount = organizers.length || 0;
@@ -1230,9 +1249,9 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
 
           {/* Events Listing Section Header */}
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pt-4 mb-2 pb-0 px-0">
-            <div className="flex-1 space-y-2">
-              <h2 className="text-2xl font-extrabold text-[#2E2E2F] tracking-tighter uppercase leading-none">{sectionTitle}</h2>
-              <p className="text-[#2E2E2F]/40 text-[11px] font-extrabold uppercase tracking-[0.2em]">{sectionSubtitle}</p>
+            <div className="flex-1 space-y-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#2E2E2F] tracking-tight">{sectionTitle}</h2>
+              <p className="text-[#2E2E2F]/60 text-[13px] sm:text-sm font-medium">{sectionSubtitle}</p>
             </div>
           </div>
         </section>
@@ -1485,7 +1504,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
                 className="px-10 py-4 rounded-2xl border-2 border-[#2E2E2F]/5 text-[#2E2E2F] font-black tracking-wide text-[11px] hover:bg-[#2E2E2F] hover:text-white transition-all group"
                 onClick={() => navigate('/browse-events')}
               >
-                <span>Explore Full Catalog</span>
+                <span>Explore Events</span>
                 <ICONS.ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>

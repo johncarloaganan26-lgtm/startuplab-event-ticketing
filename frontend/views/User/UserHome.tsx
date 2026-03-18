@@ -173,8 +173,8 @@ export const UserHome: React.FC = () => {
             {notification && (
                 <div className="fixed top-8 right-8 z-[120] animate-in slide-in-from-top-4 duration-300">
                     <Card className={`flex items-center gap-4 px-6 py-4 rounded-2xl border-2 shadow-xl ${notification.type === 'success'
-                        ? 'bg-[#38BDF2]/10 border-[#38BDF2] text-[#2E2E2F]'
-                        : 'bg-red-50 border-red-500 text-red-700'}`}>
+                        ? 'bg-[#38BDF2]/10 border-[#38BDF2]/40 text-[#2E2E2F]'
+                        : 'bg-red-50 border-red-500/40 text-red-700'}`}>
                         <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${notification.type === 'success' ? 'bg-[#38BDF2] text-white' : 'bg-red-500 text-white'}`}>
                             {notification.type === 'success' ? <ICONS.CheckCircle className="w-5 h-5" /> : <ICONS.AlertTriangle className="w-5 h-5" />}
                         </div>
@@ -184,7 +184,7 @@ export const UserHome: React.FC = () => {
             )}
 
             {/* Welcome Section */}
-            <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/5 rounded-[3rem] p-10 md:p-14 mb-4">
+            <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 rounded-[3rem] p-10 md:p-14 mb-4">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
                     <div className="max-w-2xl">
                         <div className="w-12 h-12 rounded-2xl bg-[#2E2E2F]/10 flex items-center justify-center mb-8">
@@ -219,7 +219,7 @@ export const UserHome: React.FC = () => {
             {organizerProfile && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* Current Plan Card */}
-                    <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/10 rounded-[2rem] p-6 flex flex-col justify-between min-h-[160px]">
+                    <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 rounded-[2rem] p-6 flex flex-col justify-between min-h-[160px] shadow-sm transition-all hover:border-[#38BDF2]/30">
                         <div>
                             <p className="text-[9px] font-black uppercase tracking-widest text-[#2E2E2F]/60 mb-2">Current Plan</p>
                             <p className="text-2xl font-black text-[#2E2E2F] tracking-tight">{organizerProfile.plan?.name || 'No Active Plan'}</p>
@@ -236,7 +236,7 @@ export const UserHome: React.FC = () => {
                     </div>
 
                     {/* Paid Events Limit Widget */}
-                    <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/10 rounded-[2rem] p-6 flex flex-col justify-between min-h-[160px]">
+                    <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 rounded-[2rem] p-6 flex flex-col justify-between min-h-[160px] shadow-sm transition-all hover:border-[#38BDF2]/30">
                         {organizerProfile && (() => {
                             const pricedLimit = Number(organizerProfile.plan?.limits?.max_priced_events || organizerProfile.plan?.max_priced_events || organizerProfile.plan?.maxPricedEvents || 0);
                             const usedCount = stats.paidEventsCount;
@@ -244,7 +244,7 @@ export const UserHome: React.FC = () => {
                             return (
                                 <>
                                     <div className="flex items-center gap-4 mb-4">
-                                        <div className="p-2.5 bg-[#F2F2F2] rounded-xl border border-[#2E2E2F]/5">
+                                        <div className="p-2.5 bg-[#F2F2F2] rounded-xl border-2 border-[#2E2E2F]/10">
                                             <ICONS.CreditCard className="w-5 h-5 text-[#2E2E2F]" />
                                         </div>
                                         <div>
@@ -278,7 +278,7 @@ export const UserHome: React.FC = () => {
 
                     {/* Email Quota Widget */}
                     {emailQuota && (
-                        <div className="bg-[#F2F2F2] border-[#2E2E2F]/10 border-2 rounded-[2rem] p-6 flex flex-col justify-between min-h-[160px]">
+                        <div className="bg-[#F2F2F2] border-[#2E2E2F]/15 border-2 rounded-[2rem] p-6 flex flex-col justify-between min-h-[160px] shadow-sm transition-all hover:border-[#38BDF2]/30">
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="p-2 bg-[#2E2E2F]/10 rounded-lg">
                                     <ICONS.Mail className="w-5 h-5 text-[#2E2E2F]" strokeWidth={2} />

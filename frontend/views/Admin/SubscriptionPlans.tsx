@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ICONS } from '../../constants';
 import { apiService } from '../../services/apiService';
-import { AdminPlan } from '../../types';
+import { AdminPlan, UserRole } from '../../types';
 import { Button, Card, Modal, Input } from '../../components/Shared';
+import { useUser } from '../../context/UserContext';
+import { PricingPlansGrid } from '../../components/PricingPlansGrid';
 import { formatLimitValue } from '../../utils/pricingPlans';
 
 type PlanDraft = {
@@ -45,9 +47,7 @@ const defaultDraft: PlanDraft = {
     max_promoted_events: 0,
     promotion_duration_days: 7,
   },
-};
-
-const Toggle = ({ enabled, onChange }: { enabled: boolean; onChange: (val: boolean) => void }) => (
+};const Toggle = ({ enabled, onChange }: { enabled: boolean; onChange: (val: boolean) => void }) => (
   <button
     type="button"
     onClick={() => onChange(!enabled)}
@@ -56,7 +56,6 @@ const Toggle = ({ enabled, onChange }: { enabled: boolean; onChange: (val: boole
     <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-300 ease-in-out ${enabled ? 'translate-x-5' : 'translate-x-0'}`} />
   </button>
 );
-
 const parseNumeric = (value: string, fallback = 0) => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return fallback;
@@ -131,6 +130,8 @@ export const SubscriptionPlans: React.FC = () => {
   const [draft, setDraft] = useState<PlanDraft>(defaultDraft);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const { role } = useUser();
+  const isAdmin = role === UserRole.ADMIN;
 
   const loadPlans = async (showLoader = true) => {
     try {
@@ -271,115 +272,25 @@ export const SubscriptionPlans: React.FC = () => {
             </button>
           </div>
         </div>
-        <Button onClick={openAddModal} className="rounded-xl px-8 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-[#38BDF2]/20 active:scale-95 transition-transform">
-          <span className="flex items-center gap-2">
-            <ICONS.Plus className="w-3.5 h-3.5" strokeWidth={3} />
-            Add New Plan
-          </span>
-        </Button>
+        {isAdmin && (
+          <Button onClick={openAddModal} className="rounded-xl px-8 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-[#38BDF2]/20 active:scale-95 transition-transform">
+            <span className="flex items-center gap-2">
+              <ICONS.Plus className="w-3.5 h-3.5" strokeWidth={3} />
+              Add New Plan
+            </span>
+          </Button>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-10">
-        {plans.map((plan) => (
-          <div key={plan.planId} className="relative group h-full pt-4 mt-[-1rem]">
-            {plan.isRecommended && (
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10 animate-in slide-in-from-top-4 duration-700">
-                <span className="bg-[#38BDF2] text-white px-5 py-2 rounded-2xl text-[9px] font-black uppercase tracking-widest shadow-xl shadow-[#38BDF2]/30 border border-white/20 flex items-center gap-2 whitespace-nowrap">
-                  <ICONS.CheckCircle className="w-3.5 h-3.5" />
-                  Recommended
-                </span>
-              </div>
-            )}
-
-            <Card className={`h-full flex flex-col border-[#2E2E2F]/10 rounded-[2rem] bg-[#F2F2F2] transition-all duration-500 hover:shadow-2xl hover:shadow-[#2E2E2F]/10 ${plan.isRecommended ? 'ring-2 ring-[#38BDF2] ring-offset-4 ring-offset-[#F2F2F2]' : ''}`}>
-              <div className="p-8 flex-1 flex flex-col">
-                {/* Header: Name & Description */}
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-3xl font-black text-[#2E2E2F] tracking-tighter uppercase">{plan.name}</h3>
-                    {plan.isDefault && (
-                      <span className="bg-[#38BDF2] text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest shadow-sm">Default</span>
-                    )}
-                  </div>
-                  <p className="text-sm text-[#2E2E2F]/60 font-medium leading-tight line-clamp-2">
-                    {plan.description || "Perfect for scaling your event operations with premium tools."}
-                  </p>
-                </div>
-
-                {/* Price Section */}
-                <div className="mb-8 p-6 bg-[#F2F2F2]/30 rounded-3xl border border-[#2E2E2F]/5">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-5xl font-black text-[#2E2E2F] tracking-tighter">
-                      ₱{billingCycle === 'monthly' ? Number(plan.monthlyPrice || 0).toLocaleString() : Number(plan.yearlyPrice || 0).toLocaleString()}
-                    </span>
-                    <span className="text-[11px] font-black text-[#2E2E2F]/40 uppercase tracking-widest">
-                      /{billingCycle === 'monthly' ? 'month' : 'year'}
-                    </span>
-                  </div>
-                  {billingCycle === 'yearly' && plan.yearlyPrice > 0 && (
-                    <p className="text-[10px] font-bold text-[#2E2E2F]/40 mt-1 uppercase tracking-widest">
-                      Billed annually (₱{Number(plan.yearlyPrice).toLocaleString()} per year)
-                    </p>
-                  )}
-                  {/* Trial days badge removed */}
-                </div>
-
-                {/* Features & Limits Consolidated - Dynamic Grid for compactness */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 mb-10 text-[#2E2E2F]">
-                  {[
-                    { label: `${formatLimitValue(plan.limits?.max_priced_events || 0)} Max Paid Events`, enabled: true },
-                    { label: `${formatLimitValue(plan.limits?.max_attendees_per_month || 0)} Monthly Attendees`, enabled: true },
-                    { label: `${formatLimitValue(plan.limits?.max_staff_accounts || 0)} Max Staff Accounts`, enabled: true },
-                    { label: `${formatLimitValue(plan.promotions?.max_promoted_events || 0)} Max Promoted Event Slots`, enabled: true },
-                    { label: `${formatLimitValue((plan as any)?.promotions?.promotion_duration_days || 0)} Promoted Event Duration (Days)`, enabled: true },
-                    { label: `${formatLimitValue(plan.limits?.email_quota_per_day || 0)} Daily Email Quota`, enabled: true },
-                    { label: 'Custom Branding', enabled: (plan.features as any)?.enable_custom_branding || (plan.features as any)?.custom_branding },
-                    { label: 'Discount Codes', enabled: (plan.features as any)?.enable_discount_codes || (plan.features as any)?.discount_codes },
-                    { label: 'Advanced Reports', enabled: (plan.features as any)?.enable_advanced_reports || (plan.features as any)?.advanced_reports },
-                    { label: 'Priority Support', enabled: (plan.features as any)?.enable_priority_support || (plan.features as any)?.priority_support },
-                  ].map((feature, idx) => (
-                    <div key={idx} className="flex items-center gap-2 group/feat">
-                      <div className={`shrink-0 w-4 h-4 rounded-full flex items-center justify-center transition-colors ${feature.enabled ? 'bg-[#38BDF2]/20 text-[#38BDF2]' : 'bg-[#2E2E2F]/5 text-[#2E2E2F]/20'}`}>
-                        {feature.enabled ? <ICONS.Check className="w-2.5 h-2.5" strokeWidth={5} /> : <ICONS.X className="w-2.5 h-2.5 opacity-20" />}
-                      </div>
-                      <span className={`text-[11px] font-bold tracking-tight leading-tight transition-colors ${feature.enabled ? 'text-[#2E2E2F]' : 'text-[#2E2E2F]/30'}`}>
-                        {feature.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Main Admin CTA Style Button */}
-                <Button 
-                  onClick={() => openEditModal(plan)}
-                  className="w-full h-12 rounded-2xl bg-[#38BDF2] hover:bg-[#2E2E2F] text-white font-black text-[11px] uppercase tracking-widest transition-all shadow-lg shadow-[#38BDF2]/20 hover:shadow-none"
-                >
-                  Configure Plan
-                </Button>
-              </div>
-
-              {/* Minimal Footer for status and secondary actions */}
-              <div className="px-8 py-5 bg-[#F2F2F2]/50 border-t border-[#2E2E2F]/5 flex items-center justify-between rounded-b-[2rem]">
-                <div className="flex items-center gap-3">
-                  <Toggle enabled={plan.isActive} onChange={() => void handleToggleActive(plan)} />
-                  <span className={`text-[9px] font-black uppercase tracking-widest ${plan.isActive ? 'text-[#38BDF2]' : 'text-[#2E2E2F]/40'}`}>
-                    {plan.isActive ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-                {!plan.isDefault && (
-                  <button
-                    onClick={() => void handleDeletePlan(plan)}
-                    className="p-2 text-[#2E2E2F]/20 hover:text-red-500 transition-colors"
-                    title="Delete Plan"
-                  >
-                    <ICONS.Trash className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </Card>
-          </div>
-        ))}
-      </div>
+      <PricingPlansGrid
+        plans={plans}
+        billingCycle={billingCycle}
+        showBillingToggle={false}
+        isAdmin={isAdmin}
+        onPlanAction={isAdmin ? openEditModal : undefined}
+        onDelete={handleDeletePlan}
+        onToggleActive={handleToggleActive}
+      />
 
       <Modal
         isOpen={isModalOpen}

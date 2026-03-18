@@ -540,10 +540,9 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     <div className="min-h-screen flex flex-col md:flex-row bg-[#F2F2F2] font-sans selection:bg-[#38BDF2]/30 portal-fast">
       {/* Sidebar for desktop */}
       <aside
-        className={`bg-[#F2F2F2] border-r border-[#2E2E2F]/10 hidden md:flex flex-col fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-64' : 'w-20'}`}
-        style={{ overflow: desktopSidebarOpen ? 'hidden' : 'visible' }}
-      >
-        <div className={`py-6 px-4 flex items-center justify-center border-b border-[#2E2E2F]/5 shrink-0 ${desktopSidebarOpen ? 'h-24' : 'h-20'}`}>
+        className={`bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 hidden md:flex flex-col fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-64' : 'w-20'}`}
+        style={{ overflow: desktopSidebarOpen ? 'hidden' : 'visible' }}>
+        <div className={`py-6 px-4 flex items-center justify-center border-b-2 border-[#2E2E2F]/15 shrink-0 ${desktopSidebarOpen ? 'h-24' : 'h-20'}`}>
           <Link to="/dashboard" className="flex items-center justify-center group transition-all duration-500 transform hover:scale-[1.05] active:scale-[0.95]">
             {organizerSidebarLogoUrl ? (
               <img
@@ -566,7 +565,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             return (
               <React.Fragment key={item.path || idx}>
                 {item.separator && (
-                  <div className={`mx-4 my-3 h-[1px] bg-[#2E2E2F]/5 shrink-0 ${!desktopSidebarOpen ? 'mx-2' : ''}`} />
+                  <div className={`mx-4 my-3 h-[2px] bg-[#2E2E2F]/10 shrink-0 ${!desktopSidebarOpen ? 'mx-2' : ''}`} />
                 )}
                 <Link
                   to={item.path}
@@ -574,14 +573,14 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                     ? 'flex-row items-center gap-3 px-4 py-3 rounded-2xl'
                     : 'flex-col items-center justify-center gap-1 py-4 px-1 rounded-xl'
                     } ${isActive
-                      ? 'bg-[#38BDF2] text-white shadow-lg shadow-[#38BDF2]/20'
-                      : 'text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:text-[#38BDF2]'
+                      ? 'bg-[#38BDF2] text-white shadow-lg shadow-[#38BDF2]/20 border-2 border-[#F2F2F2]/20'
+                      : 'text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] border-2 border-transparent'
                     }`}
                   title={!desktopSidebarOpen ? item.label : undefined}
                 >
                   <div className="relative shrink-0">
                     {React.cloneElement(item.icon as React.ReactElement<any>, {
-                      className: `transition-transform duration-300 ${desktopSidebarOpen ? 'w-5 h-5' : 'w-6 h-6 group-hover:scale-110'} ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`
+                      className: `transition-transform duration-300 ${desktopSidebarOpen ? 'w-5 h-5' : 'w-6 h-6 group-hover:scale-110'} ${isActive ? 'stroke-[3px]' : 'stroke-[2.8px]'}`
                     })}
                     {item.premium && <CrownBadge />}
                   </div>
@@ -606,12 +605,12 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       <main
         className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out md:pb-0 ${desktopSidebarOpen ? 'md:pl-64' : 'md:pl-20'} ${bottomNavItems.length > 0 ? 'pb-24' : ''}`}
       >
-        <header className="h-20 bg-[#F2F2F2] border-b border-[#2E2E2F]/10 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-20 w-full">
+        <header className="h-20 bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-20 w-full">
           <div className="flex items-center gap-3">
             {/* Desktop Sidebar Toggle */}
             <button
               onClick={() => setDesktopSidebarOpen(!desktopSidebarOpen)}
-              className="hidden md:flex p-2.5 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-all group active:scale-95"
+              className="hidden md:flex p-2.5 rounded-xl border-2 border-[#2E2E2F]/15 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-all group active:scale-95"
               aria-label="Toggle Sidebar"
             >
               <svg className={`w-5 h-5 transition-transform duration-500 ${!desktopSidebarOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -622,11 +621,11 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="md:hidden p-2.5 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-all group active:scale-95 lg:hidden"
+              className="md:hidden p-2.5 rounded-xl border-2 border-[#2E2E2F]/15 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-all group active:scale-95 lg:hidden"
               aria-label="Toggle Navigation Menu"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" d="M4 6h16M4 12h16M4 18h16" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.8" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
             <div className="hidden sm:block">
@@ -639,10 +638,10 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             {(!(role === UserRole.STAFF && canReceiveNotifications === false)) && (
               <div className="relative group">
                 <button
-                  className="w-11 h-11 flex items-center justify-center rounded-2xl border border-[#38BDF2]/20 bg-transparent hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/40 hover:scale-105 active:scale-95 transition-all shadow-sm relative"
+                  className="w-11 h-11 flex items-center justify-center rounded-2xl border-2 border-[#38BDF2]/30 bg-transparent hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/50 hover:scale-105 active:scale-95 transition-all shadow-sm relative"
                   onClick={() => setNotificationOpen(!notificationOpen)}
                 >
-                  <ICONS.Bell className="w-5 h-5 text-[#2E2E2F] group-hover:text-[#38BDF2] transition-colors" />
+                  <ICONS.Bell className="w-5 h-5 text-[#2E2E2F] group-hover:text-[#38BDF2] transition-colors" strokeWidth={2.8} />
                   {unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center px-1 border-2 border-[#F2F2F2] shadow-lg animate-in zoom-in duration-300">
                       {unreadCount > 99 ? '99+' : unreadCount}
@@ -652,8 +651,8 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 {notificationOpen && (
                   <>
                     <div className="fixed inset-0 z-[100] bg-[#2E2E2F]/10 backdrop-blur-[2px]" onClick={() => setNotificationOpen(false)} />
-                    <div className="fixed right-6 top-24 bottom-6 w-full max-w-[420px] bg-[#F2F2F2] rounded-[2.5rem] border border-[#2E2E2F]/5 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.15)] z-[101] flex flex-col overflow-hidden animate-in slide-in-from-right-8 fade-in duration-500">
-                      <div className="p-8 border-b border-[#2E2E2F]/5 flex items-start justify-between bg-[#F2F2F2]/80 backdrop-blur-xl sticky top-0 z-10">
+                    <div className="fixed right-6 top-24 bottom-6 w-full max-w-[420px] bg-[#F2F2F2] rounded-[2.5rem] border-2 border-[#2E2E2F]/15 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.15)] z-[101] flex flex-col overflow-hidden animate-in slide-in-from-right-8 fade-in duration-500">
+                      <div className="p-8 border-b-2 border-[#2E2E2F]/10 flex items-start justify-between bg-[#F2F2F2]/80 backdrop-blur-xl sticky top-0 z-10">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <h2 className="text-2xl font-black tracking-tight text-[#2E2E2F]">Updates</h2>
@@ -743,10 +742,10 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             {/* Profile Dropdown */}
             <div className="relative">
               <button
-                className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-[#2E2E2F]/15 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 transition-colors"
                 onClick={() => setUserMenuOpen((v) => !v)}
               >
-                <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#38BDF2]/20 text-[#2E2E2F] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#38BDF2]/20 text-[#2E2E2F] flex items-center justify-center border-2 border-[#38BDF2]/30">
                   {imageUrl ? (
                     <img src={imageUrl} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
@@ -757,15 +756,15 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                   <p className="text-xs font-semibold text-[#2E2E2F] truncate max-w-[120px]">{displayName}</p>
                   <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#2E2E2F]/45 mt-0.5">{roleLabel}</p>
                 </div>
-                <svg className="w-4 h-4 text-[#2E2E2F]/50" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-[#2E2E2F]/50" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               {userMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
-                  <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-2xl shadow-[0_10px_40px_-10px_rgba(46,46,47,0.1)] z-50 p-2 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
-                    <div className="px-4 py-3 border-b border-[#2E2E2F]/5 mb-1">
+                  <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 rounded-2xl shadow-[0_10px_40px_-10px_rgba(46,46,47,0.1)] z-50 p-2 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
+                    <div className="px-4 py-3 border-b-2 border-[#2E2E2F]/10 mb-1">
                       <p className="text-[10px] font-medium text-[#2E2E2F]/40 uppercase tracking-widest mb-0.5">Account</p>
                       <p className="text-xs font-semibold text-[#2E2E2F] truncate">{displayName}</p>
                       <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#2E2E2F]/45 mt-1">{roleLabel}</p>
@@ -846,8 +845,8 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         {sidebarOpen && (
           <div className="fixed inset-0 z-[100] flex md:hidden">
             <div className="fixed inset-0 bg-[#2E2E2F]/70 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-            <aside className="relative w-72 bg-[#F2F2F2] flex flex-col h-full z-[110] animate-in slide-in-from-left duration-300 border-r border-[#2E2E2F]/10">
-              <div className="p-6 flex items-center justify-between border-b border-[#2E2E2F]/5">
+            <aside className="relative w-72 bg-[#F2F2F2] flex flex-col h-full z-[110] animate-in slide-in-from-left duration-300 border-r-2 border-[#2E2E2F]/15">
+              <div className="p-6 flex items-center justify-between border-b-2 border-[#2E2E2F]/10">
                 <Link to="/dashboard" className="flex items-center justify-center group transition-all duration-500">
                   {organizerSidebarLogoUrl ? (
                     <img src={organizerSidebarLogoUrl} alt={organizerSidebarName || 'Logo'} className="h-10 w-auto max-w-full object-contain" />
@@ -873,8 +872,8 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                       key={item.path}
                       to={item.path}
                       className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group ${isActive
-                        ? 'bg-[#38BDF2] text-white shadow-lg shadow-[#38BDF2]/20'
-                        : 'text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:text-[#38BDF2]'
+                        ? 'bg-[#38BDF2] text-white shadow-lg shadow-[#38BDF2]/20 border-2 border-[#F2F2F2]/20'
+                        : 'text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] border-2 border-transparent'
                         }`}
                       onClick={() => setSidebarOpen(false)}
                     >
@@ -1786,7 +1785,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
               </>
             ) : (
               <>
-                <div className="px-4 py-3 border-b border-[#2E2E2F]/5">
+                <div className="px-4 py-3 border-b-2 border-[#2E2E2F]/10">
                   <p className="text-[9px] font-medium text-[#2E2E2F]/40 uppercase tracking-wider mb-0.5">Account</p>
                   <p className="text-xs font-semibold text-[#2E2E2F] truncate">{displayName}</p>
                   <p className="text-[9px] font-black uppercase tracking-[0.12em] text-[#2E2E2F]/45 mt-1">Attending</p>
@@ -1842,7 +1841,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 </Link>
                 
                 <button
-                  className="w-full flex items-center gap-3 px-4 py-3 text-[#2E2E2F]/70 hover:bg-red-50 hover:text-red-500 transition-colors text-left group text-xs font-semibold border-t border-[#2E2E2F]/5"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-[#2E2E2F]/70 hover:bg-red-50 hover:text-red-500 transition-colors text-left group text-xs font-semibold border-t-2 border-[#2E2E2F]/10"
                   onClick={() => {
                     setMobileMenuOpen(false);
                     handleLogout();
@@ -1856,7 +1855,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
                 {/* Mobile Search at Bottom */}
                 {showHeaderSearchBar && (
-                  <div className="border-t border-[#2E2E2F]/5 mt-2">
+                  <div className="border-t-2 border-[#2E2E2F]/10 mt-2">
                     <button
                       onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
                       className="w-full flex items-center gap-3 px-4 py-3 text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left text-xs font-semibold"
@@ -2220,10 +2219,10 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     <div className="min-h-screen flex bg-[#F2F2F2] portal-fast">
       {/* Sidebar for desktop */}
       <aside
-        className={`bg-[#F2F2F2] border-r border-[#2E2E2F]/10 hidden md:flex flex-col fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-64' : 'w-20'}`}
+        className={`bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 hidden md:flex flex-col fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-64' : 'w-20'}`}
         style={{ overflow: desktopSidebarOpen ? 'hidden' : 'visible' }}
       >
-        <div className={`py-6 px-4 flex items-center justify-center border-b border-[#2E2E2F]/5 shrink-0 ${desktopSidebarOpen ? 'min-h-[160px]' : 'min-h-[120px]'}`}>
+        <div className={`py-6 px-4 flex items-center justify-center border-b-2 border-[#2E2E2F]/15 shrink-0 ${desktopSidebarOpen ? 'min-h-[160px]' : 'min-h-[120px]'}`}>
           <Link to="/user-home" className="flex items-center justify-center group transition-all duration-500 transform hover:scale-[1.05] active:scale-[0.95]">
             {organizerSidebarLogoUrl ? (
               <img
@@ -2248,7 +2247,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             return (
               <React.Fragment key={item.path || idx}>
                 {item.separator && (
-                  <div className={`mx-4 my-3 h-[1px] bg-[#2E2E2F]/5 shrink-0 ${!desktopSidebarOpen ? 'mx-2' : ''}`} />
+                  <div className={`mx-4 my-3 h-[2px] bg-[#2E2E2F]/10 shrink-0 ${!desktopSidebarOpen ? 'mx-2' : ''}`} />
                 )}
                 <Link
                   to={item.path}
@@ -2256,8 +2255,8 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                     ? 'flex-row gap-3 px-4 py-3 rounded-2xl mx-1'
                     : 'flex-row justify-center p-3 rounded-xl mx-2'
                     } ${isActive
-                      ? 'bg-[#38BDF2] text-white shadow-lg shadow-[#38BDF2]/20'
-                      : 'text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:text-[#38BDF2]'
+                      ? 'bg-[#38BDF2] text-white shadow-lg shadow-[#38BDF2]/20 border-2 border-[#F2F2F2]/20'
+                      : 'text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] border-2 border-transparent'
                     }`}
                   title={!desktopSidebarOpen ? item.label : undefined}
                 >
@@ -2289,7 +2288,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
       <main
         className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'md:pl-64' : 'md:pl-20'}`}
       >
-        <header className="h-20 bg-[#F2F2F2] border-b border-[#2E2E2F]/10 px-4 sm:px-8 flex items-center justify-between gap-4 sm:gap-6 sticky top-0 z-40 w-full">
+        <header className="h-20 bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 px-4 sm:px-8 flex items-center justify-between gap-4 sm:gap-6 sticky top-0 z-40 w-full">
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
@@ -2299,7 +2298,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                   setDesktopSidebarOpen(!desktopSidebarOpen);
                 }
               }}
-              className="p-2.5 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-all group active:scale-95"
+              className="p-2.5 rounded-xl border-2 border-[#2E2E2F]/15 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-all group active:scale-95"
               aria-label="Toggle Sidebar"
             >
               <svg className={`w-5 h-5 transition-transform duration-500 ${!desktopSidebarOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2317,7 +2316,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             {(!(role === UserRole.STAFF && canReceiveNotifications === false)) && (
               <div className="relative group">
                 <button
-                  className="w-11 h-11 flex items-center justify-center rounded-2xl border border-[#38BDF2]/20 bg-transparent hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/40 hover:scale-105 active:scale-95 transition-all shadow-sm relative"
+                  className="w-11 h-11 flex items-center justify-center rounded-2xl border-2 border-[#38BDF2]/30 bg-transparent hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/50 hover:scale-105 active:scale-95 transition-all shadow-sm relative"
                   onClick={() => setNotificationOpen(!notificationOpen)}
                 >
                   <ICONS.Bell className="w-5 h-5 text-[#2E2E2F] group-hover:text-[#38BDF2] transition-colors" />
@@ -2330,8 +2329,8 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                 {notificationOpen && (
                   <>
                     <div className="fixed inset-0 z-[100] bg-[#2E2E2F]/10 backdrop-blur-[2px]" onClick={() => setNotificationOpen(false)} />
-                    <div className="fixed right-6 top-24 bottom-6 w-full max-w-[420px] bg-[#F2F2F2] rounded-[2.5rem] border border-[#2E2E2F]/5 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.15)] z-[101] flex flex-col overflow-hidden animate-in slide-in-from-right-8 fade-in duration-500">
-                      <div className="p-8 border-b border-[#2E2E2F]/5 flex items-start justify-between bg-[#F2F2F2]/80 backdrop-blur-xl sticky top-0 z-10">
+                    <div className="fixed right-6 top-24 bottom-6 w-full max-w-[420px] bg-[#F2F2F2] rounded-[2.5rem] border-2 border-[#2E2E2F]/15 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.15)] z-[101] flex flex-col overflow-hidden animate-in slide-in-from-right-8 fade-in duration-500">
+                      <div className="p-8 border-b-2 border-[#2E2E2F]/15 flex items-start justify-between bg-[#F2F2F2]/80 backdrop-blur-xl sticky top-0 z-10">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <h2 className="text-2xl font-black tracking-tight text-[#2E2E2F]">Notifications</h2>
@@ -2421,7 +2420,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 
           <div className="relative">
             <button
-              className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-[#2E2E2F]/15 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 transition-colors"
               onClick={() => setUserMenuOpen((v) => !v)}
             >
               <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#38BDF2]/20 text-[#2E2E2F] flex items-center justify-center">
@@ -2442,8 +2441,8 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             {userMenuOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
-                <div className="absolute right-0 top-[calc(100%+8px)] w-60 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-2xl shadow-xl z-50 p-2 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
-                  <div className="px-4 py-3 border-b border-[#2E2E2F]/5 mb-1">
+                <div className="absolute right-0 top-[calc(100%+8px)] w-60 bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 rounded-2xl shadow-xl z-50 p-2 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
+                  <div className="px-4 py-3 border-b-2 border-[#2E2E2F]/15 mb-1">
                     <p className="text-[10px] font-medium tracking-tight text-[#2E2E2F]/40 mb-0.5">Account</p>
                     <p className="text-xs font-medium tracking-tight text-[#2E2E2F] truncate">{displayName}</p>
                     <p className="text-xs font-medium tracking-tight text-[#2E2E2F]/45 mt-1">{roleLabel}</p>
@@ -2552,7 +2551,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
         {sidebarOpen && (
           <div className="fixed inset-0 z-[100] flex lg:hidden">
             <div className="fixed inset-0 bg-[#2E2E2F]/70 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-            <aside className="relative w-72 bg-[#F2F2F2] border-r border-[#2E2E2F]/10 flex flex-col h-full z-50 animate-in slide-in-from-left duration-300">
+            <aside className="relative w-72 bg-[#F2F2F2] border-r-2 border-[#2E2E2F]/15 flex flex-col h-full z-50 animate-in slide-in-from-left duration-300">
               <div className="p-8 pb-4 flex items-center justify-between">
                 <Link to="/user-home" onClick={() => setSidebarOpen(false)} className="flex flex-col items-start gap-2 group transition-all duration-500">
                   {organizerSidebarLogoUrl ? (
@@ -2590,8 +2589,8 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                       key={item.path}
                       to={item.path}
                       className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group ${isActive
-                        ? 'bg-[#38BDF2] text-white shadow-lg shadow-[#38BDF2]/20'
-                        : 'text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:text-[#38BDF2]'
+                        ? 'bg-[#38BDF2] text-white shadow-lg shadow-[#38BDF2]/20 border-2 border-[#F2F2F2]/20'
+                        : 'text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] border-2 border-transparent'
                         }`}
                       onClick={() => setSidebarOpen(false)}
                     >

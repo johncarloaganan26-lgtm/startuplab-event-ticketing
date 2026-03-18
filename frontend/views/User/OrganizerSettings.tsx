@@ -232,7 +232,7 @@ export const OrganizerSettings: React.FC = () => {
       {notification && (
         <div className="fixed top-24 right-8 z-[120]">
           <Card
-            className={`px-5 py-3 rounded-2xl border ${notification.type === 'success'
+            className={`px-5 py-3 rounded-2xl border-2 shadow-sm ${notification.type === 'success'
               ? 'bg-[#38BDF2]/20 border-[#38BDF2]/40 text-[#2E2E2F]'
               : 'bg-[#2E2E2F]/10 border-[#2E2E2F]/30 text-[#2E2E2F]'
               }`}
@@ -243,7 +243,7 @@ export const OrganizerSettings: React.FC = () => {
       )}
 
       <form onSubmit={handleSave} className="space-y-6">
-        <Card className="p-8 rounded-[2rem] border-[#2E2E2F]/10 bg-[#F2F2F2]">
+        <Card className="p-8 rounded-[2rem] border-2 border-[#2E2E2F]/15 bg-[#F2F2F2]">
           <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-8 items-start">
             <div className="space-y-6">
               <div className="space-y-3">
@@ -327,7 +327,7 @@ export const OrganizerSettings: React.FC = () => {
                     {!canCustomBrand && <Badge type="info" className="text-[8px] bg-[#2E2E2F] text-white uppercase px-2 font-black">Professional Feature</Badge>}
                   </div>
 
-                  <div className="p-5 rounded-3xl border border-[#2E2E2F]/10 bg-white/50 space-y-4 relative overflow-hidden group">
+                  <div className="p-5 rounded-3xl border-2 border-[#2E2E2F]/10 bg-white/50 space-y-4 relative overflow-hidden group">
                     <div className={`flex items-center gap-5 ${!canCustomBrand ? 'opacity-40 grayscale' : ''}`}>
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[10px] font-black text-[#2E2E2F]/40 uppercase tracking-widest ml-1">Brand Color</label>
@@ -427,7 +427,7 @@ export const OrganizerSettings: React.FC = () => {
                   }
                 />
 
-                <div className="md:col-span-2 mt-4 pt-6 border-t border-[#2E2E2F]/10">
+                <div className="md:col-span-2 mt-4 pt-6 border-t-2 border-[#2E2E2F]/10">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <label className="block text-[11px] font-black text-[#2E2E2F] uppercase tracking-widest mb-1">Brand Identity</label>
@@ -479,7 +479,7 @@ export const OrganizerSettings: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="p-6 rounded-2xl border-[#2E2E2F]/10 bg-[#F2F2F2]">
+        <Card className="p-6 rounded-2xl border-2 border-[#2E2E2F]/15 bg-[#F2F2F2]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide">Organizer Snapshot</p>

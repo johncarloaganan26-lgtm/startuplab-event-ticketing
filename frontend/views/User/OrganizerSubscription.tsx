@@ -101,7 +101,7 @@ export const OrganizerSubscription: React.FC = () => {
       <div className="max-w-6xl mx-auto px-5 -mt-8">
         {/* Current Plan */}
         {currentSubscription && (
-          <Card className="mb-8 p-8 rounded-3xl border-[#2E2E2F]/10">
+          <Card className="mb-8 p-8 rounded-3xl border-2 border-[#2E2E2F]/15 shadow-sm">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-black text-[#38BDF8] uppercase tracking-widest mb-2">Current Plan</p>
@@ -135,7 +135,7 @@ export const OrganizerSubscription: React.FC = () => {
             </div>
 
             {/* Current Plan Features */}
-            <div className="mt-8 pt-8 border-t border-[#2E2E2F]/10">
+            <div className="mt-8 pt-8 border-t-2 border-[#2E2E2F]/10">
               <div className="space-y-10">
                 {/* Plan Features */}
                 <div>
@@ -147,7 +147,7 @@ export const OrganizerSubscription: React.FC = () => {
                       { label: 'Advanced Reports', enabled: (currentSubscription.plan.features as any)?.enable_advanced_reports || (currentSubscription.plan.features as any)?.advanced_reports },
                       { label: 'Priority Support', enabled: (currentSubscription.plan.features as any)?.enable_priority_support || (currentSubscription.plan.features as any)?.priority_support },
                     ].map((feature, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-4 rounded-2xl bg-[#F2F2F2]/50 border border-[#2E2E2F]/5 group/feat transition-all hover:border-[#38BDF2]/30 hover:shadow-sm">
+                      <div key={idx} className="flex items-center justify-between p-4 rounded-2xl bg-[#F2F2F2]/50 border-2 border-[#2E2E2F]/10 group/feat transition-all hover:border-[#38BDF2]/30 hover:shadow-sm">
                         <span className={`text-[11px] font-black uppercase tracking-widest ${feature.enabled ? 'text-[#2E2E2F]' : 'text-[#2E2E2F]/30'}`}>{feature.label}</span>
                         {feature.enabled ? (
                           <div className="w-6 h-6 rounded-lg bg-[#38BDF2]/10 text-[#38BDF2] flex items-center justify-center">
@@ -175,7 +175,7 @@ export const OrganizerSubscription: React.FC = () => {
                       { label: 'Paid Events Limit', val: currentSubscription.plan.limits?.max_priced_events || 0, icon: <ICONS.Zap /> },
                       { label: 'Daily Email Quota', val: (currentSubscription.plan.limits?.email_quota_per_day || 500) + ' /day', icon: <ICONS.Mail /> },
                     ].map((limit, idx) => (
-                      <div key={idx} className="p-4 bg-[#F2F2F2]/50 rounded-2xl border border-[#2E2E2F]/5 hover:border-[#38BDF2]/30 transition-all group/limit hover:shadow-sm">
+                      <div key={idx} className="p-4 bg-[#F2F2F2]/50 rounded-2xl border-2 border-[#2E2E2F]/10 hover:border-[#38BDF2]/30 transition-all group/limit hover:shadow-sm">
                         <div className="flex items-center gap-2 mb-2">
                           <div className="text-[#38BDF2] w-4 h-4 opacity-70 group-hover/limit:opacity-100 transition-opacity">
                             {React.cloneElement(limit.icon as React.ReactElement<any>, { className: 'w-full h-full', strokeWidth: 3 })}
@@ -194,7 +194,7 @@ export const OrganizerSubscription: React.FC = () => {
 
         {/* No Subscription */}
         {!currentSubscription && (
-          <Card className="mb-8 p-8 rounded-3xl border-[#2E2E2F]/10 bg-gradient-to-r from-[#38BDF8]/10 to-transparent">
+          <Card className="mb-8 p-8 rounded-3xl border-2 border-[#2E2E2F]/15 bg-gradient-to-r from-[#38BDF8]/10 to-transparent shadow-sm">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-[#38BDF8]/20 flex items-center justify-center">
                 <ICONS.CreditCard className="w-8 h-8 text-[#38BDF8]" strokeWidth={2} />
