@@ -149,7 +149,7 @@ export const SubscriptionSuccess: React.FC = () => {
 
     return (
         <div className="min-h-[70vh] flex items-center justify-center p-6">
-            <Card className="max-w-md w-full p-10 text-center rounded-[2.5rem] border-[#2E2E2F]/10 shadow-2xl">
+            <Card className="max-w-md w-full p-10 text-center rounded-xl border-[#2E2E2F]/10 shadow-2xl">
                 {status === 'loading' ? (
                     <div className="space-y-6">
                         <div className="w-20 h-20 bg-[#38BDF8]/10 rounded-full flex items-center justify-center mx-auto animate-pulse">
@@ -172,14 +172,14 @@ export const SubscriptionSuccess: React.FC = () => {
                         <div className="pt-4 space-y-3">
                             <Button
                                 onClick={() => navigate('/user-home')}
-                                className="w-full py-4 rounded-2xl font-black tracking-widest text-xs"
+                                className="w-full py-4 rounded-xl font-black tracking-widest text-xs"
                             >
                                 GO TO DASHBOARDS
                             </Button>
                             <Button
                                 variant="outline"
                                 onClick={() => navigate('/subscription')}
-                                className="w-full py-4 rounded-2xl font-black tracking-widest text-xs border-[#2E2E2F]/10"
+                                className="w-full py-4 rounded-xl font-black tracking-widest text-xs border-[#2E2E2F]/10"
                             >
                                 VIEW BILLING
                             </Button>
@@ -198,7 +198,7 @@ export const SubscriptionSuccess: React.FC = () => {
                         <div className="pt-4 space-y-3">
                             <Button
                                 onClick={() => navigate('/subscription')}
-                                className="w-full py-4 rounded-2xl font-black tracking-widest text-xs"
+                                className="w-full py-4 rounded-xl font-black tracking-widest text-xs"
                             >
                                 CHECK STATUS
                             </Button>
@@ -217,14 +217,14 @@ export const SubscriptionSuccess: React.FC = () => {
                         <div className="pt-4 space-y-3">
                             <Button
                                 onClick={() => navigate('/subscription')}
-                                className="w-full py-4 rounded-2xl font-black tracking-widest text-xs"
+                                className="w-full py-4 rounded-xl font-black tracking-widest text-xs"
                             >
                                 GO TO SUBSCRIPTION
                             </Button>
                             <Button
                                 variant="outline"
                                 onClick={() => navigate('/user-home')}
-                                className="w-full py-4 rounded-2xl font-black tracking-widest text-xs border-[#2E2E2F]/10"
+                                className="w-full py-4 rounded-xl font-black tracking-widest text-xs border-[#2E2E2F]/10"
                             >
                                 GO TO DASHBOARD
                             </Button>
@@ -235,3 +235,4 @@ export const SubscriptionSuccess: React.FC = () => {
         </div>
     );
 };
+

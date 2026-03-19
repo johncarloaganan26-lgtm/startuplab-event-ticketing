@@ -48,10 +48,10 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEventClick }) => 
   return (
     <div
       onClick={handleClick}
-      className="cursor-pointer group rounded-2xl overflow-hidden border border-transparent hover:border-[#2E2E2F]/10 bg-[#F2F2F2] transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+      className="cursor-pointer group rounded-xl overflow-hidden border border-transparent hover:border-[#2E2E2F]/10 bg-[#F2F2F2] transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
     >
       {/* Image Container */}
-      <div className="relative overflow-hidden h-48 md:h-56 bg-[#F2F2F2]">
+      <div className="relative overflow-hidden h-64 md:h-72 bg-[#F2F2F2]">
         {event.image_url ? (
           <img
             src={event.image_url}
@@ -70,7 +70,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEventClick }) => 
 
         {/* Promoted Badge - Top Right */}
         {event.is_promoted && (
-          <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs font-black text-[#2E2E2F] flex items-center gap-1.5 shadow-md animate-in fade-in slide-in-from-top-2 duration-500">
+          <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-xl text-xs font-black text-[#2E2E2F] flex items-center gap-1.5 shadow-md animate-in fade-in slide-in-from-top-2 duration-500">
             <ICONS.Info className="w-4 h-4 text-[#38BDF2]" strokeWidth={2.5} />
             <span>PROMOTED</span>
           </div>
@@ -80,7 +80,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEventClick }) => 
       {/* Content */}
       <div className="p-5 space-y-3">
         {/* Title */}
-        <h3 className="font-black text-[#2E2E2F] text-xl line-clamp-2 group-hover:text-[#38BDF2] transition-colors">
+        <h3 className="font-black text-[#2E2E2F] text-2xl line-clamp-2 group-hover:text-[#38BDF2] transition-colors leading-tight">
           {event.eventName}
         </h3>
 
@@ -129,11 +129,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEventClick }) => 
               if (isDone) return <span className="text-xs text-[#2E2E2F]/40 uppercase tracking-widest">Event Ended</span>;
 
               return event.price_min === 0 ? (
-                <span className="text-sm">FREE</span>
+                <span className="text-[11px] uppercase tracking-[0.15em] font-semibold">FREE</span>
               ) : typeof event.price_min === 'number' ? (
-                <span className="text-sm">₱{event.price_min?.toLocaleString()}</span>
+                <span className="text-[11px] uppercase tracking-[0.15em] font-semibold">₱{event.price_min?.toLocaleString()}</span>
               ) : (
-                <span className="text-xs text-[#2E2E2F]/60">Check pricing</span>
+                <span className="text-[11px] uppercase tracking-[0.15em] font-semibold text-[#2E2E2F]/60">Check pricing</span>
               );
             })()}
           </div>
@@ -169,3 +169,4 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEventClick }) => 
     </div>
   );
 };
+

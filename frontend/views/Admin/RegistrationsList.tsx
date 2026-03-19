@@ -222,7 +222,7 @@ export const RegistrationsList: React.FC = () => {
         })}
       </div>
 
-      <Card className="hidden md:block overflow-hidden border-[#2E2E2F]/10 rounded-2xl bg-[#F2F2F2]">
+      <Card className="hidden md:block overflow-hidden border-[#2E2E2F]/10 rounded-xl bg-[#F2F2F2]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead className="bg-[#F2F2F2] border-b border-[#2E2E2F]/10">
@@ -258,7 +258,7 @@ export const RegistrationsList: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <span className={`inline-flex px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${isCheckedIn
+                      <span className={`inline-flex px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest ${isCheckedIn
                         ? 'bg-[#38BDF2]/20 text-[#2E2E2F]'
                         : 'bg-[#2E2E2F]/10 text-[#2E2E2F]'
                         }`}>
@@ -337,18 +337,18 @@ export const RegistrationsList: React.FC = () => {
                   <h3 className="text-[11px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.3em] mb-2">Payment & Status</h3>
                   <div className="bg-[#F2F2F2] border border-[#2E2E2F]/20 rounded-xl p-5 grid grid-cols-1 gap-2">
                     <div className="flex items-center gap-4">
-                      <span className={`px-3 py-1 rounded-lg text-[11px] font-black uppercase tracking-widest ${selectedReg.paymentStatus === 'PAID' ? 'bg-[#38BDF2]/20 text-[#2E2E2F]' : 'bg-[#2E2E2F]/10 text-[#2E2E2F]'}`}>{selectedReg.paymentStatus || '—'}</span>
+                      <span className={`px-3 py-1 rounded-xl text-[11px] font-black uppercase tracking-widest ${selectedReg.paymentStatus === 'PAID' ? 'bg-[#38BDF2]/20 text-[#2E2E2F]' : 'bg-[#2E2E2F]/10 text-[#2E2E2F]'}`}>{selectedReg.paymentStatus || '—'}</span>
                       <span className="text-[13px] font-black text-[#2E2E2F]">{selectedReg.currency} {Number(selectedReg.amountPaid ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className={`px-3 py-1 rounded-lg text-[11px] font-black uppercase tracking-widest ${selectedReg.status === 'USED' ? 'bg-[#38BDF2]/20 text-[#2E2E2F]' : 'bg-[#2E2E2F]/10 text-[#2E2E2F]'}`}>{selectedReg.status}</span>
+                      <span className={`px-3 py-1 rounded-xl text-[11px] font-black uppercase tracking-widest ${selectedReg.status === 'USED' ? 'bg-[#38BDF2]/20 text-[#2E2E2F]' : 'bg-[#2E2E2F]/10 text-[#2E2E2F]'}`}>{selectedReg.status}</span>
                       <span className="text-[13px] text-[#2E2E2F]/70 font-bold">Check-in: {formatTimestamp(selectedReg.checkInTimestamp)}</span>
                     </div>
                   </div>
                 </div>
               </div>
               {selectedReg.qrPayload && (
-                <div className="flex flex-col items-center gap-4 justify-center bg-[#F2F2F2] rounded-2xl border border-[#2E2E2F]/20 px-6 py-8 min-w-[220px]">
+                <div className="flex flex-col items-center gap-4 justify-center bg-[#F2F2F2] rounded-xl border border-[#2E2E2F]/20 px-6 py-8 min-w-[220px]">
                   <p className="text-[10px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em]">QR Code</p>
                   <QRCode value={selectedReg.qrPayload} size={160} fgColor="#2E2E2F" bgColor="#F2F2F2" />
                   <span className="text-[11px] text-[#2E2E2F]/60 font-mono break-all">{selectedReg.ticketCode}</span>
@@ -380,3 +380,4 @@ export const RegistrationsList: React.FC = () => {
     </div>
   );
 };
+

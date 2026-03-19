@@ -98,8 +98,8 @@ export const EmailSettings: React.FC = () => {
 
             {notification && (
                 <div className="fixed top-24 right-8 z-[120] animate-in slide-in-from-right-10 duration-500">
-                    <Card className={`flex items-center gap-4 px-6 py-4 rounded-2xl shadow-2xl border ${notification.type === 'success' ? 'bg-[#F2F2F2] border-green-200 text-[#2E2E2F]' : 'bg-[#F2F2F2] border-red-200 text-[#2E2E2F]'}`}>
-                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${notification.type === 'success' ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'bg-red-500 text-white shadow-lg shadow-red-500/30'}`}>
+                    <Card className={`flex items-center gap-4 px-6 py-4 rounded-xl shadow-2xl border ${notification.type === 'success' ? 'bg-[#F2F2F2] border-green-200 text-[#2E2E2F]' : 'bg-[#F2F2F2] border-red-200 text-[#2E2E2F]'}`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${notification.type === 'success' ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'bg-red-500 text-white shadow-lg shadow-red-500/30'}`}>
                             {notification.type === 'success' ? <ICONS.CheckCircle className="w-5 h-5" /> : <ICONS.Layout className="w-5 h-5" />}
                         </div>
                         <p className="font-black text-sm tracking-tight">{notification.message}</p>
@@ -110,7 +110,7 @@ export const EmailSettings: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Form */}
-                <Card className="lg:col-span-2 p-8 rounded-3xl bg-[#F2F2F2] border-[#2E2E2F]/10 shadow-sm space-y-8">
+                <Card className="lg:col-span-2 p-8 rounded-xl bg-[#F2F2F2] border-[#2E2E2F]/10 shadow-sm space-y-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-1.5">
                             <label className="text-[11px] font-black text-[#2E2E2F]/40 uppercase tracking-widest pl-1">Email Provider</label>
@@ -223,7 +223,7 @@ export const EmailSettings: React.FC = () => {
 
                 {/* Sidebar - Test Configuration */}
                 <div className="space-y-6">
-                    <Card className="p-8 rounded-3xl bg-[#F2F2F2] border-[#2E2E2F]/10 shadow-sm space-y-6">
+                    <Card className="p-8 rounded-xl bg-[#F2F2F2] border-[#2E2E2F]/10 shadow-sm space-y-6">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-[#38BDF2]/10 flex items-center justify-center text-[#38BDF2]">
                                 <ICONS.Send className="w-4 h-4" />
@@ -246,7 +246,7 @@ export const EmailSettings: React.FC = () => {
                             </p>
                             <Button
                                 onClick={handleTest}
-                                className="w-full bg-[#38BDF2] hover:bg-[#2E2E2F] text-white py-3 rounded-2xl font-black text-xs tracking-widest flex items-center justify-center gap-2 transition-all uppercase shadow-md"
+                                className="w-full bg-[#38BDF2] hover:bg-[#2E2E2F] text-white py-3 rounded-xl font-black text-xs tracking-widest flex items-center justify-center gap-2 transition-all uppercase shadow-md"
                                 disabled={testing}
                             >
                                 <ICONS.Send className="w-3.5 h-3.5" />
@@ -255,7 +255,7 @@ export const EmailSettings: React.FC = () => {
                         </div>
                     </Card>
 
-                    <div className="p-6 rounded-2xl bg-[#38BDF2]/5 border-2 border-[#38BDF2]/20 relative overflow-hidden group hover:bg-[#38BDF2]/10 transition-colors">
+                    <div className="p-6 rounded-xl bg-[#38BDF2]/5 border-2 border-[#38BDF2]/20 relative overflow-hidden group hover:bg-[#38BDF2]/10 transition-colors">
                         <div className="absolute top-0 right-0 p-2">
                             <ICONS.Bell className="w-4 h-4 text-[#38BDF2]/40" />
                         </div>
@@ -275,3 +275,4 @@ export const EmailSettings: React.FC = () => {
         </div>
     );
 };
+

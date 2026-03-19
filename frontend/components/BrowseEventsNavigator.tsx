@@ -190,7 +190,7 @@ export const BrowseEventsNavigator: React.FC<BrowseEventsNavigatorProps> = ({
                   className="w-full px-4 py-3.5 flex items-center gap-3 text-left text-[#2E2E2F] hover:bg-[#38BDF2]/10 transition-colors border-b border-[#2E2E2F]/10"
                   onClick={handleBrowseOnlineEvents}
                 >
-                  <span className="w-6 h-6 rounded-md border border-[#38BDF2]/50 flex items-center justify-center text-[#38BDF2]">
+                  <span className="w-6 h-6 rounded-xl border border-[#38BDF2]/50 flex items-center justify-center text-[#38BDF2]">
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16v12H4z" />
                       <path strokeLinecap="round" strokeLinejoin="round" d="M10 9l5 3-5 3V9z" />
@@ -259,3 +259,4 @@ export const BrowseEventsNavigator: React.FC<BrowseEventsNavigatorProps> = ({
     </section>
   );
 };
+

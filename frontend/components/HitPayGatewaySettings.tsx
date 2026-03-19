@@ -48,7 +48,7 @@ const EyeOffIcon = (props: any) => (
 );
 
 const DummyGatewayCard = ({ name }: { name: string }) => (
-  <div className="flex items-center justify-between border border-[#2E2E2F]/10 bg-[#F2F2F2] rounded-lg p-4 mb-4">
+  <div className="flex items-center justify-between border border-[#2E2E2F]/10 bg-[#F2F2F2] rounded-xl p-4 mb-4">
     <div className="flex items-center gap-3">
       <ICONS.CreditCard className="w-5 h-5 text-gray-600" />
       <span className="font-semibold text-gray-800 text-sm">{name}</span>
@@ -247,7 +247,7 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
             onChange={(e) => handleInputChange(field, e.target.value)}
             onFocus={onFocusInput}
             placeholder={hasStored && !isEditing ? "••••••••••••••••" : "Enter credential..."}
-            className={`w-full text-sm font-mono border border-[#2E2E2F]/10 rounded-lg py-2.5 pl-3 pr-10 focus:outline-none focus:border-[#38BDF2] focus:ring-1 focus:ring-[#38BDF2] text-gray-800 transition-colors bg-[#F2F2F2]`}
+            className={`w-full text-sm font-mono border border-[#2E2E2F]/10 rounded-xl py-2.5 pl-3 pr-10 focus:outline-none focus:border-[#38BDF2] focus:ring-1 focus:ring-[#38BDF2] text-gray-800 transition-colors bg-[#F2F2F2]`}
             disabled={!formData.enabled}
             readOnly={!isEditing && hasStored}
           />
@@ -279,7 +279,7 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
   return (
     <div className="max-w-4xl pt-4">
       {notification && (
-        <div className={`mb-6 p-4 rounded-lg flex items-center gap-3 text-sm font-medium border ${notification.type === 'error' ? 'bg-red-50 text-red-800 border-red-200' : 'bg-green-50 text-green-800 border-green-200'}`}>
+        <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 text-sm font-medium border ${notification.type === 'error' ? 'bg-red-50 text-red-800 border-red-200' : 'bg-green-50 text-green-800 border-green-200'}`}>
           <AlertCircleIcon className="w-5 h-5 shrink-0" />
           {notification.message}
           <button onClick={() => setNotification(null)} className="ml-auto text-current opacity-60 hover:opacity-100">&times;</button>
@@ -292,7 +292,7 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
       <DummyGatewayCard name="Cashfree" />
 
       {/* HitPay Gateway */}
-      <div className="border border-[#2E2E2F]/10 bg-[#F2F2F2] rounded-lg mb-6 shadow-sm overflow-hidden transition-all duration-300">
+      <div className="border border-[#2E2E2F]/10 bg-[#F2F2F2] rounded-xl mb-6 shadow-sm overflow-hidden transition-all duration-300">
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <ICONS.CreditCard className="w-5 h-5 text-gray-700" />
@@ -311,7 +311,7 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
         {formData.enabled && (
           <div className="p-5 md:p-6 space-y-6 animate-in slide-in-from-top-2 fade-in duration-200">
 
-            <div className="flex items-start gap-3 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-lg p-4">
+            <div className="flex items-start gap-3 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl p-4">
               <AlertCircleIcon className="w-4 h-4 mt-[3px] text-gray-600 shrink-0" />
               <p className="text-sm text-gray-600">
                 Get your HitPay API credentials from your{' '}
@@ -388,14 +388,14 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
           <button
             onClick={() => handleSave()}
             disabled={saving}
-            className="px-5 py-2 bg-[#38BDF2] hover:bg-[#2E2E2F] text-white text-sm font-medium rounded-lg transition-colors shadow-sm disabled:opacity-50"
+            className="px-5 py-2 bg-[#38BDF2] hover:bg-[#2E2E2F] text-white text-sm font-medium rounded-xl transition-colors shadow-sm disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save HitPay Settings'}
           </button>
         </div>
       </div>
 
-      <div className="flex items-start gap-3 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-lg p-4">
+      <div className="flex items-start gap-3 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl p-4">
         <AlertCircleIcon className="w-4 h-4 mt-[3px] text-gray-600 shrink-0" />
         <p className="text-sm text-gray-600 leading-relaxed">
           These payment settings will be used for all {scope === 'admin' ? 'subscription plan payments' : 'event ticket payments'}. Make sure to test your configuration before going live.
@@ -405,3 +405,4 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
     </div>
   );
 };
+

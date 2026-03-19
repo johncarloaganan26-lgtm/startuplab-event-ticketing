@@ -1,0 +1,51 @@
+=== A: Lines 1393-1415 ===
+1393[ 36] Back to Events
+1394[ 32] </button>
+1395[ 32] <div className="p-5 space-y-4">
+1396[ 36] <h1 className="text-3xl font-black text-[#2E2E2F] tracking-tight leading-tight">{formData.
+1397[ 32] <div className="flex flex-wrap items-center gap-3">
+1398[ 40] <div className={`px-4 py-1.5 rounded-xl text-[10px] font-semibold uppercase tracking-wide 
+1399[ 36] </div>
+1400[ 36] <div className="space-y-3 pt-1">
+1401[ 40] <div className="flex items-center gap-3 bg-[#F2F2F2] px-4 py-3 rounded-xl border-2 border-
+1402[ 44] <div className="w-8 h-8 bg-[#38BDF2]/10 text-[#2E2E2F] rounded-xl flex items-center justif
+1403[ 44] <span className="text-[13px] font-semibold text-[#2E2E2F] tracking-tight">{previewDateLabe
+1404[ 40] </div>
+1405[ 40] <div className="flex items-center gap-3 bg-[#F2F2F2] px-4 py-3 rounded-xl border-2 border-
+1406[ 44] <div className="w-8 h-8 bg-[#38BDF2]/10 text-[#2E2E2F] rounded-xl flex items-center justif
+1407[ 44] <span className="text-[13px] font-semibold text-[#2E2E2F] tracking-tight truncate max-w-[2
+1408[ 40] </div>
+1409[ 36] </div>
+1410[ 32] </div>
+1411[ 28] </div>
+1412[ 28] <div className="bg-[#F2F2F2] rounded-xl border-2 border-[#2E2E2F]/15 overflow-hidden flex 
+1413[ 32] <div className="px-5 py-3 border-b border-[#2E2E2F]/10 shrink-0"><p className="text-[11px]
+1414[ 32] <div className="overflow-y-auto custom-scrollbar flex-1">
+1415[ 32] {EVENT_SETUP_STEPS.map((step) => (
+
+=== B: Lines 2303-2312 ===
+2303[ 48] </div>
+2304[ 44] </div>
+2305[ 40] </div>
+2306[ 41] </>
+2307[ 37] ) : (
+2308[ 41] <div className="bg-[#F2F2F2] p-8 flex justify-center w-full"> {/* Outer Box (M1) */}
+2309[ 45] {/* Phone Frame */}
+2310[ 45] <div className="relative w-[375px] h-[760px] bg-black rounded-[3.5rem] border-[12px] borde
+2311[ 48] {/* Notch */}
+2312[ 48] <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-[#2E2E2F] rounded-b-2
+
+=== C: Lines 2425-2437 ===
+2425[ 60] </div>
+2426[ 56] </div>
+2427[ 52] </div> {/* CLOSE Sticky Bar */}
+2428[ 48] </div> {/* CLOSE M3 Screen */}
+2429[ 44] </div> {/* CLOSE M2 Phone */}
+2430[ 40] </div> {/* CLOSE M1 Outer Container */}
+2431[ 40] )}
+2432[ 32] </div>
+2433[ 28] </div>
+2434[ 24] </div>
+2435[ 20] </div>
+2436[ 16] </div>
+2437[ 12] </Modal>

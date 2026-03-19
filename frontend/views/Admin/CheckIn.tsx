@@ -105,7 +105,7 @@ export const CheckIn: React.FC = () => {
         <Card className="p-6 bg-[#F2F2F2] text-[#2E2E2F] flex flex-col items-center justify-center min-h-[300px] border-[#2E2E2F]/20 relative overflow-hidden">
           {status === 'idle' ? (
             <>
-              <div className="w-20 h-20 border-2 border-[#2E2E2F]/40 rounded-2xl flex items-center justify-center mb-6 relative overflow-hidden">
+              <div className="w-20 h-20 border-2 border-[#2E2E2F]/40 rounded-xl flex items-center justify-center mb-6 relative overflow-hidden">
                 <div className="w-full h-[2px] bg-[#38BDF2] absolute animate-scan-y top-0"></div>
                 <ICONS.CheckCircle className="w-8 h-8 text-[#38BDF2]" />
               </div>
@@ -174,7 +174,7 @@ export const CheckIn: React.FC = () => {
           <form onSubmit={handleManualCheckIn} className="flex gap-2">
             <input
               placeholder="Type or paste ticket code here"
-              className="flex-1 px-3 py-2 bg-[#F2F2F2] border border-[#2E2E2F]/20 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF2]/30 focus:border-[#38BDF2]"
+              className="flex-1 px-3 py-2 bg-[#F2F2F2] border border-[#2E2E2F]/20 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF2]/30 focus:border-[#38BDF2]"
               value={code}
               onChange={(e: any) => setCode(e.target.value)}
             />
@@ -208,3 +208,4 @@ export const CheckIn: React.FC = () => {
     </div>
   );
 };
+

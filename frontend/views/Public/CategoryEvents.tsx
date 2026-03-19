@@ -34,7 +34,7 @@ const CategoryEventCard: React.FC<{ event: Event }> = ({ event }) => {
   const navigate = useNavigate();
 
   return (
-    <Card className="flex flex-col h-full border border-[#2E2E2F]/10 rounded-[1.5rem] overflow-hidden bg-[#F2F2F2] hover:border-[#38BDF2]/40 transition-colors cursor-pointer" onClick={() => navigate(`/events/${event.slug}`)}>
+    <Card className="flex flex-col h-full border border-[#2E2E2F]/10 rounded-xl overflow-hidden bg-[#F2F2F2] hover:border-[#38BDF2]/40 transition-colors cursor-pointer" onClick={() => navigate(`/events/${event.slug}`)}>
       <div className="relative h-52 overflow-hidden">
         <img src={getImageUrl(event.imageUrl)} alt={event.eventName} className="w-full h-full object-cover" />
       </div>
@@ -115,7 +115,7 @@ export const CategoryEvents: React.FC = () => {
   if (!category) {
     return (
       <div className="max-w-7xl mx-auto px-6 pt-12 pb-20">
-        <div className="py-20 px-8 text-center bg-[#F2F2F2] rounded-[2.5rem] border border-[#2E2E2F]/10">
+        <div className="py-20 px-8 text-center bg-[#F2F2F2] rounded-xl border border-[#2E2E2F]/10">
           <h3 className="text-2xl font-bold text-[#2E2E2F] tracking-tight mb-4">Category not found</h3>
           <Link to="/">
             <Button variant="outline" className="px-4">Back to Events</Button>
@@ -136,7 +136,7 @@ export const CategoryEvents: React.FC = () => {
           BACK TO EVENTS
         </Link>
 
-        <div className="rounded-[2.2rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] p-8 md:p-10">
+        <div className="rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-8 md:p-10">
           <div className="w-20 h-20 rounded-full border border-[#38BDF2]/40 bg-[#38BDF2]/20 flex items-center justify-center text-[#2E2E2F] mb-5">
             <category.Icon className="w-9 h-9" />
           </div>
@@ -150,7 +150,7 @@ export const CategoryEvents: React.FC = () => {
           <h2 className="text-3xl lg:text-4xl font-black text-[#2E2E2F] tracking-tight mb-2">{visibleEvents.length} Event{visibleEvents.length === 1 ? '' : 's'}</h2>
           <p className="text-[#2E2E2F]/50 font-medium">Refined by category: {category.label}</p>
         </div>
-        <div className="w-full lg:w-[360px]">
+        <div className="w-full md:w-[280px] lg:w-[360px]">
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-[#2E2E2F]/30 group-focus-within:text-[#38BDF2] transition-colors">
               <ICONS.Search className="h-4 w-4" strokeWidth={3} />
@@ -160,7 +160,7 @@ export const CategoryEvents: React.FC = () => {
               placeholder="Search in this category..."
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              className="block w-full pl-12 pr-12 py-3 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-2xl text-[13px] font-medium transition-all focus:outline-none focus:ring-2 focus:ring-[#38BDF2]/20 focus:border-[#38BDF2] placeholder:text-[#2E2E2F]/30"
+              className="block w-full pl-12 pr-12 py-3 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl text-[13px] font-medium transition-all focus:outline-none focus:ring-2 focus:ring-[#38BDF2]/20 focus:border-[#38BDF2] placeholder:text-[#2E2E2F]/30"
             />
           </div>
         </div>
@@ -175,7 +175,7 @@ export const CategoryEvents: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="py-20 px-8 text-center bg-[#F2F2F2] rounded-[2.5rem] border border-[#2E2E2F]/10">
+        <div className="py-20 px-8 text-center bg-[#F2F2F2] rounded-xl border border-[#2E2E2F]/10">
           <div className="w-14 h-14 bg-[#F2F2F2] rounded-full flex items-center justify-center mx-auto mb-6 border border-[#2E2E2F]/10">
             <ICONS.Search className="w-7 h-7 text-[#2E2E2F]/60" />
           </div>
@@ -188,3 +188,4 @@ export const CategoryEvents: React.FC = () => {
     </div>
   );
 };
+

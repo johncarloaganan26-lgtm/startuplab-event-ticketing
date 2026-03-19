@@ -116,7 +116,7 @@ export const OrganizerSupport: React.FC = () => {
   if (!hasPrioritySupport) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] p-8 text-center animate-in fade-in zoom-in duration-500">
-        <div className="w-24 h-24 bg-[#38BDF2]/10 rounded-[2.5rem] flex items-center justify-center mb-10 text-[#38BDF2] shadow-xl shadow-[#38BDF2]/10 border border-[#38BDF2]/20">
+        <div className="w-24 h-24 bg-[#38BDF2]/10 rounded-xl flex items-center justify-center mb-10 text-[#38BDF2] shadow-xl shadow-[#38BDF2]/10 border border-[#38BDF2]/20">
           <ICONS.Lock className="w-10 h-10" strokeWidth={3} />
         </div>
         <h2 className="text-3xl font-black text-[#2E2E2F] mb-4 uppercase tracking-tighter">Support Restricted</h2>
@@ -126,7 +126,7 @@ export const OrganizerSupport: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-5">
           <button
             onClick={() => navigate('/subscription')}
-            className="px-12 py-5 bg-[#38BDF2] text-white rounded-[2rem] font-black uppercase tracking-widest text-[11px] shadow-2xl shadow-[#38BDF2]/30 hover:scale-105 active:scale-95 transition-all"
+            className="px-12 py-5 bg-[#38BDF2] text-white rounded-xl font-black uppercase tracking-widest text-[11px] shadow-2xl shadow-[#38BDF2]/30 hover:scale-105 active:scale-95 transition-all"
           >
             Upgrade Plan
           </button>
@@ -157,7 +157,7 @@ export const OrganizerSupport: React.FC = () => {
         </button>
       </div>
 
-      <div className="bg-transparent border border-[#2E2E2F]/5 rounded-2xl p-6 md:p-8 relative overflow-hidden group">
+      <div className="bg-transparent border border-[#2E2E2F]/5 rounded-xl p-6 md:p-8 relative overflow-hidden group">
         <div className="flex flex-col gap-4 relative z-10">
           <div className="max-w-2xl">
             <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-widest mb-4 flex-shrink-0 w-fit ${hasPrioritySupport ? 'bg-[#38BDF2]/10 border-[#38BDF2]/20 text-[#38BDF2]' : 'bg-[#2E2E2F]/5 border-[#2E2E2F]/10 text-[#2E2E2F]/60'}`}>
@@ -182,7 +182,7 @@ export const OrganizerSupport: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             {!profile?.plan ? (
-              <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center bg-transparent rounded-[32px] border border-[#2E2E2F]/5 shadow-sm">
+              <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center bg-transparent rounded-xl border border-[#2E2E2F]/5 shadow-sm">
                 <div className="w-16 h-16 bg-[#2E2E2F]/5 rounded-full flex items-center justify-center mb-6 text-[#2E2E2F]/20">
                   <ICONS.Lock className="w-8 h-8" />
                 </div>
@@ -192,13 +192,13 @@ export const OrganizerSupport: React.FC = () => {
                 </p>
                 <button
                   onClick={() => navigate('/subscription')}
-                  className="px-10 py-4 bg-[#2E2E2F] text-white rounded-[20px] font-black uppercase tracking-widest text-[10px] shadow-xl hover:-translate-y-1 transition-all"
+                  className="px-10 py-4 bg-[#2E2E2F] text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-xl hover:-translate-y-1 transition-all"
                 >
                   Explore Plans
                 </button>
               </div>
             ) : (
-              <Card className="bg-transparent border text-[#2E2E2F] border-[#2E2E2F]/5 rounded-2xl p-6 md:p-8 shadow-sm transition-all hover:shadow-md">
+              <Card className="bg-transparent border text-[#2E2E2F] border-[#2E2E2F]/5 rounded-xl p-6 md:p-8 shadow-sm transition-all hover:shadow-md">
                 <h2 className="text-xl font-bold text-[#2E2E2F] mb-6">Submit a Request</h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
@@ -230,7 +230,7 @@ export const OrganizerSupport: React.FC = () => {
           </div>
 
           <div className="space-y-6">
-            <Card className={`border rounded-2xl p-6 md:p-8 transition-all bg-transparent ${hasPrioritySupport ? 'border-[#38BDF2]/30 shadow-sm' : 'border-[#2E2E2F]/5'}`}>
+            <Card className={`border rounded-xl p-6 md:p-8 transition-all bg-transparent ${hasPrioritySupport ? 'border-[#38BDF2]/30 shadow-sm' : 'border-[#2E2E2F]/5'}`}>
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${hasPrioritySupport ? 'bg-[#38BDF2]/10 text-[#38BDF2]' : 'bg-transparent border border-[#2E2E2F]/10 text-[#2E2E2F]'}`}>
                 {hasPrioritySupport ? <ICONS.Zap className="w-6 h-6" /> : <ICONS.MessageSquare className="w-6 h-6" />}
               </div>
@@ -244,7 +244,7 @@ export const OrganizerSupport: React.FC = () => {
               </p>
             </Card>
 
-            <Card className="bg-transparent border border-[#2E2E2F]/5 rounded-2xl p-6 md:p-8 text-[#2E2E2F] relative overflow-hidden shadow-sm">
+            <Card className="bg-transparent border border-[#2E2E2F]/5 rounded-xl p-6 md:p-8 text-[#2E2E2F] relative overflow-hidden shadow-sm">
               <div className="relative z-10">
                 <p className="text-xs font-bold uppercase tracking-widest text-[#2E2E2F]/50 mb-4">Other Ways to Connect</p>
                 <div className="space-y-4">
@@ -263,7 +263,7 @@ export const OrganizerSupport: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="bg-transparent border border-[#2E2E2F]/10 rounded-[32px] overflow-hidden">
+        <div className="bg-transparent border border-[#2E2E2F]/10 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead className="bg-[#2E2E2F]/5 border-b border-[#2E2E2F]/5">
@@ -306,7 +306,7 @@ export const OrganizerSupport: React.FC = () => {
         <>
           <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-[100] transition-opacity animate-in fade-in duration-300" onClick={() => setSelectedTicket(null)} />
           
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-[#F2F2F2]/95 backdrop-blur-xl shadow-[0_32px_128px_-16px_rgba(0,0,0,0.3)] z-[101] rounded-[32px] border border-[#2E2E2F]/5 overflow-hidden flex flex-col animate-in zoom-in-95 duration-400 ease-out h-[90vh]">
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-[#F2F2F2]/95 backdrop-blur-xl shadow-[0_32px_128px_-16px_rgba(0,0,0,0.3)] z-[101] rounded-xl border border-[#2E2E2F]/5 overflow-hidden flex flex-col animate-in zoom-in-95 duration-400 ease-out h-[90vh]">
              {/* Header */}
              <div className="px-8 py-5 border-b border-[#2E2E2F]/5 flex items-center justify-between bg-transparent sticky top-0 z-10">
                <button onClick={() => setSelectedTicket(null)} className="p-3 hover:bg-[#2E2E2F]/5 rounded-full text-[#2E2E2F] transition-all">
@@ -333,14 +333,14 @@ export const OrganizerSupport: React.FC = () => {
                 {/* Inquiry */}
                 <div className="flex flex-col gap-2 max-w-[85%] items-end ml-auto">
                    <div className="flex items-end gap-3 flex-row-reverse">
-                      <div className="w-10 h-10 rounded-2xl bg-transparent flex-shrink-0 flex items-center justify-center border border-[#2E2E2F]/5 shadow-sm overflow-hidden">
+                      <div className="w-10 h-10 rounded-xl bg-transparent flex-shrink-0 flex items-center justify-center border border-[#2E2E2F]/5 shadow-sm overflow-hidden">
                          {profile?.profileImageUrl ? (
                            <img src={profile.profileImageUrl} alt="O" className="w-full h-full object-cover" />
                          ) : (
                            <ICONS.Users className="w-5 h-5 text-[#38BDF2]" />
                          )}
                       </div>
-                      <div className="bg-[#38BDF2] p-6 rounded-[24px] rounded-br-none border-0 shadow-sm text-white">
+                      <div className="bg-[#38BDF2] p-6 rounded-xl rounded-br-none border-0 shadow-sm text-white">
                          <p className="text-sm font-bold mb-1.5">{selectedTicket.title}</p>
                          <p className="text-sm font-medium whitespace-pre-wrap leading-relaxed">
                            {selectedTicket.message}
@@ -357,7 +357,7 @@ export const OrganizerSupport: React.FC = () => {
                   {(ticketMessages[selectedTicket.notification_id] || []).map((m) => (
                     <div key={m.message_id} className={`flex flex-col gap-2 max-w-[85%] ${m.is_admin_reply ? 'mr-auto items-start' : 'ml-auto items-end'}`}>
                       <div className={`flex items-end gap-3 ${m.is_admin_reply ? 'flex-row' : 'flex-row-reverse'}`}>
-                         <div className="w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center border border-[#2E2E2F]/5 shadow-sm overflow-hidden bg-transparent">
+                         <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center border border-[#2E2E2F]/5 shadow-sm overflow-hidden bg-transparent">
                             {m.is_admin_reply ? (
                                <img src="/lgo.webp" alt="Bot" className="w-full h-full object-contain p-1.5" />
                             ) : (
@@ -368,7 +368,7 @@ export const OrganizerSupport: React.FC = () => {
                                )
                             )}
                          </div>
-                         <div className={`p-6 rounded-[24px] shadow-sm ${
+                         <div className={`p-6 rounded-xl shadow-sm ${
                            m.is_admin_reply 
                              ? 'bg-[#2E2E2F]/5 text-[#2E2E2F] rounded-bl-none border border-[#2E2E2F]/5' 
                              : 'bg-[#38BDF2] text-white rounded-br-none border-0'
@@ -420,3 +420,4 @@ export const OrganizerSupport: React.FC = () => {
     </div>
   );
 };
+

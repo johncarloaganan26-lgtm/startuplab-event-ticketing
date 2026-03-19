@@ -2,6 +2,15 @@ import supabase from '../database/db.js';
 import { logAudit } from '../utils/auditLogger.js';
 import { getEventLikeCountsMap } from './eventLikeController.js';
 
+const DEFAULT_PROMOTION_DURATION_DAYS = 7;
+const emptyQuotaResponse = () => ({
+  limit: 0,
+  used: 0,
+  remaining: 0,
+  durationDays: DEFAULT_PROMOTION_DURATION_DAYS,
+  canPromote: false
+});
+
 /**
  * Toggle event promotion on/off
  * Creates a promoted_events record with expiration based on plan duration
@@ -40,6 +49,13 @@ export const toggleEventPromotion = async (req, res) => {
 
     if (orgErr) throw orgErr;
     if (!organizer) return res.status(403).json({ error: 'Not an organizer' });
+    if (!organizer.currentPlanId) {
+      return res.status(402).json({
+        error: 'Promotion is not available on your current plan.',
+        limit: 0,
+        activeCount: 0
+      });
+    }
 
     // Get the plan details
     const { data: planFeatures, error: planErr } = await supabase
@@ -51,11 +67,17 @@ export const toggleEventPromotion = async (req, res) => {
 
     // Extract promotion limits from plan features
     let maxPromotedEvents = 0;
-    let promotionDurationDays = 7;
+    let promotionDurationDays = DEFAULT_PROMOTION_DURATION_DAYS;
 
     (planFeatures || []).forEach(feat => {
-      if (feat.key === 'max_promoted_events') maxPromotedEvents = parseInt(feat.value, 10);
-      if (feat.key === 'promotion_duration_days') promotionDurationDays = parseInt(feat.value, 10);
+      if (feat.key === 'max_promoted_events') {
+        const parsed = Number.parseInt(feat.value, 10);
+        if (Number.isFinite(parsed) && parsed >= 0) maxPromotedEvents = parsed;
+      }
+      if (feat.key === 'promotion_duration_days') {
+        const parsed = Number.parseInt(feat.value, 10);
+        if (Number.isFinite(parsed) && parsed > 0) promotionDurationDays = parsed;
+      }
     });
 
     // Check if promotion exists
@@ -284,6 +306,7 @@ export const getPromotionQuota = async (req, res) => {
 
     if (orgErr) throw orgErr;
     if (!organizer) return res.status(403).json({ error: 'Not an organizer' });
+    if (!organizer.currentPlanId) return res.json(emptyQuotaResponse());
 
     // Get plan features
     const { data: planFeatures, error: planErr } = await supabase
@@ -294,11 +317,17 @@ export const getPromotionQuota = async (req, res) => {
     if (planErr) throw planErr;
 
     let maxPromotedEvents = 0;
-    let promotionDurationDays = 7;
+    let promotionDurationDays = DEFAULT_PROMOTION_DURATION_DAYS;
 
     (planFeatures || []).forEach(feat => {
-      if (feat.key === 'max_promoted_events') maxPromotedEvents = parseInt(feat.value, 10);
-      if (feat.key === 'promotion_duration_days') promotionDurationDays = parseInt(feat.value, 10);
+      if (feat.key === 'max_promoted_events') {
+        const parsed = Number.parseInt(feat.value, 10);
+        if (Number.isFinite(parsed) && parsed >= 0) maxPromotedEvents = parsed;
+      }
+      if (feat.key === 'promotion_duration_days') {
+        const parsed = Number.parseInt(feat.value, 10);
+        if (Number.isFinite(parsed) && parsed > 0) promotionDurationDays = parsed;
+      }
     });
 
     // Count active promotions
@@ -308,6 +337,9 @@ export const getPromotionQuota = async (req, res) => {
       .eq('organizerId', organizer.organizerId)
       .gte('expires_at', new Date().toISOString());
 
+    if (countErr && countErr.code === '42P01') {
+      return res.json(emptyQuotaResponse());
+    }
     if (countErr && countErr.code !== 'PGRST116') throw countErr;
     const used = (activePromos || []).length;
 
@@ -320,6 +352,9 @@ export const getPromotionQuota = async (req, res) => {
     });
   } catch (error) {
     console.error('getPromotionQuota error:', error);
+    if (error?.code === '42P01') {
+      return res.json(emptyQuotaResponse());
+    }
     return res.status(500).json({ error: error?.message || 'Failed to get promotion quota' });
   }
 };

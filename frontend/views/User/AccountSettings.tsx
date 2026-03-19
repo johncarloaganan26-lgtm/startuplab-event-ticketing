@@ -126,8 +126,8 @@ export const AccountSettings: React.FC = () => {
         <div className="space-y-10 pb-20">
             {notification && (
                 <div className="fixed top-24 right-8 z-[120] animate-in slide-in-from-right-10 duration-500">
-                    <Card className={`flex items-center gap-4 px-6 py-4 rounded-2xl shadow-2xl border ${notification.type === 'success' ? 'bg-[#F2F2F2] border-green-200 text-[#2E2E2F]' : 'bg-[#F2F2F2] border-red-200 text-[#2E2E2F]'}`}>
-                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${notification.type === 'success' ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'bg-red-500 text-white shadow-lg shadow-red-500/30'}`}>
+                    <Card className={`flex items-center gap-4 px-6 py-4 rounded-xl shadow-2xl border ${notification.type === 'success' ? 'bg-[#F2F2F2] border-green-200 text-[#2E2E2F]' : 'bg-[#F2F2F2] border-red-200 text-[#2E2E2F]'}`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${notification.type === 'success' ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'bg-red-500 text-white shadow-lg shadow-red-500/30'}`}>
                             {notification.type === 'success' ? <ICONS.CheckCircle className="w-5 h-5" /> : <XCircleIcon className="w-5 h-5" />}
                         </div>
                         <p className="font-black text-sm tracking-tight">{notification.message}</p>
@@ -137,7 +137,7 @@ export const AccountSettings: React.FC = () => {
             )}
 
             {/* Profile Section */}
-            <Card className="p-10 border-2 border-[#2E2E2F]/15 rounded-[2.5rem] bg-[#F2F2F2] shadow-sm">
+            <Card className="p-10 border-2 border-[#2E2E2F]/15 rounded-xl bg-[#F2F2F2] shadow-sm">
                 <div className="flex items-center gap-3 mb-10">
                     <div className="w-10 h-10 rounded-xl bg-[#38BDF2]/10 text-[#38BDF2] flex items-center justify-center">
                         <UserIcon className="w-5 h-5" strokeWidth={2.5} />
@@ -151,7 +151,7 @@ export const AccountSettings: React.FC = () => {
                 <div className="space-y-10">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-8">
                         <div
-                            className="relative group w-28 h-28 rounded-[2rem] overflow-hidden border-2 border-[#2E2E2F]/5 bg-[#F2F2F2] flex items-center justify-center cursor-pointer hover:border-[#38BDF2] transition-all"
+                            className="relative group w-28 h-28 rounded-xl overflow-hidden border-2 border-[#2E2E2F]/5 bg-[#F2F2F2] flex items-center justify-center cursor-pointer hover:border-[#38BDF2] transition-all"
                             onClick={() => fileInputRef.current?.click()}
                         >
                             {previewUrl ? (
@@ -212,7 +212,7 @@ export const AccountSettings: React.FC = () => {
             </Card>
 
             {/* Security Section */}
-            <Card className="p-10 border-2 border-[#2E2E2F]/15 rounded-[2.5rem] bg-[#F2F2F2] shadow-sm">
+            <Card className="p-10 border-2 border-[#2E2E2F]/15 rounded-xl bg-[#F2F2F2] shadow-sm">
                 <div className="flex items-center gap-3 mb-10">
                     <div className="w-10 h-10 rounded-xl bg-[#38BDF2]/10 text-[#38BDF2] flex items-center justify-center">
                         <ShieldIcon className="w-5 h-5" strokeWidth={2.5} />
@@ -224,7 +224,7 @@ export const AccountSettings: React.FC = () => {
                 </div>
 
                 <div className="space-y-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 rounded-3xl bg-[#F2F2F2] border-2 border-[#2E2E2F]/10">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 rounded-xl bg-[#F2F2F2] border-2 border-[#2E2E2F]/10">
                         <div className="space-y-1">
                             <h4 className="text-xs font-bold text-[#2E2E2F]">Password</h4>
                             <p className="text-[11px] text-[#2E2E2F]/50 font-medium">Last changed: (Not recorded)</p>
@@ -239,7 +239,7 @@ export const AccountSettings: React.FC = () => {
                         </Button>
                     </div>
 
-                    <div className="flex gap-3 items-start p-4 bg-[#38BDF2]/5 border-2 border-[#38BDF2]/20 rounded-2xl">
+                    <div className="flex gap-3 items-start p-4 bg-[#38BDF2]/5 border-2 border-[#38BDF2]/20 rounded-xl">
                         <AlertIcon className="w-4 h-4 text-[#38BDF2] mt-0.5 shrink-0" />
                         <p className="text-[10px] text-[#2E2E2F]/70 font-medium leading-relaxed">
                             Clicking "Change Password" will send a secure reset link to your email ({email}).
@@ -251,3 +251,4 @@ export const AccountSettings: React.FC = () => {
         </div>
     );
 };
+

@@ -75,7 +75,7 @@ export const SupportCenter: React.FC<SupportCenterProps> = ({
         ) : (
           <>
             {/* Header */}
-            <div className="bg-gradient-to-r from-[#38BDF2]/10 to-[#38BDF2]/5 border border-[#38BDF2]/20 rounded-2xl p-6">
+            <div className="bg-gradient-to-r from-[#38BDF2]/10 to-[#38BDF2]/5 border border-[#38BDF2]/20 rounded-xl p-6">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-xl bg-[#38BDF2] text-white flex items-center justify-center flex-shrink-0">
                   <ICONS.Mail className="w-6 h-6" strokeWidth={2} />
@@ -179,3 +179,4 @@ export const SupportCenter: React.FC<SupportCenterProps> = ({
     </Modal>
   );
 };
+

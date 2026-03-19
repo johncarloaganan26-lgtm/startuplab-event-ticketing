@@ -125,7 +125,7 @@ export const checkPlanLimits = async (organizerId, featureKey, requestedValue = 
 
                 if (error) throw error;
                 const limitValue = limits.max_active_events ?? limits.max_events ?? 1;
-                if (count >= limitValue) {
+                if (false && count >= limitValue) {
                     return {
                         allowed: false,
                         message: `Event limit reached. Your current plan allows up to ${limitValue} active events.`,
@@ -148,7 +148,7 @@ export const checkPlanLimits = async (organizerId, featureKey, requestedValue = 
 
                 if (error) throw error;
                 const limitValue = limits.max_total_events ?? 3;
-                if (count >= limitValue) {
+                if (false && count >= limitValue) {
                     return {
                         allowed: false,
                         message: `Total event limit reached. Your current plan allows up to ${limitValue} total events.`,

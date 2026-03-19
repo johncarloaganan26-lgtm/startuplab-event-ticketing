@@ -211,11 +211,11 @@ export const EventCard: React.FC<EventCardProps> = ({
   const isTrendingLanding = isLanding && listing === 'all';
   return (
     <Card
-      className="group flex flex-col h-full border border-transparent hover:border-[#2E2E2F]/10 rounded-[1.35rem] overflow-hidden bg-[#F2F2F2] transition-all duration-300 cursor-pointer hover:shadow-xl"
+      className="group flex flex-col h-full border border-transparent hover:border-[#2E2E2F]/10 rounded-xl overflow-hidden bg-[#F2F2F2] transition-all duration-300 cursor-pointer hover:shadow-xl"
       onClick={() => navigate(`/events/${event.slug}`)}
     >
-      {/* Image Section - Responsive Height: Mobile 40, SM 48, MD 64 */}
-      <div className="relative h-40 sm:h-48 md:h-64 overflow-hidden">
+      {/* Image Section - Keep phone-like proportions through tablet widths */}
+      <div className="relative h-40 sm:h-48 lg:h-64 overflow-hidden">
         {event.imageUrl ? (
           <img
             src={getImageUrl(event.imageUrl)}
@@ -247,7 +247,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                   <ICONS.Info className="w-4 h-4 text-white" strokeWidth={2.5} />
                   <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white">Promoted</span>
                 </div>
-              <div className="absolute left-0 top-full mt-2 w-56 p-4 bg-[#2E2E2F] text-white text-[10px] font-bold rounded-2xl shadow-2xl opacity-0 translate-y-1 pointer-events-none group-hover/promoted:opacity-100 group-hover/promoted:translate-y-0 transition-all z-50 leading-relaxed ring-1 ring-white/10">
+              <div className="absolute left-0 top-full mt-2 w-56 p-4 bg-[#2E2E2F] text-white text-[10px] font-bold rounded-xl shadow-2xl opacity-0 translate-y-1 pointer-events-none group-hover/promoted:opacity-100 group-hover/promoted:translate-y-0 transition-all z-50 leading-relaxed ring-1 ring-white/10">
                 This event is highlighted by the organizer as a premium featured session on StartupLab.
                 <div className="absolute bottom-full left-4 border-8 border-transparent border-b-[#2E2E2F]"></div>
               </div>
@@ -260,23 +260,25 @@ export const EventCard: React.FC<EventCardProps> = ({
             </div>
           ) : null}
         </div>
-        <div className="absolute top-3 right-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none">
+        <div className="absolute top-3 right-3 flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity pointer-events-none">
           <button
             type="button"
             onClick={handleLike}
-            className={`pointer-events-auto w-9 h-9 rounded-xl border backdrop-blur-sm flex items-center justify-center transition-colors ${liked
+            className={`pointer-events-auto w-10 h-10 sm:w-9 sm:h-9 rounded-xl border backdrop-blur-sm flex items-center justify-center transition-colors active:scale-95 ${liked
               ? 'bg-[#38BDF2] text-white border-[#38BDF2]'
               : 'bg-white/90 text-[#2E2E2F] border-[#2E2E2F]/20 hover:bg-[#38BDF2]/20'
               }`}
             title={organizerRestricted ? 'Switch to Attending to like events' : 'Like event'}
+            aria-label={liked ? 'Unlike event' : 'Like event'}
           >
             <ICONS.Heart className="w-4 h-4" />
           </button>
           <button
             type="button"
             onClick={handleShare}
-            className={`pointer-events-auto w-9 h-9 rounded-xl border bg-white/90 text-[#2E2E2F] border-[#2E2E2F]/20 backdrop-blur-sm flex items-center justify-center ${isTrendingLanding ? 'hover:bg-[#2E2E2F]/10' : 'hover:bg-[#38BDF2]/20'} transition-colors`}
+            className={`pointer-events-auto w-10 h-10 sm:w-9 sm:h-9 rounded-xl border bg-white/90 text-[#2E2E2F] border-[#2E2E2F]/20 backdrop-blur-sm flex items-center justify-center ${isTrendingLanding ? 'hover:bg-[#2E2E2F]/10' : 'hover:bg-[#38BDF2]/20'} transition-colors active:scale-95`}
             title="Share event"
+            aria-label="Share event"
           >
             <ICONS.Download className="w-4 h-4" />
           </button>
@@ -289,7 +291,7 @@ export const EventCard: React.FC<EventCardProps> = ({
         {/* Organizer Profile Summary - Hidden in Trending Landing & All Events page */}
         {isLanding && listing !== 'all' && (
           <div
-            className="flex items-center gap-2 mb-5 p-2 rounded-lg transition-colors hover:bg-black/5"
+            className="flex items-center gap-2 mb-5 p-2 rounded-xl transition-colors hover:bg-black/5"
             onClick={(e) => {
               e.stopPropagation();
               if (organizerId) navigate(`/organizers/${organizerId}`);
@@ -310,7 +312,7 @@ export const EventCard: React.FC<EventCardProps> = ({
           </div>
         )}
 
-        <h4 className="text-[#2E2E2F] text-lg sm:text-xl font-bold tracking-tight leading-tight mb-3 line-clamp-2">
+        <h4 className="text-[#2E2E2F] text-xl sm:text-2xl font-black tracking-tighter leading-tight mb-3 line-clamp-2">
           {event.eventName}
         </h4>
         <div className="flex items-center gap-2 text-[12px] sm:text-[13px] font-semibold text-[#2E2E2F]/70 mb-3">
@@ -342,12 +344,12 @@ export const EventCard: React.FC<EventCardProps> = ({
           {isDone ? (
             <div className="pt-5 flex flex-col items-start">
               <p className="text-[10px] sm:text-[12px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em] mb-1">Status</p>
-              <p className="text-xl sm:text-2xl font-black text-[#2E2E2F]">Event Ended</p>
+              <p className="text-lg sm:text-xl font-bold text-[#2E2E2F]">Event Ended</p>
             </div>
           ) : (
             <div className="pt-5 flex flex-col items-start">
               <p className="text-[10px] sm:text-[12px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em] mb-1">Tickets From</p>
-              <p className="text-xl sm:text-2xl font-black text-[#2E2E2F]">
+              <p className="text-lg sm:text-xl font-bold text-[#2E2E2F]">
                 {minPrice > 0
                   ? `₱${minPrice.toLocaleString()}`
                   : (event.ticketTypes && event.ticketTypes.length > 0) || (minPrice === 0 && event.ticketTypes?.length)
@@ -405,6 +407,26 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
   const [loadingPromoted, setLoadingPromoted] = useState(true);
   const [currentPromotedIndex, setCurrentPromotedIndex] = useState(0);
   const [promotedCarouselInterval, setPromotedCarouselInterval] = useState<NodeJS.Timeout | null>(null);
+
+  const categoriesScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isLanding) return;
+    let animationFrameId: number;
+    const step = () => {
+      if (categoriesScrollRef.current) {
+        const el = categoriesScrollRef.current;
+        if (el.scrollLeft >= (el.scrollWidth - el.clientWidth - 1)) {
+          el.scrollLeft = 0;
+        } else {
+          el.scrollLeft += 0.5;
+        }
+      }
+      animationFrameId = requestAnimationFrame(step);
+    };
+    animationFrameId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isLanding]);
 
   const likedSet = useMemo(() => new Set(likedEventIds), [likedEventIds]);
   const followedSet = useMemo(() => new Set(followedOrganizerIds), [followedOrganizerIds]);
@@ -755,7 +777,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
   );
 
   return (
-    <div className={`max-w-[88rem] mx-auto px-6 sm:px-10 pb-16 ${isLanding ? 'pt-6 sm:pt-12' : 'pt-0'}`}>
+    <div className={`max-w-[88rem] mx-auto px-4 sm:px-10 pb-16 ${isLanding ? 'pt-6 sm:pt-12' : 'pt-0'}`}>
       {isLanding && (
         <>
           {/* Premium Hero Section */}
@@ -768,7 +790,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
                   <span className="opacity-80">New: Advanced QR Ticketing & Analytics Launched!</span>
                 </div>
 
-                <h1 className="text-[2.5rem] sm:text-5xl lg:text-[64px] font-bold text-[#0B1A2E] tracking-tight leading-[1.1] mb-8">
+                <h1 className="text-[2.5rem] sm:text-5xl lg:text-[60px] font-bold text-[#0B1A2E] tracking-tight leading-[1.1] mb-[5px]">
                   Smart Events for<br />
                   Growing Philippine<br />
                   Organizers
@@ -781,7 +803,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
                 <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4">
                   <Button
                     onClick={() => navigate('/signup')}
-                    className="w-full sm:w-auto px-8 bg-[#38BDF2] border-2 border-[#38BDF2] text-white font-bold tracking-wide text-[15px] h-[52px] rounded-[14px] shadow-[0_4px_20px_rgba(56,189,242,0.2)] hover:bg-[#2E2E2F] hover:border-[#2E2E2F] transition-all flex items-center justify-center gap-2 active:scale-95 group"
+                    className="w-full sm:w-auto px-8 bg-[#38BDF2] border-2 border-[#38BDF2] text-white font-bold tracking-wide text-[15px] h-[52px] rounded-xl shadow-[0_4px_20px_rgba(56,189,242,0.2)] hover:bg-[#2E2E2F] hover:border-[#2E2E2F] transition-all flex items-center justify-center gap-2 active:scale-95 group"
                   >
                     Get Started
                     <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -790,7 +812,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
                   </Button>
                   <Button
                     onClick={() => navigate('/pricing')}
-                    className="w-full sm:w-auto px-8 !bg-transparent !border-2 !border-solid !border-[#38BDF2] !text-[#38BDF2] font-bold tracking-wide text-[15px] h-[52px] rounded-[14px] hover:!bg-[#38BDF2] hover:!text-white transition-colors duration-300 flex items-center justify-center gap-2 active:scale-95 group"
+                    className="w-full sm:w-auto px-8 !bg-transparent !border-2 !border-solid !border-[#38BDF2] !text-[#38BDF2] font-bold tracking-wide text-[15px] h-[52px] rounded-xl hover:!bg-[#38BDF2] hover:!text-white transition-colors duration-300 flex items-center justify-center gap-2 active:scale-95 group"
                   >
                     <ICONS.CreditCard className="w-5 h-5 !text-[#38BDF2] group-hover:!text-white transition-colors duration-300" />
                     Pricing
@@ -799,9 +821,9 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
               </div>
 
               {/* Stats Block - Tucked tightly under the buttons */}
-              <div className="mt-10 w-full grid grid-cols-2 sm:grid-cols-3 gap-x-6 sm:gap-x-10 gap-y-8 sm:gap-y-12">
+              <div className="mt-10 sm:mt-12 w-full grid grid-cols-2 sm:grid-cols-3 gap-x-6 sm:gap-x-10 gap-y-8 sm:gap-y-12">
                 <div className="flex flex-col items-start w-full">
-                  <h4 className="text-lg sm:text-2xl md:text-[32px] lg:text-[42px] leading-[1.05] font-semibold text-[#0B1A2E] tracking-tighter text-left mb-2 sm:mb-3">
+                  <h4 className="text-lg sm:text-2xl md:text-[32px] lg:text-[42px] leading-[1.3] font-semibold text-[#0B1A2E] tracking-tighter text-left mb-2 sm:mb-3">
                     6+ Core<br />Event<br />Modules
                   </h4>
                   <p className="text-[11px] sm:text-[14px] text-[#0B1A2E]/80 font-normal text-left leading-relaxed">
@@ -810,7 +832,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
                 </div>
 
                 <div className="flex flex-col items-start w-full">
-                  <h4 className="text-lg sm:text-2xl md:text-[32px] lg:text-[42px] leading-[1.05] font-semibold text-[#0B1A2E] tracking-tighter text-left mb-2 sm:mb-3">
+                  <h4 className="text-lg sm:text-2xl md:text-[32px] lg:text-[42px] leading-[1.3] font-semibold text-[#0B1A2E] tracking-tighter text-left mb-2 sm:mb-3">
                     {organizerCount > 3 ? organizerCount : '3'}+ Active<br />Event<br />Organizers
                   </h4>
                   <p className="text-[11px] sm:text-[14px] text-[#0B1A2E]/80 font-normal text-left leading-relaxed">
@@ -819,7 +841,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
                 </div>
 
                 <div className="flex flex-col items-start w-full col-span-2 sm:col-span-1">
-                  <h4 className="text-lg sm:text-2xl md:text-[32px] lg:text-[42px] leading-[1.05] font-semibold text-[#0B1A2E] tracking-tighter text-left mb-2 sm:mb-3">
+                  <h4 className="text-lg sm:text-2xl md:text-[32px] lg:text-[42px] leading-[1.3] font-semibold text-[#0B1A2E] tracking-tighter text-left mb-2 sm:mb-3">
                     {(pagination?.total || 0) > 8 ? pagination.total : '8'}+ Hosted<br />Event<br />Workflows
                   </h4>
                   <p className="text-[11px] sm:text-[14px] text-[#0B1A2E]/80 font-normal text-left leading-relaxed">
@@ -832,17 +854,17 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
             {/* Right Column: Visual */}
             <div className="flex-1 relative w-full mt-10 lg:mt-0">
               <div className="absolute -inset-8 bg-gradient-to-tr from-[#38BDF2]/10 to-transparent blur-3xl opacity-50"></div>
-              <div className="relative bg-[#F2F2F2] p-1.5 rounded-[2.2rem] shadow-[0_28px_56px_-16px_rgba(46,46,47,0.15)] overflow-hidden transform lg:rotate-2 hover:rotate-0 transition-transform duration-700">
+              <div className="relative bg-[#F2F2F2] p-1.5 rounded-xl shadow-[0_28px_56px_-16px_rgba(46,46,47,0.15)] overflow-hidden transform lg:rotate-2 hover:rotate-0 transition-transform duration-700">
                 <img
                   src="/hero-analytics.png"
                   alt="Event Management Dashboard"
-                  className="w-full h-auto rounded-[1.8rem]"
+                  className="w-full h-auto rounded-xl"
                 />
               </div>
               {/* Floating badge */}
               {/* Floating badge: Organizer Tally */}
               <div
-                className="absolute -bottom-6 sm:-bottom-8 -left-4 sm:-left-8 bg-[#F2F2F2] p-3 sm:p-4 rounded-[1.8rem] border border-[#2E2E2F]/10 shadow-[0_20px_40px_-15px_rgba(46,46,47,0.15)] flex flex-col items-start gap-3 animate-float group/badge cursor-pointer z-40"
+                className="absolute -bottom-6 sm:-bottom-8 -left-4 sm:-left-8 bg-[#F2F2F2] p-3 sm:p-4 rounded-xl border border-[#2E2E2F]/10 shadow-[0_20px_40px_-15px_rgba(46,46,47,0.15)] flex flex-col items-start gap-3 animate-float group/badge cursor-pointer z-40"
                 onMouseEnter={() => setShowOrgDropdown(true)}
                 onMouseLeave={() => setShowOrgDropdown(false)}
               >
@@ -864,7 +886,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
                 </div>
 
                 {/* Dropdown list of organizers */}
-                <div className={`absolute bottom-[calc(100%-10px)] left-0 w-64 bg-[#F2F2F2] border border-[#2E2E2F]/10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] rounded-[2.5rem] overflow-hidden transition-all duration-300 origin-bottom-left pb-3 ${showOrgDropdown ? 'opacity-100 scale-100 translate-y-[-10px]' : 'opacity-0 scale-95 pointer-events-none translate-y-0'}`}>
+                <div className={`absolute bottom-[calc(100%-10px)] left-0 w-64 bg-[#F2F2F2] border border-[#2E2E2F]/10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] rounded-xl overflow-hidden transition-all duration-300 origin-bottom-left pb-3 ${showOrgDropdown ? 'opacity-100 scale-100 translate-y-[-10px]' : 'opacity-0 scale-95 pointer-events-none translate-y-0'}`}>
                   <div className="p-5 border-b border-[#2E2E2F]/5 bg-[#2E2E2F]/[0.02]">
                     <h5 className="text-[10px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.25em]">Our Partners</h5>
                   </div>
@@ -876,7 +898,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
                           e.stopPropagation();
                           navigate(`/organizer/${org.organizerId}`);
                         }}
-                        className="w-full flex items-center gap-3.5 p-2.5 rounded-[1.2rem] hover:bg-white hover:shadow-sm transition-all duration-300 text-left group/item border border-transparent hover:border-[#2E2E2F]/5"
+                        className="w-full flex items-center gap-3.5 p-2.5 rounded-xl hover:bg-white hover:shadow-sm transition-all duration-300 text-left group/item border border-transparent hover:border-[#2E2E2F]/5"
                       >
                         <div className="w-9 h-9 rounded-xl overflow-hidden border-2 border-white shadow-sm bg-gradient-to-br from-[#38BDF2] to-[#A5E1FF] flex items-center justify-center shrink-0">
                           {org.profileImageUrl ? (
@@ -899,7 +921,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
                       </button>
                     ))}
                     {organizers.length === 0 && (
-                      <div className="p-8 text-center bg-[#2E2E2F]/[0.02] rounded-2xl mx-1">
+                      <div className="p-8 text-center bg-[#2E2E2F]/[0.02] rounded-xl mx-1">
                         <p className="text-[10px] font-black text-[#2E2E2F]/20 uppercase tracking-[0.1em]">No verified partners yet.</p>
                       </div>
                     )}
@@ -917,12 +939,15 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
 
           {/* Category Rail (Top of Available Events) */}
           <div className="mt-28 mb-20 overflow-visible relative z-10">
-            <div className="rounded-[1.8rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] px-4 py-6 md:px-7">
+            <div className="rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] px-4 py-6 md:px-7">
               <div className="flex items-center gap-4 mb-6">
                 <p className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/60">Event Smart Categories.</p>
               </div>
-              <div className="category-marquee py-2">
-                <div className="category-marquee__track flex items-center">
+              <div className="py-2">
+                <div 
+                  ref={categoriesScrollRef}
+                  className="flex items-center gap-6 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                >
                   {marqueeCategories.map((category, index) => (
                     <button
                       key={`${category.key}-${index}`}
@@ -950,7 +975,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
                   <h2 className="text-2xl font-extrabold text-[#2E2E2F] tracking-tighter uppercase leading-none">Promoted Events</h2>
                   <div className="group/info relative">
                     <ICONS.Info className="w-5 h-5 text-black cursor-help" strokeWidth={1.5} />
-                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-64 p-4 bg-[#2E2E2F] text-white text-[11px] font-bold rounded-2xl shadow-2xl opacity-0 translate-y-2 pointer-events-none group-hover/info:opacity-100 group-hover/info:translate-y-0 transition-all z-50 leading-relaxed text-center">
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-64 p-4 bg-[#2E2E2F] text-white text-[11px] font-bold rounded-xl shadow-2xl opacity-0 translate-y-2 pointer-events-none group-hover/info:opacity-100 group-hover/info:translate-y-0 transition-all z-50 leading-relaxed text-center">
                       These events are highlighted because the organizer has subscribed to a premium plan with promotion features.
                       <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#2E2E2F]"></div>
                     </div>
@@ -964,7 +989,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
               {!loadingPromoted && promotedEvents.length > 0 ? (
                 <div className="relative">
                   {/* Carousel Container - More subtle, "out" of the heavy card style */}
-                  <div className="rounded-3xl overflow-hidden border border-[#2E2E2F]/5 bg-white shadow-sm group">
+                  <div className="rounded-xl overflow-hidden border border-[#2E2E2F]/5 bg-white shadow-sm group">
                       <div className="relative h-[280px] sm:h-[400px] lg:h-[500px] overflow-hidden bg-white">
                         {/* Carousel Images */}
                         {promotedEvents.map((event, idx) => {
@@ -1146,14 +1171,14 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
             {/* Hide Sidebar Toggle */}
             <button
               onClick={() => setIsSidebarVisible(!isSidebarVisible)}
-              className="flex items-center gap-2 bg-[#F2F2F2] px-4 py-2.5 rounded-2xl border border-[#2E2E2F]/10 shadow-sm text-[10px] font-black uppercase tracking-widest text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/30 transition-all"
+              className="flex items-center gap-2 bg-[#F2F2F2] px-4 py-2.5 rounded-xl border border-[#2E2E2F]/10 shadow-sm text-[10px] font-black uppercase tracking-widest text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/30 transition-all"
             >
               <ICONS.Filter className="w-4 h-4" />
               {isSidebarVisible ? 'Hide Sidebar' : 'Show Sidebar'}
             </button>
 
             {/* Sort By Dropdown */}
-            <div className="flex items-center gap-3 bg-[#F2F2F2] px-5 py-2.5 rounded-2xl border border-[#2E2E2F]/10 shadow-sm justify-between sm:justify-start">
+            <div className="flex items-center gap-3 bg-[#F2F2F2] px-5 py-2.5 rounded-xl border border-[#2E2E2F]/10 shadow-sm justify-between sm:justify-start">
               <span className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/40">Sort By</span>
               <select
                 value={sortBy}
@@ -1168,7 +1193,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
           </div>
         )}
 
-        <div className="w-full sm:w-[320px]">
+        <div className="w-full sm:w-[280px] md:w-[320px]">
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#2E2E2F]/30 group-focus-within:text-[#38BDF2] transition-colors">
               <ICONS.Search className="h-4 w-4" strokeWidth={3} />
@@ -1178,14 +1203,14 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
               placeholder="Search sessions..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-9 py-3 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-2xl text-[12px] font-bold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#38BDF2]/20 focus:border-[#38BDF2] placeholder:text-[#2E2E2F]/30"
+              className="block w-full pl-10 pr-9 py-3 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl text-[12px] font-bold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#38BDF2]/20 focus:border-[#38BDF2] placeholder:text-[#2E2E2F]/30"
             />
           </div>
         </div>
       </div>
 
       {interactionNotice && (
-        <div className="mb-6 rounded-2xl border border-[#38BDF2]/30 bg-[#38BDF2]/10 px-4 py-3 text-sm font-semibold text-[#2E2E2F]">
+        <div className="mb-6 rounded-xl border border-[#38BDF2]/30 bg-[#38BDF2]/10 px-4 py-3 text-sm font-semibold text-[#2E2E2F]">
           {interactionNotice}
         </div>
       )}
@@ -1313,7 +1338,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
 
         <div className="flex-1 min-w-0 space-y-10">
           {/* Grid Display */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7 lg:gap-8 min-h-[400px]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-7 lg:gap-8 min-h-[400px]">
             {displayEvents.map((event) => (
               <div key={event.eventId} className="animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <EventCard
@@ -1330,8 +1355,8 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
 
           {/* Empty State */}
           {displayEvents.length === 0 && (
-            <div className="py-24 px-6 text-center bg-[#F2F2F2] rounded-[2.5rem] border border-[#2E2E2F]/10 animate-in zoom-in-95 duration-500">
-              <div className="w-16 h-16 bg-[#F2F2F2] border border-[#2E2E2F]/5 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+            <div className="py-24 px-6 text-center bg-[#F2F2F2] rounded-xl border border-[#2E2E2F]/10 animate-in zoom-in-95 duration-500">
+              <div className="w-16 h-16 bg-[#F2F2F2] border border-[#2E2E2F]/5 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-sm">
                 <ICONS.Search className="w-8 h-8 text-[#2E2E2F]/20" />
               </div>
               <h3 className="text-2xl font-black text-[#2E2E2F] tracking-tighter mb-4 uppercase">
@@ -1354,7 +1379,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
               </p>
               {isLandingAllListing ? (
                 <Button
-                  className="px-8 py-3.5 rounded-2xl bg-[#2E2E2F] text-white font-black uppercase tracking-widest text-[10px] hover:bg-[#38BDF2] transition-colors"
+                  className="px-8 py-3.5 rounded-xl bg-[#2E2E2F] text-white font-black uppercase tracking-widest text-[10px] hover:bg-[#38BDF2] transition-colors"
                   onClick={() => navigate('/browse-events')}
                 >
                   Discover All Sessions
@@ -1362,7 +1387,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
               ) : (
                 <Button
                   variant="outline"
-                  className="px-8 py-3.5 rounded-2xl border-2 border-[#2E2E2F]/10 text-[#2E2E2F] font-black uppercase tracking-widest text-[10px]"
+                  className="px-8 py-3.5 rounded-xl border-2 border-[#2E2E2F]/10 text-[#2E2E2F] font-black uppercase tracking-widest text-[10px]"
                   onClick={() => {
                     setSearchTerm('');
                     setSelectedLocation(DEFAULT_LOCATION);
@@ -1379,19 +1404,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
             </div>
           )}
 
-          {/* View All Button for Landing Page */}
-          {isLandingAllListing && displayEvents.length > 0 && (
-            <div className="pt-4 flex justify-center">
-              <Button
-                variant="outline"
-                className="px-10 py-4 rounded-2xl border-2 border-[#2E2E2F]/5 text-[#2E2E2F] font-black tracking-wide text-[11px] hover:bg-[#2E2E2F] hover:text-white transition-all group"
-                onClick={() => navigate('/browse-events')}
-              >
-                <span>Explore Full Catalog</span>
-                <ICONS.ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
-          )}
+
         </div>
       </div>
 
@@ -1408,28 +1421,20 @@ const FAQSection: React.FC = () => {
 
   const faqs = [
     {
-      question: "What is StartupLab Event SaaS?",
-      answer: "StartupLab is a comprehensive event management platform designed for organizers to create, promote, and manage both on-site and digital events with professional tools like QR ticketing, HitPay payments, and real-time analytics."
+      question: "Event Setup",
+      answer: "Setting up an event is simple. Navigate to your Organizer Portal, click 'Create Event', and follow the guided steps to add details, images, and ticket types. You can save your progress as a draft or publish immediately to the marketplace."
     },
     {
-      question: "How do I get started as an organizer?",
-      answer: "Simply sign up and complete our mandatory organizer onboarding flow. We ensure every organization is properly set up with a profile and contact details before they can start publishing events to our marketplace."
+      question: "Checkout",
+      answer: "Our checkout process is optimized for speed and security. Attendees can purchase tickets using HitPay with local payment options like GCash, Maya, and GrabPay. Once payment is confirmed, e-tickets are instantly generated and emailed."
     },
     {
-      question: "Can I host Live Streams and Archives?",
-      answer: "Absolutely! Our integrated 'Broadcasts' system allows you to host live sessions and automatically archive them as replays. Attendees can watch your live streams directly on the platform or through your linked external providers."
+      question: "Check-In",
+      answer: "Manage entry seamlessly with our mobile-ready check-in system. Each ticket includes a unique QR code that organizers can scan using our built-in scanner in the Staff portal, ensuring real-time attendance tracking and preventing duplicate entries."
     },
     {
-      question: "What payment methods do you support?",
-      answer: "We integrate directly with HitPay, allowing organizers to accept various local payment methods securely in the Philippines. You can configure your own gateway settings directly within your organizer dashboard."
-    },
-    {
-      question: "What are the benefits of a Pro subscription?",
-      answer: "Upgrading to a Pro plan unlocks premium features such as Custom Branding (using your own logos), Live Stream Priority, and Advanced Analytics Reports to track your audience engagement."
-    },
-    {
-      question: "Is there a Priority Support system?",
-      answer: "Yes, organizations on premium plans get exclusive access to our Priority Support center. Tickets from Pro users are automatically moved to the top of our queue for lightning-fast resolutions."
+      question: "Refunds",
+      answer: "Refund policies are determined by each organizer individually. If you require a refund, please contact the event organizer directly through their profile page. Refunds are processed according to the specific terms set for the event."
     }
   ];
 
@@ -1448,7 +1453,7 @@ const FAQSection: React.FC = () => {
         {faqs.map((faq, index) => (
           <div
             key={index}
-            className={`group rounded-[2rem] overflow-hidden transition-all duration-300 border-2 ${openIndex === index
+            className={`group rounded-xl overflow-hidden transition-all duration-300 border-2 ${openIndex === index
               ? 'bg-[#F2F2F2] border-[#38BDF2] shadow-[0_10px_30px_-10px_rgba(56,189,242,0.1)]'
               : 'bg-[#F2F2F2] border-[#2E2E2F]/10 shadow-none'
               }`}
@@ -1490,12 +1495,14 @@ const FeaturedOrganizers: React.FC = () => {
   const { followedOrganizerIds, toggleFollowing, canLikeFollow } = useEngagement();
   const { isAuthenticated } = useUser();
   const navigate = useNavigate();
+  const carouselRef = React.useRef<HTMLDivElement>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const fetchOrgs = async () => {
       try {
         const data = await apiService.getOrganizers();
-        setOrganizers(data);
+        setOrganizers(data || []);
       } catch (error) {
         console.error('Failed to fetch organizers:', error);
       } finally {
@@ -1505,49 +1512,74 @@ const FeaturedOrganizers: React.FC = () => {
     fetchOrgs();
   }, []);
 
-  if (loading || organizers.length === 0) return null;
+
+
+  const handleScroll = () => {
+    if (carouselRef.current) {
+      const scrollLeft = carouselRef.current.scrollLeft;
+      const cardWidth = 284; // 260 width + 24 gap approx
+      const newIndex = Math.round(scrollLeft / cardWidth);
+      if (newIndex !== currentIndex) setCurrentIndex(newIndex);
+    }
+  };
+
+  if (loading || !organizers || organizers.length === 0) return null;
+  const dotsCount = Math.min(5, organizers.length);
+  const activeDot = Math.min(currentIndex, 4);
 
   return (
-    <section className="mt-32 mb-32 rounded-[1.8rem] bg-[#F2F2F2] px-4 sm:px-6 lg:px-10 py-12 border border-[#2E2E2F]/5">
-      <div className="flex flex-col mb-10">
+    <section className="mt-20 mb-32 px-4 sm:px-6 lg:px-10 py-12 bg-transparent">
+      <div className="flex flex-col mb-10 text-center items-center justify-center">
         <h2 className="text-2xl font-black text-[#2E2E2F] tracking-tighter uppercase leading-none mb-2">Featured Organisers</h2>
         <p className="text-[#2E2E2F]/40 text-[11px] font-black uppercase tracking-[0.2em]">Follow the organisers from these events and get notified when they create new ones.</p>
       </div>
 
-      <div className={organizers.length > 5 ? "overflow-x-auto pb-10 custom-scrollbar -mx-2 px-2 scroll-smooth" : ""}>
-        <div className={organizers.length > 5 ? "flex gap-4 sm:gap-6 flex-nowrap" : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6"}>
-          {organizers.map((org) => {
-            const isFollowing = (followedOrganizerIds || []).includes(org.organizerId);
-            return (
-              <div
-                key={org.organizerId}
-                className={`bg-[#F2F2F2] rounded-[3rem] p-5 sm:p-8 border border-[#2E2E2F]/5 shadow-sm hover:shadow-2xl hover:shadow-[#38BDF2]/10 transition-all duration-500 group flex flex-col items-center text-center cursor-pointer ${organizers.length > 5 ? 'w-[250px] sm:w-[280px] shrink-0' : 'w-full'}`}
-                onClick={() => navigate(`/organizer/${org.organizerId}`)}
-              >
-                <div className="relative mb-5 sm:mb-8">
-                  <div className="w-20 sm:w-28 h-20 sm:h-28 rounded-full overflow-hidden border-[4px] sm:border-[6px] border-white shadow-xl group-hover:border-[#38BDF2]/40 transition-all duration-500 bg-gradient-to-br from-[#38BDF2] to-[#A5E1FF]">
-                    {org.profileImageUrl ? (
-                      <img
-                        src={getImageUrl(org.profileImageUrl)}
-                        alt={org.organizerName}
-                        className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
-                      />
-                    ) : (
-                      <span className="flex h-full w-full items-center justify-center text-2xl sm:text-4xl font-black text-white drop-shadow-lg">
-                        {(org.organizerName || 'O').charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
+      <div 
+        ref={carouselRef}
+        onScroll={handleScroll}
+        className="flex gap-6 overflow-x-auto pb-8 pt-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth snap-x snap-mandatory flex-nowrap"
+      >
+        {organizers.map((org, index) => {
+          const isFollowing = (followedOrganizerIds || []).includes(org.organizerId);
+
+          return (
+            <div
+              key={org.organizerId}
+              className="bg-[#F2F2F2] rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-[#DEE2E6]/60 hover:ring-[#DEE2E6] transition-all duration-300 flex flex-col items-center w-[260px] shrink-0 p-6 pt-8 snap-center cursor-pointer group"
+              onClick={() => navigate(`/organizer/${org.organizerId}`)}
+            >
+              <div className="w-[84px] h-[84px] rounded-full shadow-sm mb-4 border border-gray-100/50 bg-white flex items-center justify-center text-white text-[32px] font-black shrink-0 relative overflow-hidden">
+                <img
+                  src={org.profileImageUrl ? getImageUrl(org.profileImageUrl) : generateDefaultAvatarDataUri((org.organizerName || 'O').split(' ').filter(Boolean).map(p => p[0]).join('').substring(0, 2).toUpperCase() || 'O')}
+                  alt={org.organizerName}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              <div className="flex items-center gap-1.5 mb-1 text-center justify-center">
+                <h3 className="text-[17px] font-bold text-gray-900 tracking-tight line-clamp-1">{org.organizerName}</h3>
+              </div>
+
+              <p className="text-[13px] text-gray-500 mb-5 font-medium line-clamp-1">{org.bio || 'Event Organizer'}</p>
+
+              <div className="flex items-center justify-center gap-4 text-[12px] font-semibold text-gray-500 mb-6 w-full mt-1">
+                <div className="flex items-center gap-1.5">
+                  <ICONS.Users className="w-[14px] h-[14px] text-gray-400" />
+                  <span className="text-gray-900 font-bold">{org.followersCount || 0}</span> followers
                 </div>
+                <div className="w-[1px] h-3 bg-gray-200"></div>
+                <div className="flex items-center gap-1.5">
+                  <ICONS.Calendar className="w-[14px] h-[14px] text-gray-400" />
+                  <span className="text-gray-900 font-bold">{org.eventsHostedCount || 0}</span> Events
+                </div>
+              </div>
 
-                <h3 className="text-sm sm:text-lg font-black text-[#2E2E2F] mb-1 line-clamp-1 group-hover:text-[#38BDF2] transition-colors">{org.organizerName}</h3>
-                <p className="text-[#2E2E2F]/50 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-5 sm:mb-8">{org.followersCount || 0} followers</p>
-
+              <div className="w-full mt-auto">
                 <Button
                   variant={isFollowing ? 'outline' : 'primary'}
-                  className={`w-full rounded-2xl py-2.5 sm:py-3.5 font-black text-[9px] sm:text-[11px] uppercase tracking-[0.2em] transition-all duration-300 ${isFollowing
-                    ? 'bg-[#38BDF2] border-2 border-[#38BDF2] text-white hover:bg-[#2E2E2F] hover:border-[#2E2E2F]'
-                    : 'bg-[#38BDF2] border-2 border-[#38BDF2] text-white hover:bg-[#2E2E2F] hover:border-[#2E2E2F] shadow-lg shadow-[#38BDF2]/10 hover:shadow-xl active:scale-95'
+                  className={`w-full rounded-[10px] py-[10px] text-[13px] tracking-wide transition-all duration-300 !h-auto ${isFollowing
+                    ? 'bg-transparent border-2 border-[#2E2E2F]/10 text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/30 hover:text-[#38BDF2] font-bold'
+                    : 'bg-[#38BDF2] font-bold border-none text-white hover:bg-[#32a8db] hover:shadow-lg shadow-md shadow-[#38BDF2]/30 active:scale-95'
                     }`}
                   onClick={async (e) => {
                     e.stopPropagation();
@@ -1559,15 +1591,32 @@ const FeaturedOrganizers: React.FC = () => {
                     await toggleFollowing(org.organizerId);
                   }}
                 >
-                  {isFollowing ? 'Following' : 'Follow'}
+                  {isFollowing ? 'Following' : '+ Follow'}
                 </Button>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center justify-center gap-2 mt-2">
+        {Array.from({ length: dotsCount }).map((_, i) => (
+          <div key={i} className={`w-[7px] h-[7px] rounded-full transition-all duration-300 ${i === activeDot ? 'bg-[#38BDF2] scale-110' : 'bg-[#2E2E2F]/15'}`} />
+        ))}
+      </div>
+
+      <div className="flex justify-center mt-10">
+        <button 
+          onClick={() => navigate('/browse-events')}
+          className="flex items-center gap-3 px-8 py-3 bg-[#38BDF2] border border-[#38BDF2] rounded-xl text-[13px] font-black uppercase tracking-widest text-[#F2F2F2] hover:bg-black hover:border-black transition-all hover:shadow-xl hover:shadow-[#38BDF2]/20 active:scale-95"
+        >
+          View All Organizers 
+          <ICONS.ChevronRight className="w-4 h-4 text-white" />
+        </button>
       </div>
     </section>
   );
 };
+
 
 

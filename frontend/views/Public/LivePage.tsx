@@ -137,7 +137,7 @@ export const LivePage: React.FC = () => {
                     <div className="lg:col-span-8 space-y-8">
                         {currentEvent ? (
                             <div className="space-y-8">
-                                <div className="overflow-hidden rounded-[3rem] border border-[#2E2E2F]/10 shadow-2xl bg-[#F2F2F2]">
+                                <div className="overflow-hidden rounded-xl border border-[#2E2E2F]/10 shadow-2xl bg-[#F2F2F2]">
                                     {/* Integrated Header */}
                                     <div className={`${status === 'LIVE' ? 'bg-[#00AEEF]' : 'bg-[#2E2E2F]'} p-8 text-white text-left flex justify-between items-center border-b border-white/10 shadow-xl`}>
                                         <div>
@@ -156,7 +156,7 @@ export const LivePage: React.FC = () => {
 
                                     {/* Body / Player */}
                                     <div className="p-4 bg-[#F2F2F2]">
-                                        <div className="overflow-hidden rounded-[2.5rem] border border-[#2E2E2F]/10 shadow-inner bg-black relative aspect-video group">
+                                        <div className="overflow-hidden rounded-xl border border-[#2E2E2F]/10 shadow-inner bg-black relative aspect-video group">
                                             {/* Watermark */}
                                             <div className="absolute top-6 left-8 flex items-center gap-2.5 z-10 bg-black/20 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-white/10 group-hover:bg-black/40 transition-all">
                                                 <ICONS.Monitor className="w-3.5 h-3.5 text-white/60" />
@@ -185,7 +185,7 @@ export const LivePage: React.FC = () => {
                                                         href={currentEvent.streaming_url || ''}
                                                         target="_blank"
                                                         rel="noreferrer"
-                                                        className="bg-[#00AEEF] text-white px-10 py-5 rounded-2xl font-black text-[12px] uppercase tracking-[0.2em] flex items-center gap-3 transition-all hover:scale-105 hover:bg-[#0098D6] active:scale-95 shadow-2xl"
+                                                        className="bg-[#00AEEF] text-white px-10 py-5 rounded-xl font-black text-[12px] uppercase tracking-[0.2em] flex items-center gap-3 transition-all hover:scale-105 hover:bg-[#0098D6] active:scale-95 shadow-2xl"
                                                     >
                                                         <ICONS.Globe className="w-5 h-5" />
                                                         Watch on {currentEvent.streamingPlatform || 'Platform'}
@@ -196,7 +196,7 @@ export const LivePage: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="p-10 rounded-[2.5rem] bg-[#F2F2F2] border border-[#2E2E2F]/10 shadow-xl">
+                                <div className="p-10 rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/10 shadow-xl">
                                     <div className="flex items-center justify-between mb-6">
                                         <h2 className="text-3xl font-black text-[#2E2E2F] tracking-tighter">
                                             {currentEvent.eventName}
@@ -215,10 +215,10 @@ export const LivePage: React.FC = () => {
                                                 <img
                                                     src={currentEvent.organizer.profileImageUrl}
                                                     alt={currentEvent.organizer?.organizerName}
-                                                    className="w-14 h-14 rounded-2xl object-cover border border-[#2E2E2F]/10 shadow-sm"
+                                                    className="w-14 h-14 rounded-xl object-cover border border-[#2E2E2F]/10 shadow-sm"
                                                 />
                                             ) : (
-                                                <div className="w-14 h-14 rounded-2xl bg-[#2E2E2F] flex items-center justify-center text-white text-lg font-bold shadow-lg">
+                                                <div className="w-14 h-14 rounded-xl bg-[#2E2E2F] flex items-center justify-center text-white text-lg font-bold shadow-lg">
                                                     {currentEvent.organizer?.organizerName?.[0] || 'O'}
                                                 </div>
                                             )}
@@ -259,7 +259,7 @@ export const LivePage: React.FC = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-32 text-center bg-[#F2F2F2] border border-[#2E2E2F]/5 rounded-[4rem] shadow-sm">
+                            <div className="flex flex-col items-center justify-center py-32 text-center bg-[#F2F2F2] border border-[#2E2E2F]/5 rounded-xl shadow-sm">
                                 <div className="w-32 h-32 rounded-full bg-[#F2F2F2] flex items-center justify-center mb-10">
                                     {events.length > 0 ? (
                                         <ICONS.Monitor className="w-12 h-12 text-[#2E2E2F]/20" />
@@ -276,7 +276,7 @@ export const LivePage: React.FC = () => {
                                         : 'There are no events streaming right now. Check back later or browse upcoming sessions in our discovery feed.'
                                     }
                                 </p>
-                                <Link to="/browse-events" className="bg-[#00AEEF] text-white px-10 py-5 rounded-2xl font-black text-[12px] uppercase tracking-[0.2em] transition-all hover:bg-[#0098D6] hover:scale-105 shadow-xl shadow-[#00AEEF]/20">
+                                <Link to="/browse-events" className="bg-[#00AEEF] text-white px-10 py-5 rounded-xl font-black text-[12px] uppercase tracking-[0.2em] transition-all hover:bg-[#0098D6] hover:scale-105 shadow-xl shadow-[#00AEEF]/20">
                                     Browse Events
                                 </Link>
                             </div>
@@ -299,7 +299,7 @@ export const LivePage: React.FC = () => {
                                                 setCurrentEvent(event);
                                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                                             }}
-                                            className={`w-full text-left p-6 rounded-[2rem] transition-all duration-300 border ${currentEvent?.eventId === event.eventId
+                                            className={`w-full text-left p-6 rounded-xl transition-all duration-300 border ${currentEvent?.eventId === event.eventId
                                                 ? 'bg-[#F2F2F2] border-[#00AEEF] shadow-xl shadow-[#00AEEF]/10 scale-[1.02] ring-1 ring-[#00AEEF]/30'
                                                 : 'bg-[#F2F2F2] border-[#2E2E2F]/5 hover:border-[#00AEEF]/40 hover:scale-[1.01]'
                                                 }`}
@@ -334,7 +334,7 @@ export const LivePage: React.FC = () => {
                             <>
                                 <div className="flex items-center justify-between mb-4 pt-4 border-t border-[#2E2E2F]/5">
                                     <h3 className="text-[10px] font-black text-[#2E2E2F]/50 uppercase tracking-[0.3em]">Archive / Replays</h3>
-                                    <span className="text-[10px] font-black text-[#2E2E2F]/40 bg-[#2E2E2F]/10 px-2 py-0.5 rounded-md">{archiveItems.length}</span>
+                                    <span className="text-[10px] font-black text-[#2E2E2F]/40 bg-[#2E2E2F]/10 px-2 py-0.5 rounded-xl">{archiveItems.length}</span>
                                 </div>
                                 <div className="space-y-4">
                                     {archiveItems.map((event) => (
@@ -344,7 +344,7 @@ export const LivePage: React.FC = () => {
                                                 setCurrentEvent(event);
                                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                                             }}
-                                            className={`w-full text-left p-6 rounded-[2rem] transition-all duration-300 border ${currentEvent?.eventId === event.eventId
+                                            className={`w-full text-left p-6 rounded-xl transition-all duration-300 border ${currentEvent?.eventId === event.eventId
                                                 ? 'bg-[#F2F2F2] border-[#2E2E2F] shadow-xl shadow-black/5 scale-[1.02]'
                                                 : 'bg-[#F2F2F2] border-[#2E2E2F]/5 hover:border-[#2E2E2F]/20 hover:scale-[1.01]'
                                                 }`}
@@ -384,3 +384,4 @@ export const LivePage: React.FC = () => {
         </div>
     );
 };
+

@@ -135,11 +135,11 @@ export const SupportTickets: React.FC = () => {
       </div>
 
       {error ? (
-        <Card className="p-6 bg-red-50 text-red-700 border-red-200 font-bold border rounded-2xl">
+        <Card className="p-6 bg-red-50 text-red-700 border-red-200 font-bold border rounded-xl">
           {error}
         </Card>
       ) : tickets.length === 0 ? (
-        <Card className="p-16 text-center border-2 border-dashed border-[#2E2E2F]/10 rounded-3xl bg-transparent">
+        <Card className="p-16 text-center border-2 border-dashed border-[#2E2E2F]/10 rounded-xl bg-transparent">
           <div className="w-20 h-20 mx-auto bg-[#F2F2F2] text-[#2E2E2F]/20 rounded-full flex items-center justify-center mb-6">
             <ICONS.MessageSquare className="w-10 h-10" />
           </div>
@@ -147,7 +147,7 @@ export const SupportTickets: React.FC = () => {
           <p className="text-[#2E2E2F]/60 text-base font-medium">You are all caught up! No active messages from organizers.</p>
         </Card>
       ) : (
-        <div className="border-2 border-[#2E2E2F]/5 rounded-3xl overflow-hidden bg-transparent shadow-sm">
+        <div className="border-2 border-[#2E2E2F]/5 rounded-xl overflow-hidden bg-transparent shadow-sm">
           <table className="w-full text-left border-collapse">
             <thead className="bg-[#F2F2F2]/50 border-b-2 border-[#2E2E2F]/5">
               <tr>
@@ -195,14 +195,14 @@ export const SupportTickets: React.FC = () => {
                     <div className="flex justify-end gap-2">
                       <button 
                         onClick={() => openThread(t)}
-                        className="p-2 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-lg text-[#2E2E2F] hover:bg-[#38BDF2] hover:text-white transition-all shadow-sm"
+                        className="p-2 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl text-[#2E2E2F] hover:bg-[#38BDF2] hover:text-white transition-all shadow-sm"
                       >
                         <ICONS.MessageSquare className="w-4 h-4" />
                       </button>
                       <a 
                         href={`mailto:${t.actor?.email}?subject=Re: ${t.title}${adminSmtp?.fromAddress ? `&bcc=${adminSmtp.fromAddress}` : ''}`}
                         title="Reply via Email"
-                        className="p-2 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-lg text-[#2E2E2F] hover:bg-[#38BDF2] hover:text-white transition-all shadow-sm"
+                        className="p-2 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl text-[#2E2E2F] hover:bg-[#38BDF2] hover:text-white transition-all shadow-sm"
                       >
                         <ICONS.Mail className="w-4 h-4" />
                       </a>
@@ -210,7 +210,7 @@ export const SupportTickets: React.FC = () => {
                         <button 
                           onClick={() => handleResolve(t.notification_id)}
                           title="Mark as Resolved"
-                          className="p-2 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-lg text-[#2E2E2F] hover:bg-[#2E2E2F] hover:text-white transition-all shadow-sm"
+                          className="p-2 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl text-[#2E2E2F] hover:bg-[#2E2E2F] hover:text-white transition-all shadow-sm"
                         >
                           <ICONS.CheckCircle className="w-4 h-4" />
                         </button>
@@ -228,7 +228,7 @@ export const SupportTickets: React.FC = () => {
         <>
           <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-[100] transition-opacity animate-in fade-in duration-300" onClick={() => setSelectedTicket(null)} />
           
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-[#F2F2F2]/95 backdrop-blur-xl shadow-[0_32px_128px_-16px_rgba(0,0,0,0.3)] z-[101] rounded-[32px] border border-[#2E2E2F]/5 overflow-hidden flex flex-col animate-in zoom-in-95 duration-400 ease-out h-[90vh]">
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-[#F2F2F2]/95 backdrop-blur-xl shadow-[0_32px_128px_-16px_rgba(0,0,0,0.3)] z-[101] rounded-xl border border-[#2E2E2F]/5 overflow-hidden flex flex-col animate-in zoom-in-95 duration-400 ease-out h-[90vh]">
              {/* RiBOT Style Header */}
              <div className="px-8 py-5 border-b border-[#2E2E2F]/5 flex items-center justify-between bg-transparent sticky top-0 z-10 transition-colors">
                <button onClick={() => setSelectedTicket(null)} className="p-3 hover:bg-[#F2F2F2] rounded-full text-[#2E2E2F] transition-all">
@@ -257,14 +257,14 @@ export const SupportTickets: React.FC = () => {
                 {/* Inquiry */}
                 <div className="flex flex-col gap-2 max-w-[85%] items-start">
                    <div className="flex items-end gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-transparent flex-shrink-0 flex items-center justify-center border border-[#2E2E2F]/5 shadow-sm overflow-hidden">
+                      <div className="w-10 h-10 rounded-xl bg-transparent flex-shrink-0 flex items-center justify-center border border-[#2E2E2F]/5 shadow-sm overflow-hidden">
                          {selectedTicket.organizer?.profileImageUrl ? (
                            <img src={selectedTicket.organizer.profileImageUrl} alt="O" className="w-full h-full object-cover" />
                          ) : (
                            <ICONS.MessageSquare className="w-5 h-5 text-[#38BDF2]" />
                          )}
                       </div>
-                      <div className="bg-[#2E2E2F]/5 p-6 rounded-[24px] rounded-bl-none border border-[#2E2E2F]/5 shadow-sm">
+                      <div className="bg-[#2E2E2F]/5 p-6 rounded-xl rounded-bl-none border border-[#2E2E2F]/5 shadow-sm">
                          <p className="text-sm font-bold text-[#2E2E2F] mb-1.5">{selectedTicket.title}</p>
                          <p className="text-sm font-medium text-[#2E2E2F]/60 whitespace-pre-wrap leading-relaxed">
                            {selectedTicket.message}
@@ -281,7 +281,7 @@ export const SupportTickets: React.FC = () => {
                   {(ticketMessages[selectedTicket.notification_id] || []).map((m) => (
                     <div key={m.message_id} className={`flex flex-col gap-2 max-w-[85%] ${m.is_admin_reply ? 'ml-auto items-end' : 'items-start'}`}>
                       <div className={`flex items-end gap-3 ${m.is_admin_reply ? 'flex-row-reverse' : 'flex-row'}`}>
-                         <div className={`w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center border border-[#2E2E2F]/5 shadow-sm overflow-hidden ${m.is_admin_reply ? 'bg-transparent' : 'bg-transparent'}`}>
+                         <div className={`w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center border border-[#2E2E2F]/5 shadow-sm overflow-hidden ${m.is_admin_reply ? 'bg-transparent' : 'bg-transparent'}`}>
                             {m.is_admin_reply ? (
                               <img src="/lgo.webp" alt="Bot" className="w-full h-full object-contain p-1.5" />
                             ) : (
@@ -292,7 +292,7 @@ export const SupportTickets: React.FC = () => {
                               )
                             )}
                          </div>
-                         <div className={`p-6 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] ${
+                         <div className={`p-6 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] ${
                            m.is_admin_reply 
                              ? 'bg-[#38BDF2] text-white rounded-br-none border-0' 
                              : 'bg-[#2E2E2F]/5 text-[#2E2E2F] rounded-bl-none border border-[#2E2E2F]/5'
@@ -352,3 +352,4 @@ export const SupportTickets: React.FC = () => {
     </div>
   );
 };
+

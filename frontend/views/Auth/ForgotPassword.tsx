@@ -47,7 +47,7 @@ export const ForgotPassword: React.FC = () => {
                         <img
                             src="https://xmjdcbzgdfylbqkjoyyb.supabase.co/storage/v1/object/public/startuplab-business-ticketing/assets/assets/image%20(1).svg"
                             alt="StartupLab Business Center Logo"
-                            className="mx-auto mb-6 w-[200px] max-w-full h-auto"
+                            className="mx-auto mb-6 w-[170px] lg:w-[200px] max-w-full h-auto"
                             style={{ objectFit: 'contain' }}
                         />
                         <h2 className="text-2xl font-black text-[#2E2E2F] tracking-tighter mb-2">Forgot Password?</h2>
@@ -80,7 +80,7 @@ export const ForgotPassword: React.FC = () => {
                                 </Button>
                             </div>
                             {error && (
-                                <div className="mt-4 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="mt-4 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <div className="flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-xl bg-red-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-red-500/20">
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
@@ -92,7 +92,7 @@ export const ForgotPassword: React.FC = () => {
                         </form>
                     ) : (
                         <div className="text-center py-8 px-4 animate-in zoom-in-95 duration-500">
-                            <div className="mb-6 inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-green-500 text-white shadow-xl shadow-green-500/30 rotate-3 hover:rotate-0 transition-transform">
+                            <div className="mb-6 inline-flex items-center justify-center w-20 h-20 rounded-xl bg-green-500 text-white shadow-xl shadow-green-500/30 rotate-3 hover:rotate-0 transition-transform">
                                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                             </div>
                             <h3 className="text-xl font-black text-[#2E2E2F] mb-3">Check your inbox!</h3>
@@ -120,3 +120,4 @@ export const ForgotPassword: React.FC = () => {
         </div>
     );
 };
+

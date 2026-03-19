@@ -91,7 +91,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                 type="checkbox"
                 checked={dontShowAgain}
                 onChange={(e) => setDontShowAgain(e.target.checked)}
-                className="w-5 h-5 rounded-md accent-[#38BDF2] cursor-pointer"
+                className="w-5 h-5 rounded-xl accent-[#38BDF2] cursor-pointer"
               />
             </div>
             <span className="text-sm font-semibold text-[#2E2E2F]/70">
@@ -130,7 +130,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
           </div>
           
           <div className="flex justify-center w-full">
-            <div className="bg-[#EAEAEA] p-1.5 rounded-2xl border border-[#2E2E2F]/10 flex items-center shadow-sm">
+            <div className="bg-[#EAEAEA] p-1.5 rounded-xl border border-[#2E2E2F]/10 flex items-center shadow-sm">
               <button
                 type="button"
                 onClick={() => setBillingCycle('monthly')}
@@ -180,3 +180,4 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
     </Modal>
   );
 };
+

@@ -238,7 +238,7 @@ export const FollowingsEventsPage: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <div className="max-w-6xl mx-auto px-6 py-14">
-        <div className="rounded-[2rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] p-8 text-center">
+        <div className="rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-8 text-center">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/45 mb-3">Followings</p>
           <h1 className="text-3xl font-black text-[#2E2E2F] tracking-tight mb-4">Sign in to view organizations you follow</h1>
           <p className="text-sm text-[#2E2E2F]/65 max-w-xl mx-auto mb-6">
@@ -253,7 +253,7 @@ export const FollowingsEventsPage: React.FC = () => {
   if (followedIds.length === 0 || organizers.length === 0) {
     return (
       <div className="max-w-6xl mx-auto px-6 py-14">
-        <div className="rounded-[2rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] p-8 text-center">
+        <div className="rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-8 text-center">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/45 mb-3">Followings</p>
           <h1 className="text-3xl font-black text-[#2E2E2F] tracking-tight mb-4">No organizations followed yet</h1>
           <p className="text-sm text-[#2E2E2F]/65 max-w-xl mx-auto mb-6">
@@ -295,19 +295,19 @@ export const FollowingsEventsPage: React.FC = () => {
       </section>
 
       {errorMessage && (
-        <div className="mb-6 rounded-2xl border border-[#2E2E2F]/20 bg-[#2E2E2F]/5 px-4 py-3 text-sm font-semibold text-[#2E2E2F]">
+        <div className="mb-6 rounded-xl border border-[#2E2E2F]/20 bg-[#2E2E2F]/5 px-4 py-3 text-sm font-semibold text-[#2E2E2F]">
           {errorMessage}
         </div>
       )}
 
       {interactionNotice && (
-        <div className="mb-6 rounded-2xl border border-[#38BDF2]/30 bg-[#38BDF2]/10 px-4 py-3 text-sm font-semibold text-[#2E2E2F]">
+        <div className="mb-6 rounded-xl border border-[#38BDF2]/30 bg-[#38BDF2]/10 px-4 py-3 text-sm font-semibold text-[#2E2E2F]">
           {interactionNotice}
         </div>
       )}
 
       {!hasSelectedOrganizer && (
-        <section className="mb-8 rounded-[1.8rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] p-5 md:p-6">
+        <section className="mb-8 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-5 md:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/45">Followed Organizations</p>
             <span className="text-[11px] font-semibold text-[#2E2E2F]/55">{organizers.length} organization(s)</span>
@@ -326,7 +326,7 @@ export const FollowingsEventsPage: React.FC = () => {
 
       {selectedOrganizer && (
         <>
-          <section className="mb-6 rounded-[1.5rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] p-4">
+          <section className="mb-6 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-4">
             <div className="flex items-center justify-between gap-3 mb-3">
               <button
                 type="button"
@@ -356,8 +356,8 @@ export const FollowingsEventsPage: React.FC = () => {
             )}
           </section>
 
-          <section className="mb-8 rounded-[1.8rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] p-5 md:p-6">
-            <div className="rounded-[1.5rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] p-5 flex flex-col md:flex-row md:items-center gap-5">
+          <section className="mb-8 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-5 md:p-6">
+            <div className="rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-5 flex flex-col md:flex-row md:items-center gap-5">
               <div className="w-16 h-16 rounded-full overflow-hidden bg-[#2E2E2F] text-[#F2F2F2] flex items-center justify-center text-xl font-bold shrink-0">
                 {organizerImage ? (
                   <img src={organizerImage} alt={selectedOrganizer.organizerName} className="w-full h-full object-cover" />
@@ -421,7 +421,7 @@ export const FollowingsEventsPage: React.FC = () => {
           </section>
 
           {(organizerDescription || organizerWebsite || organizerFacebook || organizerTwitter) && (
-            <section className="mb-8 rounded-[1.8rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] p-5 md:p-6">
+            <section className="mb-8 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-5 md:p-6">
               <div className="space-y-3">
                 {organizerDescription && (
                   <p className="text-sm text-[#2E2E2F]/70 leading-relaxed whitespace-pre-wrap">{organizerDescription}</p>
@@ -447,7 +447,7 @@ export const FollowingsEventsPage: React.FC = () => {
             </section>
           )}
 
-          <section className="mb-6 rounded-[1.8rem] bg-[#F2F2F2] px-4 sm:px-5 lg:px-6 py-5 sm:py-6">
+          <section className="mb-6 rounded-xl bg-[#F2F2F2] px-4 sm:px-5 lg:px-6 py-5 sm:py-6">
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
               <div>
                 <h2 className="text-lg lg:text-xl font-extrabold text-[#2E2E2F] tracking-tight mb-1.5">
@@ -473,7 +473,7 @@ export const FollowingsEventsPage: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className="py-14 px-6 text-center bg-[#F2F2F2] rounded-[2.2rem] border border-[#2E2E2F]/10">
+            <div className="py-14 px-6 text-center bg-[#F2F2F2] rounded-xl border border-[#2E2E2F]/10">
               <div className="w-12 h-12 bg-[#F2F2F2] rounded-full flex items-center justify-center mx-auto mb-5 border border-[#2E2E2F]/10">
                 <ICONS.Calendar className="w-6 h-6 text-[#2E2E2F]/60" />
               </div>
@@ -493,3 +493,4 @@ export const FollowingsEventsPage: React.FC = () => {
     </div>
   );
 };
+

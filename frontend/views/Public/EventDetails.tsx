@@ -85,7 +85,7 @@ const StreamStatusBanner: React.FC<{ event: Event; isOwner?: boolean }> = ({ eve
     const platformColor = isGoogleMeet ? '#00897B' : '#2D8CFF';
 
     return (
-      <div className="rounded-[2rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] p-8 mb-10">
+      <div className="rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-8 mb-10">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: platformColor }} />
           <h3 className="text-[10px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em]">Meeting Link</h3>
@@ -94,10 +94,10 @@ const StreamStatusBanner: React.FC<{ event: Event; isOwner?: boolean }> = ({ eve
           href={normalizedUrl}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-5 p-6 rounded-2xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:border-[#2E2E2F]/30 hover:shadow-lg transition-all group"
+          className="flex items-center gap-5 p-6 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:border-[#2E2E2F]/30 hover:shadow-lg transition-all group"
         >
           {/* Platform Logo */}
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm" style={{ backgroundColor: `${platformColor}15` }}>
+          <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 shadow-sm" style={{ backgroundColor: `${platformColor}15` }}>
             {isGoogleMeet ? (
               <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none">
                 <path d="M3 6.5C3 5.12 4.12 4 5.5 4h7C13.88 4 15 5.12 15 6.5v11c0 1.38-1.12 2.5-2.5 2.5h-7C4.12 20 3 18.88 3 17.5v-11z" fill="#00897B"/>
@@ -139,7 +139,7 @@ const StreamStatusBanner: React.FC<{ event: Event; isOwner?: boolean }> = ({ eve
   if (!showingLive) return null;
 
   return (
-    <div className={`overflow-hidden rounded-[2.5rem] border border-[#2E2E2F]/10 mb-10 shadow-2xl ${isOwner && hasLink ? 'ring-2 ring-[#2E2E2F]/30' : ''}`}>
+    <div className={`overflow-hidden rounded-xl border border-[#2E2E2F]/10 mb-10 shadow-2xl ${isOwner && hasLink ? 'ring-2 ring-[#2E2E2F]/30' : ''}`}>
       {/* Header */}
       <div className="bg-[#00AEEF] p-6 text-white text-left flex justify-between items-center border-b border-[#00AEEF]/20 shadow-[0_4px_20px_rgba(0,174,239,0.3)]">
         <div>
@@ -157,7 +157,7 @@ const StreamStatusBanner: React.FC<{ event: Event; isOwner?: boolean }> = ({ eve
       {/* Body */}
       <div className={`bg-[#F2F2F2] ${showingLive ? 'p-4' : 'p-12'} flex flex-col items-center justify-center text-center relative border-t border-[#2E2E2F]/10`}>
         {isOwner && showingLive && (
-          <div className="absolute top-4 left-4 flex items-center gap-2 z-10 bg-[#2E2E2F]/5 px-2 py-1 rounded-lg border border-[#2E2E2F]/10">
+          <div className="absolute top-4 left-4 flex items-center gap-2 z-10 bg-[#2E2E2F]/5 px-2 py-1 rounded-xl border border-[#2E2E2F]/10">
             <ICONS.Monitor className="w-2.5 h-2.5 text-[#2E2E2F]" />
             <span className="text-[8px] font-black text-[#2E2E2F] uppercase tracking-[0.1em]">Organizer Preview</span>
           </div>
@@ -188,7 +188,7 @@ const StreamStatusBanner: React.FC<{ event: Event; isOwner?: boolean }> = ({ eve
         ) : (
           <div className="w-full">
             {isYouTube && videoId ? (
-              <div className="relative aspect-video rounded-3xl overflow-hidden bg-[#2E2E2F]/5 border border-[#2E2E2F]/10 shadow-inner">
+              <div className="relative aspect-video rounded-xl overflow-hidden bg-[#2E2E2F]/5 border border-[#2E2E2F]/10 shadow-inner">
                 <iframe
                   className="absolute inset-0 w-full h-full"
                   src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0&modestbranding=1`}
@@ -199,7 +199,7 @@ const StreamStatusBanner: React.FC<{ event: Event; isOwner?: boolean }> = ({ eve
                 />
               </div>
             ) : isFacebook ? (
-              <div className="relative aspect-video rounded-3xl overflow-hidden bg-[#2E2E2F]/5 border border-[#2E2E2F]/10 shadow-inner">
+              <div className="relative aspect-video rounded-xl overflow-hidden bg-[#2E2E2F]/5 border border-[#2E2E2F]/10 shadow-inner">
                 <iframe
                   className="absolute inset-0 w-full h-full"
                   src={`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(normalizedUrl)}&show_text=0&autoplay=1&mute=1`}
@@ -214,7 +214,7 @@ const StreamStatusBanner: React.FC<{ event: Event; isOwner?: boolean }> = ({ eve
                 href={normalizedUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="flex flex-col items-center justify-center p-14 rounded-3xl bg-[#F2F2F2] border border-[#2E2E2F]/10 hover:bg-[#2E2E2F]/5 hover:border-[#2E2E2F]/30 transition-all group shadow-sm text-[#2E2E2F]"
+                className="flex flex-col items-center justify-center p-14 rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/10 hover:bg-[#2E2E2F]/5 hover:border-[#2E2E2F]/30 transition-all group shadow-sm text-[#2E2E2F]"
               >
                 <div className="w-20 h-20 rounded-full bg-[#2E2E2F]/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
                   <ICONS.Monitor className="w-10 h-10 text-[#2E2E2F]" />
@@ -725,7 +725,7 @@ export const EventDetails: React.FC = () => {
               </div>
 
               {/* Visual Header */}
-              <div className="overflow-hidden rounded-[2.5rem] border border-[#2E2E2F]/10">
+              <div className="overflow-hidden rounded-xl border border-[#2E2E2F]/10">
                 <img
                   src={getImageUrl(event.imageUrl)}
                   alt={event.eventName}
@@ -743,34 +743,34 @@ export const EventDetails: React.FC = () => {
               )}
 
               <div id="event-schedule-info" className="flex flex-wrap gap-4 mt-10 mb-12">
-                <div className="flex items-center text-[#2E2E2F]/80 bg-[#F2F2F2] px-4 py-2 rounded-2xl border border-[#2E2E2F]/10 text-[14px]">
+                <div className="flex items-center text-[#2E2E2F]/80 bg-[#F2F2F2] px-4 py-2 rounded-xl border border-[#2E2E2F]/10 text-[14px]">
                   <ICONS.Calendar className="w-5 h-5 mr-3" strokeWidth={3} style={{ color: brandColor }} />
                   {formatRange(event.startAt, event.endAt, event.timezone)}{event.timezone ? ` TZ: ${event.timezone}` : ''}
                 </div>
-                <div className="flex items-center text-[#2E2E2F]/80 bg-[#F2F2F2] px-4 py-2 rounded-2xl border border-[#2E2E2F]/10 text-[13px] font-bold">
+                <div className="flex items-center text-[#2E2E2F]/80 bg-[#F2F2F2] px-4 py-2 rounded-xl border border-[#2E2E2F]/10 text-[13px] font-bold">
                   <ICONS.Monitor className="w-5 h-5 mr-2" strokeWidth={3} style={{ color: brandColor }} />
                   {event.locationType === 'ONLINE' ? 'DIGITAL SESSION' : event.locationType === 'HYBRID' ? 'HYBRID ACCESS' : 'IN-PERSON EVENT'}
                 </div>
                 {event.streamingPlatform && (event.locationType === 'ONLINE' || event.locationType === 'HYBRID') && (
                   <div
-                    className="flex items-center px-4 py-2 rounded-2xl border text-[13px] font-black tracking-wide"
+                    className="flex items-center px-4 py-2 rounded-xl border text-[13px] font-black tracking-wide"
                     style={{ color: brandColor, backgroundColor: `${brandColor}10`, borderColor: `${brandColor}20` }}
                   >
                     VIA {event.streamingPlatform.toUpperCase()}
                   </div>
                 )}
-                <div className="flex items-center text-[#2E2E2F]/80 bg-[#F2F2F2] px-4 py-2 rounded-2xl border border-[#2E2E2F]/10 text-[13px] font-bold">
+                <div className="flex items-center text-[#2E2E2F]/80 bg-[#F2F2F2] px-4 py-2 rounded-xl border border-[#2E2E2F]/10 text-[13px] font-bold">
                   CAPACITY: {(event.ticketTypes || []).reduce((sum, t) => sum + (t.quantityTotal || 0), 0)}
                 </div>
                 {regState && (
-                  <div className="flex items-center text-[#2E2E2F]/80 bg-[#F2F2F2] px-4 py-2 rounded-2xl border border-[#2E2E2F]/10 text-[13px] font-black uppercase">
+                  <div className="flex items-center text-[#2E2E2F]/80 bg-[#F2F2F2] px-4 py-2 rounded-xl border border-[#2E2E2F]/10 text-[13px] font-black uppercase">
                     {regState}
                   </div>
                 )}
               </div>
 
               {/* Event Description */}
-              <div className="p-8 bg-[#F2F2F2] rounded-[2rem] border border-[#2E2E2F]/10 mb-10 w-full">
+              <div className="p-8 bg-[#F2F2F2] rounded-xl border border-[#2E2E2F]/10 mb-10 w-full">
                 <h3 className="text-[10px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.4em] mb-6">EVENT DETAILS</h3>
                 <p className="text-[#2E2E2F]/70 leading-relaxed text-base font-medium whitespace-pre-wrap break-all max-w-full">
                   {event.description}
@@ -778,9 +778,9 @@ export const EventDetails: React.FC = () => {
               </div>
 
               {/* Organizer Card */}
-              <div className="p-8 bg-[#F2F2F2] rounded-[2rem] border border-[#2E2E2F]/10 mb-10">
+              <div className="p-8 bg-[#F2F2F2] rounded-xl border border-[#2E2E2F]/10 mb-10">
                 <h3 className="text-[10px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.4em] mb-6">ORGANIZED BY</h3>
-                <div className="rounded-[1.5rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] p-5 flex flex-col md:flex-row md:items-center gap-5">
+                <div className="rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-5 flex flex-col md:flex-row md:items-center gap-5">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-white shadow-md bg-gradient-to-br from-[#38BDF2] to-[#A5E1FF] flex items-center justify-center shrink-0">
                     {organizer?.profileImageUrl ? (
                       <img src={organizerImage} alt={organizer?.organizerName || 'Organizer'} className="w-full h-full object-cover" />
@@ -893,7 +893,7 @@ export const EventDetails: React.FC = () => {
 
               {/* Location Card */}
               {hasPhysicalLocation && (
-                <div className="p-8 bg-[#F2F2F2] rounded-[2rem] border border-[#2E2E2F]/10 mb-10">
+                <div className="p-8 bg-[#F2F2F2] rounded-xl border border-[#2E2E2F]/10 mb-10">
                   <div className="flex items-center justify-between gap-3 mb-4">
                     <h3 className="text-[10px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.4em]">EXACT LOCATION</h3>
                     <a
@@ -907,7 +907,7 @@ export const EventDetails: React.FC = () => {
                     </a>
                   </div>
                   <p className="text-sm text-[#2E2E2F]/70 font-medium mb-5">{event.locationText}</p>
-                  <div className="rounded-2xl overflow-hidden border border-[#2E2E2F]/10 bg-[#F2F2F2]">
+                  <div className="rounded-xl overflow-hidden border border-[#2E2E2F]/10 bg-[#F2F2F2]">
                     <iframe
                       src={mapEmbedUrl}
                       title="Event location map"
@@ -922,8 +922,8 @@ export const EventDetails: React.FC = () => {
           </div>
 
           {/* Secure Access Sidebar */}
-          <div className="w-full lg:w-[380px] shrink-0 lg:sticky lg:top-24 self-start">
-            <Card className="p-8 rounded-[2.5rem] bg-[#F2F2F2] border border-[#2E2E2F]/10 lg:max-h-[calc(100vh-7rem)] lg:flex lg:flex-col">
+          <div className="w-full md:w-[280px] lg:w-[380px] shrink-0 lg:sticky lg:top-24 self-start">
+            <Card className="p-8 rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/10 lg:max-h-[calc(100vh-7rem)] lg:flex lg:flex-col">
               {isOwnEvent ? (
                 <div className="flex flex-col items-center text-center py-6 border-b border-[#2E2E2F]/10 mb-6">
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: `${brandColor}15` }}>
@@ -947,7 +947,7 @@ export const EventDetails: React.FC = () => {
                   </p>
                   <Button
                     onClick={() => navigate('/browse-events')}
-                    className="w-full rounded-2xl py-4 font-black text-[11px] uppercase tracking-[0.2em] text-white shadow-xl"
+                    className="w-full rounded-xl py-4 font-black text-[11px] uppercase tracking-[0.2em] text-white shadow-xl"
                     style={{ backgroundColor: brandColor }}
                   >
                     Browse more events
@@ -970,7 +970,7 @@ export const EventDetails: React.FC = () => {
                       return (
                         <div
                           key={ticket.ticketTypeId}
-                          className="p-6 rounded-[1.75rem] border-2 transition-colors bg-[#F2F2F2] hover:opacity-90"
+                          className="p-6 rounded-xl border-2 transition-colors bg-[#F2F2F2] hover:opacity-90"
                           style={{ borderColor: qty > 0 ? brandColor : '#2E2E2F1A' }}
                         >
                           <div className="flex justify-between items-start mb-2">
@@ -1024,7 +1024,7 @@ export const EventDetails: React.FC = () => {
                           </div>
 
                           {salesNotStarted && ticket.salesStartAt && (
-                            <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: `${brandColor}1A`, borderColor: `${brandColor}4D`, borderWidth: '1px', borderStyle: 'solid' }}>
+                            <div className="mb-4 p-3 rounded-xl" style={{ backgroundColor: `${brandColor}1A`, borderColor: `${brandColor}4D`, borderWidth: '1px', borderStyle: 'solid' }}>
                               <div className="text-xs font-semibold" style={{ color: brandColor }}>
                                 Sale begins soon
                               </div>
@@ -1037,7 +1037,7 @@ export const EventDetails: React.FC = () => {
                           )}
 
                           {salesEnded && ticket.saleDiscountPercent && ticket.saleDiscountPercent > 0 && (
-                            <div className="mb-4 p-3 rounded-lg bg-[#2E2E2F]/5 border border-[#2E2E2F]/10">
+                            <div className="mb-4 p-3 rounded-xl bg-[#2E2E2F]/5 border border-[#2E2E2F]/10">
                               <div className="text-xs font-semibold text-[#2E2E2F]/70">
                                 Sale ended - regular price restored
                               </div>
@@ -1121,7 +1121,7 @@ export const EventDetails: React.FC = () => {
                   <CompactEventRow key={e.eventId} event={e} brandColor={brandColor} />
                 ))
               ) : (
-                <div className="col-span-full py-12 text-center bg-[#F2F2F2] rounded-[2rem] border border-dashed border-[#2E2E2F]/20">
+                <div className="col-span-full py-12 text-center bg-[#F2F2F2] rounded-xl border border-dashed border-[#2E2E2F]/20">
                   <p className="text-[#2E2E2F]/40 font-bold uppercase tracking-widest text-[11px]">Searching for more interesting sessions...</p>
                 </div>
               )}
@@ -1147,7 +1147,7 @@ export const EventDetails: React.FC = () => {
           className="fixed inset-x-0 z-[60] px-3 sm:px-4 lg:hidden pointer-events-none"
           style={{ bottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
         >
-          <div className="pointer-events-auto mx-auto w-full max-w-xl max-h-[calc(100dvh-7.5rem)] overflow-y-auto overscroll-contain rounded-[2rem] border border-[#2E2E2F]/15 bg-[#F2F2F2]/98 backdrop-blur px-6 py-6 shadow-[0_18px_38px_-18px_rgba(46,46,47,0.35)]">
+          <div className="pointer-events-auto mx-auto w-full max-w-xl max-h-[calc(100dvh-7.5rem)] overflow-y-auto overscroll-contain rounded-xl border border-[#2E2E2F]/15 bg-[#F2F2F2]/98 backdrop-blur px-6 py-6 shadow-[0_18px_38px_-18px_rgba(46,46,47,0.35)]">
             <p className="text-xl font-black text-[#2E2E2F] tracking-tight">
               Get Tickets
             </p>
@@ -1172,3 +1172,4 @@ export const EventDetails: React.FC = () => {
     </div>
   );
 };
+

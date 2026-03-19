@@ -234,7 +234,7 @@ export const SettingsView: React.FC = () => {
     <div className="space-y-10 pb-20">
       {notification && (
         <div className="fixed top-24 right-8 z-[120] animate-in slide-in-from-right-10 duration-500">
-          <Card className={`flex items-center gap-4 px-6 py-4 rounded-2xl shadow-xl border ${notification.type === 'success' ? 'bg-[#F2F2F2] border-[#38BDF2]/20 text-[#2E2E2F]' : 'bg-[#F2F2F2] border-red-200 text-[#2E2E2F]'}`}>
+          <Card className={`flex items-center gap-4 px-6 py-4 rounded-xl shadow-xl border ${notification.type === 'success' ? 'bg-[#F2F2F2] border-[#38BDF2]/20 text-[#2E2E2F]' : 'bg-[#F2F2F2] border-red-200 text-[#2E2E2F]'}`}>
             <div className={`p-2 rounded-xl ${notification.type === 'success' ? 'bg-[#38BDF2] text-[#F2F2F2] shadow-lg shadow-[#38BDF2]/30' : 'bg-red-500 text-white shadow-lg shadow-red-500/30'}`}>
               {notification.type === 'success' ? <ICONS.CheckCircle className="w-5 h-5" /> : <ICONS.Layout className="w-5 h-5" />}
             </div>
@@ -255,7 +255,7 @@ export const SettingsView: React.FC = () => {
           <div className="space-y-10">
             {/* Sub-navigation for Team */}
             <div className="flex justify-end border-b border-[#2E2E2F]/10 pb-2">
-              <div className="flex bg-[#F2F2F2] p-1 rounded-2xl border border-[#2E2E2F]/10 shrink-0">
+              <div className="flex bg-[#F2F2F2] p-1 rounded-xl border border-[#2E2E2F]/10 shrink-0">
                 {[
                   { id: 'directory', label: 'Directory' },
                   { id: 'permissions', label: 'Access Control' }
@@ -282,7 +282,7 @@ export const SettingsView: React.FC = () => {
                     </span>
                   </Button>
                 </div>
-                <Card className="overflow-hidden border-[#2E2E2F]/10 rounded-[2.5rem] bg-[#F2F2F2]">
+                <Card className="overflow-hidden border-[#2E2E2F]/10 rounded-xl bg-[#F2F2F2]">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
                       <thead className="bg-[#F2F2F2] border-b border-[#2E2E2F]/10">
@@ -296,7 +296,7 @@ export const SettingsView: React.FC = () => {
                           <tr key={member.id} className="hover:bg-[#38BDF2]/10 transition-colors group">
                             <td className="px-10 py-8">
                               <div className="flex items-center gap-5">
-                                <div className={`w-12 h-12 rounded-2xl overflow-hidden flex items-center justify-center font-black text-lg ${member.isOwner ? 'bg-[#38BDF2] text-[#F2F2F2]' : 'bg-[#38BDF2] text-[#F2F2F2]'}`}>
+                                <div className={`w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center font-black text-lg ${member.isOwner ? 'bg-[#38BDF2] text-[#F2F2F2]' : 'bg-[#38BDF2] text-[#F2F2F2]'}`}>
                                   {member.imageUrl ? (
                                     <img src={member.imageUrl} alt={member.name} className="w-full h-full object-cover" />
                                   ) : (
@@ -331,7 +331,7 @@ export const SettingsView: React.FC = () => {
                   <label className="block text-[10px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] mb-3 ml-1">Access Control</label>
                   <Badge type="info" className="font-black text-[9px] tracking-widest uppercase bg-[#38BDF2]/20 text-[#2E2E2F]">Manage Team Permissions</Badge>
                 </div>
-                <Card className="overflow-hidden border-[#2E2E2F]/10 rounded-[2.5rem] bg-[#F2F2F2]">
+                <Card className="overflow-hidden border-[#2E2E2F]/10 rounded-xl bg-[#F2F2F2]">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
                       <thead className="bg-[#F2F2F2] border-b border-[#2E2E2F]/10">
@@ -399,7 +399,7 @@ export const SettingsView: React.FC = () => {
         {activeTab === 'support' && <SupportTickets />}
         {activeTab === 'profile' && (
           <div className="space-y-8 max-w-2xl">
-            <Card className="p-10 border-[#2E2E2F]/10 rounded-[2.5rem] bg-[#F2F2F2]">
+            <Card className="p-10 border-[#2E2E2F]/10 rounded-xl bg-[#F2F2F2]">
               <div className="flex items-center gap-3 mb-10">
                 <div className="w-10 h-10 rounded-xl bg-[#38BDF2]/10 text-[#38BDF2] flex items-center justify-center">
                   <ICONS.Users className="w-5 h-5" strokeWidth={2.5} />
@@ -437,7 +437,7 @@ export const SettingsView: React.FC = () => {
               </div>
             </Card>
 
-            <Card className="p-10 border-[#2E2E2F]/10 rounded-[2.5rem] bg-[#F2F2F2]">
+            <Card className="p-10 border-[#2E2E2F]/10 rounded-xl bg-[#F2F2F2]">
               <div className="flex items-center gap-3 mb-10">
                 <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center">
                   <ICONS.Shield className="w-5 h-5" strokeWidth={2.5} />
@@ -449,7 +449,7 @@ export const SettingsView: React.FC = () => {
               </div>
 
               <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 rounded-3xl bg-[#F2F2F2] border border-[#2E2E2F]/5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/5">
                   <div className="space-y-1">
                     <h4 className="text-xs font-bold text-[#2E2E2F]">Password Protection</h4>
                     <p className="text-[11px] text-[#2E2E2F]/50 font-medium tracking-tight">Generate a secure reset link</p>
@@ -463,7 +463,7 @@ export const SettingsView: React.FC = () => {
                     {passwordLoading ? 'Sending link...' : 'Change Password'}
                   </Button>
                 </div>
-                <div className="p-4 bg-orange-50 border border-orange-100 rounded-2xl flex gap-3">
+                <div className="p-4 bg-orange-50 border border-orange-100 rounded-xl flex gap-3">
                   <ICONS.Layout className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
                   <p className="text-[10px] text-orange-800 font-medium leading-relaxed">
                     By clicking "Change Password", you will receive a reset link at <strong>{adminEmail}</strong>. This email is sent using your configured Admin SMTP settings.
@@ -478,8 +478,8 @@ export const SettingsView: React.FC = () => {
       <Modal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} title="Invite Team Member" size="lg">
         <form onSubmit={handleInviteSubmit} className="space-y-10 px-2">
           <div className="space-y-6">
-            <Input label="Work Email" type="email" placeholder="j.miller@startuplab.co" required className="w-full py-5 px-6 rounded-2xl bg-[#F2F2F2] border-[#2E2E2F]/20 text-base" value={inviteData.email} onChange={(e: any) => setInviteData({ ...inviteData, email: e.target.value })} />
-            <Input label="Assigned Position" value="STAFF" disabled className="w-full py-5 px-6 rounded-2xl bg-[#F2F2F2] border-[#2E2E2F]/20 text-[#2E2E2F]/60 text-base" />
+            <Input label="Work Email" type="email" placeholder="j.miller@startuplab.co" required className="w-full py-5 px-6 rounded-xl bg-[#F2F2F2] border-[#2E2E2F]/20 text-base" value={inviteData.email} onChange={(e: any) => setInviteData({ ...inviteData, email: e.target.value })} />
+            <Input label="Assigned Position" value="STAFF" disabled className="w-full py-5 px-6 rounded-xl bg-[#F2F2F2] border-[#2E2E2F]/20 text-[#2E2E2F]/60 text-base" />
           </div>
           <div className="pt-8 flex flex-col sm:flex-row gap-4">
             <Button className="flex-1" onClick={() => setIsInviteModalOpen(false)}>Cancel</Button>
@@ -585,7 +585,7 @@ const AdminEmailSettings: React.FC<{ setNotification: any }> = ({ setNotificatio
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Form */}
-        <Card className="lg:col-span-2 p-8 rounded-3xl bg-[#F2F2F2] border-[#2E2E2F]/10 shadow-sm space-y-8">
+        <Card className="lg:col-span-2 p-8 rounded-xl bg-[#F2F2F2] border-[#2E2E2F]/10 shadow-sm space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1.5">
               <label className="text-[11px] font-black text-[#2E2E2F]/40 uppercase tracking-widest pl-1">Email Provider</label>
@@ -698,7 +698,7 @@ const AdminEmailSettings: React.FC<{ setNotification: any }> = ({ setNotificatio
 
         {/* Sidebar - Test Configuration */}
         <div className="space-y-6">
-          <Card className="p-8 rounded-3xl bg-[#F2F2F2] border-[#2E2E2F]/10 shadow-sm space-y-6">
+          <Card className="p-8 rounded-xl bg-[#F2F2F2] border-[#2E2E2F]/10 shadow-sm space-y-6">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-[#38BDF2]/10 flex items-center justify-center text-[#38BDF2]">
                 <ICONS.Send className="w-4 h-4" />
@@ -721,7 +721,7 @@ const AdminEmailSettings: React.FC<{ setNotification: any }> = ({ setNotificatio
               </p>
               <Button
                 onClick={handleTest}
-                className="w-full bg-[#38BDF2] hover:bg-[#2E2E2F] text-white py-3 rounded-2xl font-black text-xs tracking-widest flex items-center justify-center gap-2 transition-all uppercase shadow-md"
+                className="w-full bg-[#38BDF2] hover:bg-[#2E2E2F] text-white py-3 rounded-xl font-black text-xs tracking-widest flex items-center justify-center gap-2 transition-all uppercase shadow-md"
                 disabled={testing}
               >
                 <ICONS.Send className="w-3.5 h-3.5" />
@@ -730,7 +730,7 @@ const AdminEmailSettings: React.FC<{ setNotification: any }> = ({ setNotificatio
             </div>
           </Card>
 
-          <div className="p-6 rounded-2xl bg-[#38BDF2]/5 border-2 border-[#38BDF2]/20 relative overflow-hidden group hover:bg-[#38BDF2]/10 transition-colors">
+          <div className="p-6 rounded-xl bg-[#38BDF2]/5 border-2 border-[#38BDF2]/20 relative overflow-hidden group hover:bg-[#38BDF2]/10 transition-colors">
             <div className="absolute top-0 right-0 p-2">
               <ICONS.Bell className="w-4 h-4 text-[#38BDF2]/40" />
             </div>
@@ -750,3 +750,4 @@ const AdminEmailSettings: React.FC<{ setNotification: any }> = ({ setNotificatio
     </div>
   );
 };
+

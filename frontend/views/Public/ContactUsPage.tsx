@@ -123,7 +123,7 @@ export const ContactUsPage: React.FC = () => {
 
       <section className="mx-auto max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
         <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-          <article className="rounded-2xl border border-[#3768A2]/20 bg-[#F2F2F2] px-5 py-6 shadow-[0_24px_56px_-36px_rgba(0,62,134,0.2)] sm:px-8 sm:py-8">
+          <article className="rounded-xl border border-[#3768A2]/20 bg-[#F2F2F2] px-5 py-6 shadow-[0_24px_56px_-36px_rgba(0,62,134,0.2)] sm:px-8 sm:py-8">
             <h2 className="text-4xl font-black leading-tight tracking-tight text-[#2E2E2F] sm:text-5xl">Events Contact Support</h2>
             <p className="mt-3 max-w-[640px] text-sm leading-relaxed text-[#2E2E2F]/70 sm:text-base">
               Need help with event registrations or bookings? Fill out the form below and our team will assist you.
@@ -235,7 +235,7 @@ export const ContactUsPage: React.FC = () => {
             </form>
           </article>
 
-          <aside className="rounded-2xl border border-[#3768A2]/25 bg-[#38BDF2] p-7 text-[#F2F2F2] shadow-[0_24px_56px_-30px_rgba(56,189,242,0.65)] sm:p-8">
+          <aside className="rounded-xl border border-[#3768A2]/25 bg-[#38BDF2] p-7 text-[#F2F2F2] shadow-[0_24px_56px_-30px_rgba(56,189,242,0.65)] sm:p-8">
             <h3 className="text-lg lg:text-xl font-extrabold tracking-tight text-[#F2F2F2] mb-1.5">Need Quick Help?</h3>
             <p className="text-[#F2F2F2]/90 text-[13px] font-medium leading-relaxed">
               Prefer to speak with someone directly? Call our support team, and we&apos;ll connect you with a dedicated member of our staff.
@@ -282,3 +282,4 @@ export const ContactUsPage: React.FC = () => {
     </div>
   );
 };
+

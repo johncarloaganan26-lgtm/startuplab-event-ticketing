@@ -62,11 +62,9 @@ export const SignUpView: React.FC = () => {
         return;
       }
 
-      const msg = data.message || 'Account created! Please check your email to verify your account before signing in.';
+      const msg = data.message || 'Account created. Verify your email, then continue setup.';
       showToast('success', msg);
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000);
+      navigate('/welcome?newAccount=1', { replace: true });
     } catch (err: any) {
       const msg = err?.message || 'Failed to create account.';
       setError(msg);
@@ -84,7 +82,7 @@ export const SignUpView: React.FC = () => {
             <img
               src="https://xmjdcbzgdfylbqkjoyyb.supabase.co/storage/v1/object/public/startuplab-business-ticketing/assets/assets/image%20(1).svg"
               alt="StartupLab Business Center Logo"
-              className="mx-auto mb-6 w-[240px] max-w-full h-auto"
+              className="mx-auto mb-6 w-[180px] lg:w-[240px] max-w-full h-auto"
               style={{ objectFit: 'contain' }}
             />
             <p className="text-[#2E2E2F]/70 text-lg font-medium">Create your account</p>

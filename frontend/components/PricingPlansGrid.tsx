@@ -35,7 +35,7 @@ export const PricingPlansGrid: React.FC<PricingPlansGridProps> = ({
     <>
       {showBillingToggle && onBillingCycleChange && (
         <div className="mb-12 flex justify-center">
-          <div className="bg-[#F2F2F2] p-1.5 rounded-2xl border border-[#2E2E2F]/10 flex items-center shadow-sm">
+          <div className="bg-[#F2F2F2] p-1.5 rounded-xl border border-[#2E2E2F]/10 flex items-center shadow-sm">
             <button
               type="button"
               onClick={() => onBillingCycleChange('monthly')}
@@ -93,13 +93,13 @@ export const PricingPlansGrid: React.FC<PricingPlansGridProps> = ({
             <div key={plan.planId} className="relative group h-full pt-4 mt-[-1rem]">
               {!isCurrentPlan && plan.isRecommended && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 animate-in slide-in-from-top-4 duration-700 -translate-y-1/2">
-                  <span className="bg-[#38BDF2] text-white px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl shadow-black/30 border border-[#38BDF2] flex items-center gap-2 whitespace-nowrap">
+                  <span className="bg-[#38BDF2] text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl shadow-black/30 border border-[#38BDF2] flex items-center gap-2 whitespace-nowrap">
                     <ICONS.CheckCircle className="w-4 h-4" />
                     Recommended
                   </span>
                 </div>
               )}
-              <Card className={`h-full flex flex-col border-2 border-[#2E2E2F]/15 rounded-[2.5rem] bg-[#F2F2F2] text-[#2E2E2F] transition-all duration-500 hover:shadow-2xl hover:shadow-[#2E2E2F]/10 ${!isCurrentPlan && plan.isRecommended ? 'ring-2 ring-[#38BDF2] ring-offset-4 ring-offset-[#F2F2F2]' : ''}`}>
+              <Card className={`h-full flex flex-col border-2 border-[#2E2E2F]/15 rounded-xl bg-[#F2F2F2] text-[#2E2E2F] transition-all duration-500 hover:shadow-2xl hover:shadow-[#2E2E2F]/10 ${!isCurrentPlan && plan.isRecommended ? 'ring-2 ring-[#38BDF2] ring-offset-4 ring-offset-[#F2F2F2]' : ''}`}>
                 <div className={`p-8 sm:p-10 flex-1 flex flex-col ${!isCurrentPlan && plan.isRecommended ? '' : 'pt-12'}`}>
                   {/* Top: Name and Description */}
                   <div className="mb-8">
@@ -115,7 +115,7 @@ export const PricingPlansGrid: React.FC<PricingPlansGridProps> = ({
                   </div>
 
                   {/* Price Section */}
-                  <div className={`mb-10 p-6 sm:p-8 rounded-3xl border-2 bg-[#F2F2F2]/30 border-[#2E2E2F]/10`}>
+                  <div className={`mb-10 p-6 sm:p-8 rounded-xl border-2 bg-[#F2F2F2]/30 border-[#2E2E2F]/10`}>
                     <div className="flex items-baseline gap-1.5 flex-wrap">
                       <span className="text-5xl sm:text-6xl font-black tracking-tighter text-[#2E2E2F]">
                         ₱{Number(amount || 0).toLocaleString()}
@@ -170,7 +170,7 @@ export const PricingPlansGrid: React.FC<PricingPlansGridProps> = ({
                     <Button
                       onClick={() => onPlanAction?.(plan)}
                       disabled={isCurrentPlan || (actionLoadingPlanId !== null && actionLoadingPlanId !== plan.planId)}
-                      className={`w-full h-14 rounded-2xl font-black text-[13px] uppercase tracking-[0.2em] transition-all duration-300 shadow-xl ${isCurrentPlan
+                      className={`w-full h-14 rounded-xl font-black text-[13px] uppercase tracking-[0.2em] transition-all duration-300 shadow-xl ${isCurrentPlan
                         ? '!bg-[#F2F2F2] !text-[#2E2E2F]/40 border border-[#2E2E2F]/5 shadow-none'
                         : 'bg-[#38BDF2] text-white hover:bg-[#2E2E2F] shadow-[#38BDF2]/20 hover:shadow-[#2E2E2F]/20'
                         }`}
@@ -223,3 +223,4 @@ export const PricingPlansGrid: React.FC<PricingPlansGridProps> = ({
     </>
   );
 };
+

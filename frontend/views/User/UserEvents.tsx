@@ -791,8 +791,10 @@ export const UserEvents: React.FC = () => {
                 </div>
             )}
 
+            {!isModalOpen && (
+                <>
             {/* Header section - Refined with Title/Subtitle aligned to Controls */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-2 mb-8 pt-6 border-b-2 border-[#2E2E2F]/15 pb-8">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-2 mb-8 pt-6 border-b border-[#2E2E2F]/15 pb-8">
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
                         <h1 className="text-3xl font-black text-[#2E2E2F] tracking-tight">Events</h1>
@@ -820,8 +822,8 @@ export const UserEvents: React.FC = () => {
                                 </span>
                                 <span className="text-[10px] font-bold text-[#2E2E2F]/30">|</span>
                                 <span className={`text-[10px] font-bold ${promotionQuota.used < promotionQuota.limit
-                                        ? 'text-[#2E2E2F]/50'
-                                        : 'text-red-500'
+                                    ? 'text-[#2E2E2F]/50'
+                                    : 'text-red-500'
                                     }`}>
                                     {promotionQuota.used}/{promotionQuota.limit}
                                 </span>
@@ -1021,7 +1023,7 @@ export const UserEvents: React.FC = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="mt-5 pt-4 border-t-2 border-[#2E2E2F]/10 flex items-center justify-between text-[11px] font-bold text-[#2E2E2F]/40 uppercase tracking-widest">
+                                    <div className="mt-5 pt-4 border-t border-[#2E2E2F]/15 flex items-center justify-between text-[11px] font-bold text-[#2E2E2F]/40 uppercase tracking-widest">
                                         <span>Inventory</span>
                                         <span className="text-[#38BDF2]">{event.capacityTotal} Slots</span>
                                     </div>
@@ -1030,10 +1032,10 @@ export const UserEvents: React.FC = () => {
                         </div>
 
                         {/* Desktop Table View */}
-                        <Card className="hidden md:block !overflow-visible border-2 border-[#2E2E2F]/15 rounded-[2.5rem] bg-[#F2F2F2]">
+                        <Card className="hidden md:block !overflow-visible border border-[#2E2E2F]/15 rounded-[2.5rem] bg-[#F2F2F2]">
                             <div className="!overflow-visible">
                                 <table className="w-full text-left">
-                                    <thead className="bg-[#F2F2F2] border-b-2 border-[#2E2E2F]/15">
+                                    <thead className="bg-[#F2F2F2] border-b border-[#2E2E2F]/15">
                                         <tr>
                                             <th className="px-8 py-5 text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide">Event Identity</th>
                                             <th className="px-8 py-5 text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide">Date & Location</th>
@@ -1201,6 +1203,8 @@ export const UserEvents: React.FC = () => {
                     </div>
                 </div>
             )}
+                </>
+            )}
 
             <Modal
                 isOpen={isWorkflowNoticeOpen}
@@ -1247,85 +1251,79 @@ export const UserEvents: React.FC = () => {
                 </div>
             </Modal>
 
-            {/* ─── Create/Edit Event Modal (SAME as Admin side) ─── */}
-            <Modal
-                isOpen={isModalOpen}
-                onClose={handleCloseEventModal}
-                title={isEditMode ? 'Edit Event' : 'Create Event'}
-                size="xl"
-                className="max-w-[96vw]"
-            >
-                <div className={`grid grid-cols-1 gap-6 ${isSidebarHidden ? 'xl:grid-cols-1' : !isPreviewMode ? 'xl:grid-cols-[300px_minmax(0,1fr)]' : previewDevice === 'desktop' ? 'xl:grid-cols-[300px_minmax(0,1fr)_minmax(800px,1100px)]' : 'xl:grid-cols-[300px_minmax(0,1fr)_380px]'}`}>
+            {/* ─── Create/Edit Event logic (In-page) ─── */}
+            {isModalOpen && (
+                <div style={{ zoom: 0.85 }} className="animate-in fade-in duration-200 min-h-[calc(85vh-80px)] mb-0 px-0 pt-0">
+                <div className={`grid grid-cols-1 gap-6 ${isSidebarHidden ? 'xl:grid-cols-1' : (!isPreviewMode || previewDevice === 'desktop') ? 'xl:grid-cols-[300px_minmax(0,1fr)]' : 'xl:grid-cols-[300px_minmax(0,1fr)_380px]'}`}>
                     {!isSidebarHidden && (
                         <div className="space-y-5 xl:sticky xl:top-0 self-start xl:max-h-[calc(70vh-1rem)] xl:overflow-y-auto xl:pr-1">
-                        <div className="bg-[#F2F2F2] rounded-[2rem] border-2 border-[#2E2E2F]/15 overflow-hidden">
-                            <div className="h-16 bg-gradient-to-r from-[#BAF3FF] via-[#67E8F9] to-[#38BDF2]" />
-                            <div className="p-4 space-y-4">
-                                <h1 className="text-3xl font-black text-[#2E2E2F] tracking-tight leading-tight">{formData.eventName || 'Event Title'}</h1>
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <div className={`px-4 py-1.5 rounded-xl text-[10px] font-semibold uppercase tracking-wide border ${formData.status === 'PUBLISHED' ? 'bg-[#38BDF2]/20 border-[#38BDF2]/40 text-[#2E2E2F]' : 'bg-[#F2F2F2] border-[#2E2E2F]/20 text-[#2E2E2F]/60'}`}>{formData.status}</div>
-                                </div>
-                                <div className="space-y-3 pt-1">
-                                    <div className="flex items-center gap-3 bg-[#F2F2F2] px-4 py-3 rounded-2xl border-2 border-[#2E2E2F]/15">
-                                        <div className="w-8 h-8 bg-[#38BDF2]/10 text-[#2E2E2F] rounded-lg flex items-center justify-center"><ICONS.Calendar className="w-4 h-4" strokeWidth={2.5} /></div>
-                                        <span className="text-[13px] font-semibold text-[#2E2E2F] tracking-tight">{previewDateLabel}</span>
+                            <div className="bg-[#F2F2F2] rounded-[2rem] border border-[#2E2E2F]/15 overflow-hidden">
+                                <div className="p-4 space-y-4">
+                                    <button
+                                        type="button"
+                                        onClick={handleCloseEventModal}
+                                        className="flex items-center gap-2 px-4 py-2 bg-[#F2F2F2] text-[#2E2E2F] rounded-xl hover:bg-[#2E2E2F] hover:text-white transition-colors w-fit"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                                        <span className="text-xs font-bold uppercase tracking-wide">Back to Events</span>
+                                    </button>
+                                    <h1 className="text-3xl font-black text-[#2E2E2F] tracking-tight leading-tight">{formData.eventName || 'Event Title'}</h1>
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <div className={`px-4 py-1.5 rounded-xl text-[10px] font-semibold uppercase tracking-wide border ${formData.status === 'PUBLISHED' ? 'bg-[#38BDF2]/20 border-[#38BDF2]/40 text-[#2E2E2F]' : 'bg-[#F2F2F2] border-[#2E2E2F]/20 text-[#2E2E2F]/60'}`}>{formData.status}</div>
                                     </div>
-                                    <div className="flex items-center gap-3 bg-[#F2F2F2] px-4 py-3 rounded-2xl border-2 border-[#2E2E2F]/15">
-                                        <div className="w-8 h-8 bg-[#38BDF2]/10 text-[#2E2E2F] rounded-lg flex items-center justify-center"><ICONS.MapPin className="w-4 h-4" strokeWidth={2.5} /></div>
-                                        <span className="text-[13px] font-semibold text-[#2E2E2F] tracking-tight truncate max-w-[210px]">{formData.location || 'Set Venue / Connection'}</span>
+                                    <div className="space-y-3 pt-1">
+                                        <div className="flex items-center gap-3 bg-[#F2F2F2] px-4 py-3 rounded-2xl border-2 border-[#2E2E2F]/15">
+                                            <div className="w-8 h-8 bg-[#38BDF2]/10 text-[#2E2E2F] rounded-lg flex items-center justify-center"><ICONS.Calendar className="w-4 h-4" strokeWidth={2.5} /></div>
+                                            <span className="text-[13px] font-semibold text-[#2E2E2F] tracking-tight">{previewDateLabel}</span>
+                                        </div>
+                                        <div className="flex items-center gap-3 bg-[#F2F2F2] px-4 py-3 rounded-2xl border-2 border-[#2E2E2F]/15">
+                                            <div className="w-8 h-8 bg-[#38BDF2]/10 text-[#2E2E2F] rounded-lg flex items-center justify-center"><ICONS.MapPin className="w-4 h-4" strokeWidth={2.5} /></div>
+                                            <span className="text-[13px] font-semibold text-[#2E2E2F] tracking-tight truncate max-w-[210px]">{formData.location || 'Set Venue / Connection'}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="bg-[#F2F2F2] rounded-[2rem] border-2 border-[#2E2E2F]/15 overflow-hidden">
-                            <div className="px-5 py-3 border-b border-[#2E2E2F]/10"><p className="text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide">Steps</p></div>
-                            {EVENT_SETUP_STEPS.map((step) => (
-                                <button
-                                    key={step.id}
-                                    type="button"
-                                    onClick={() => { setWizardStep(step.id); setIsPreviewMode(false); }}
-                                    className={`w-full text-left px-5 py-4 border-b border-[#2E2E2F]/10 last:border-b-0 transition-colors hover:bg-[#38BDF2]/5 ${wizardStep === step.id ? 'bg-[#38BDF2]/10' : ''}`}
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <span className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${wizardStep >= step.id ? 'border-[#2563EB]' : 'border-[#2E2E2F]/20'}`}>
-                                            {wizardStep >= step.id && <span className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />}
-                                        </span>
-                                        <div>
-                                            <p className="text-[18px] leading-none font-bold text-[#2E2E2F]">{step.title}</p>
-                                            <p className="mt-2 text-[13px] leading-5 text-[#2E2E2F]/70">{EVENT_SETUP_STEP_DETAIL[step.id]}</p>
+                            <div className="hidden md:block bg-[#F2F2F2] rounded-[2rem] border border-[#2E2E2F]/15 overflow-hidden">
+                                <div className="px-5 py-3 border-b border-[#2E2E2F]/15"><p className="text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide">Steps</p></div>
+                                {EVENT_SETUP_STEPS.map((step) => (
+                                    <button
+                                        key={step.id}
+                                        type="button"
+                                        onClick={() => { setWizardStep(step.id); setIsPreviewMode(false); }}
+                                        className={`w-full text-left px-5 py-4 border-b border-[#2E2E2F]/15 last:border-b-0 transition-colors hover:bg-[#38BDF2]/5 ${wizardStep === step.id ? 'bg-[#38BDF2]/10' : ''}`}
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <span className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${wizardStep >= step.id ? 'border-[#2563EB]' : 'border-[#2E2E2F]/20'}`}>
+                                                {wizardStep >= step.id && <span className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />}
+                                            </span>
+                                            <div>
+                                                <p className="text-[18px] leading-none font-bold text-[#2E2E2F]">{step.title}</p>
+                                                <p className="mt-2 text-[13px] leading-5 text-[#2E2E2F]/70">{EVENT_SETUP_STEP_DETAIL[step.id]}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                </button>
-                            ))}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
                     <div className="space-y-4">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="hidden md:flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <h3 className="text-2xl font-black text-[#2E2E2F] tracking-tight">{activeStepMeta.title}</h3>
                                 <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#2E2E2F]/55 mt-1">{EVENT_SETUP_STEP_DETAIL[wizardStep]}</p>
                             </div>
                             <div className="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsSidebarHidden(!isSidebarHidden)}
-                                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all text-[13px] font-bold ${isSidebarHidden ? 'bg-[#38BDF2] text-white border-[#38BDF2]' : 'bg-[#F2F2F2] border-[#2E2E2F]/15 text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/35'}`}
-                                >
-                                    {isSidebarHidden ? <ICONS.Plus className="w-4 h-4" /> : <ICONS.Info className="w-4 h-4" />}
-                                    {isSidebarHidden ? 'Show Steps' : 'Hide Steps'}
-                                </button>
                                 {!isPreviewMode && (
                                     <button
-                                    type="button"
-                                    onClick={() => setIsPreviewMode(true)}
-                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-[#2E2E2F]/15 bg-[#F2F2F2] text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/35 transition-colors text-[13px] font-bold"
-                                >
-                                    <EyeIcon className="w-4 h-4" />
-                                    Show Preview
-                                </button>
-                            )}</div>
+                                        type="button"
+                                        onClick={() => setIsPreviewMode(true)}
+                                        className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-[#2E2E2F]/15 bg-[#F2F2F2] text-[#2E2E2F] hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/35 transition-colors text-[13px] font-bold"
+                                    >
+                                        <EyeIcon className="w-4 h-4" />
+                                        Show Preview
+                                    </button>
+                                )}</div>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-8 px-1">
@@ -1665,7 +1663,7 @@ export const UserEvents: React.FC = () => {
                                                 {promotionsLoading ? (
                                                     <div className="py-10 text-center"><div className="w-6 h-6 border-2 border-[#38BDF2] border-t-transparent rounded-full animate-spin mx-auto"></div></div>
                                                 ) : promotions.length === 0 ? (
-                                                    <div className="py-10 text-center border-2 border-dashed border-[#2E2E2F]/10 rounded-2xl text-[#2E2E2F]/30 uppercase text-[10px] font-black tracking-widest">No promo codes active</div>
+                                                    <div className="py-10 text-center border-2 border-dashed border-[#2E2E2F]/15 rounded-2xl text-[#2E2E2F]/30 uppercase text-[10px] font-black tracking-widest">No promo codes active</div>
                                                 ) : (
                                                     promotions.map(promo => (
                                                         <div key={promo.promotionId} className="flex items-center justify-between p-4 bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 rounded-2xl group border-l-4 border-l-[#38BDF2]">
@@ -1765,7 +1763,7 @@ export const UserEvents: React.FC = () => {
                                 </div>
                             )}
 
-                            <div className="flex gap-4 pt-8 border-t border-[#2E2E2F]/20">
+                            <div className="hidden md:flex gap-4 pt-8 border-t border-[#2E2E2F]/15">
                                 <Button
                                     type="button"
                                     className="flex-1 py-2 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest bg-[#F2F2F2] text-[#2E2E2F] border-2 border-[#2E2E2F]/15 hover:bg-[#2E2E2F]/5 transition-colors min-h-[32px]"
@@ -1813,47 +1811,63 @@ export const UserEvents: React.FC = () => {
                         </form>
                     </div>
 
-                    <div className={`${isPreviewMode ? 'block' : 'hidden'} xl:sticky xl:top-0 self-start space-y-3 xl:max-h-[calc(70vh-1rem)] xl:overflow-y-auto xl:pr-1`}>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <ICONS.ChevronRight className="w-4 h-4 text-[#2E2E2F]/65" />
-                                <h4 className="text-[30px] font-black text-[#2E2E2F] tracking-tight">Preview</h4>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsPreviewMode(false)}
-                                    className="px-4 py-1.5 rounded-full border border-[#2E2E2F]/15 bg-[#F2F2F2] text-[11px] font-black uppercase tracking-widest text-[#2E2E2F]/60 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors"
-                                >
-                                    Hide Preview
-                                </button>
-                                <div className="inline-flex items-center rounded-xl border border-[#2E2E2F]/15 bg-[#F2F2F2] p-1">
+                    <div className={`${
+                        previewDevice === 'desktop'
+                            ? `fixed top-1/2 right-6 xl:right-8 w-[calc(100vw-3rem)] max-w-[1140px] h-[92vh] z-[150] bg-[#F2F2F2] shadow-[0_20px_60px_rgba(0,0,0,0.12)] rounded-[12px] flex flex-col overflow-hidden custom-scrollbar transform transition-all duration-500 ease-in-out border border-[#2E2E2F]/15 -translate-y-1/2 ${isPreviewMode ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0'}`
+                            : `${isPreviewMode ? 'fixed inset-0 top-16 z-50 bg-[#F2F2F2] overflow-y-auto' : 'hidden'} xl:sticky xl:top-0 self-start space-y-3 xl:max-h-[calc(70vh-1rem)] xl:overflow-y-auto xl:pr-1`
+                    }`}>
+                        <div className={`flex flex-col h-full w-full ${previewDevice === 'desktop' ? '' : 'pb-32'}`}>
+                            <div className={`flex items-center justify-between flex-shrink-0 ${previewDevice === 'desktop' ? 'py-6 px-10' : 'mb-3'}`}>
+                                {previewDevice === 'desktop' ? (
                                     <button
                                         type="button"
-                                        onClick={() => setPreviewDevice('mobile')}
-                                        className={`w-9 h-9 rounded-lg flex items-center justify-center ${previewDevice === 'mobile' ? 'bg-[#2563EB]/15 text-[#2563EB]' : 'text-[#2E2E2F]/45 hover:text-[#2E2E2F]'}`}
-                                        title="Mobile preview"
+                                        onClick={() => setIsPreviewMode(false)}
+                                        className="flex items-center gap-2 text-[#2E2E2F] hover:text-black font-bold text-sm transition-colors"
                                     >
-                                        <MobilePreviewIcon className="w-4 h-4" />
+                                        <ICONS.ChevronLeft className="w-5 h-5" strokeWidth={3} />
+                                        Preview
                                     </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setPreviewDevice('desktop')}
-                                        className={`w-9 h-9 rounded-lg flex items-center justify-center ${previewDevice === 'desktop' ? 'bg-[#2563EB]/15 text-[#2563EB]' : 'text-[#2E2E2F]/45 hover:text-[#2E2E2F]'}`}
-                                        title="Desktop preview"
-                                    >
-                                        <DesktopPreviewIcon className="w-4 h-4" />
-                                    </button>
+                                ) : (
+                                    <div className="flex items-center justify-between w-full">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsPreviewMode(false)}
+                                            className="flex items-center gap-2 text-[#2E2E2F] hover:text-black font-bold text-sm transition-colors"
+                                        >
+                                            <ICONS.ChevronRight className="w-4 h-4 text-[#2E2E2F]/65" />
+                                            <h4 className="text-[30px] font-black text-[#2E2E2F] tracking-tight">Preview</h4>
+                                        </button>
+                                    </div>
+                                )}
+                                
+                                <div className="flex items-center gap-2">
+                                    <div className="hidden md:inline-flex items-center rounded-lg border border-[#2E2E2F]/15 bg-transparent p-1 shadow-sm">
+                                        <button
+                                            type="button"
+                                            onClick={() => setPreviewDevice('mobile')}
+                                            className={`w-9 h-9 rounded-md flex items-center justify-center ${previewDevice === 'mobile' ? 'bg-[#2E2E2F]/10 text-[#2E2E2F]' : 'text-[#2E2E2F]/45 hover:text-[#2E2E2F]'}`}
+                                            title="Mobile preview"
+                                        >
+                                            <MobilePreviewIcon className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPreviewDevice('desktop')}
+                                            className={`w-9 h-9 rounded-md flex items-center justify-center ${previewDevice === 'desktop' ? 'bg-[#2E2E2F]/10 text-[#2E2E2F]' : 'text-[#2E2E2F]/45 hover:text-[#2E2E2F]'}`}
+                                            title="Desktop preview"
+                                        >
+                                            <DesktopPreviewIcon className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="rounded-[1.5rem] border border-[#2E2E2F]/12 bg-[#F2F2F2] p-4 md:p-5">
-                            <div className={`${previewDevice === 'mobile' ? 'max-w-[360px] mx-auto' : 'max-w-none'}`}>
-                                <div className="rounded-[2.1rem] overflow-hidden border border-[#2E2E2F]/12 bg-[#F2F2F2] shadow-2xl">
-                                    {/* Browser Chrome for Laptop/Desktop */}
-                                    {previewDevice !== 'mobile' && (
-                                        <div className="bg-[#E5E7EB] h-10 flex items-center px-4 gap-4 border-b border-[#2E2E2F]/10">
+                            <div className={`${previewDevice === 'desktop' ? 'flex-1 overflow-y-auto custom-scrollbar w-full px-8 xl:px-12 py-6 mx-auto flex justify-center' : 'flex-1 w-full overflow-y-auto'}`}>
+                                <div className={`${previewDevice === 'desktop' ? 'w-full max-w-[1024px] rounded-[12px] shadow-sm border border-[#2E2E2F]/15 min-h-[85vh]' : 'w-full'}`}>
+                                    <div className={`${previewDevice === 'desktop' ? 'relative p-10 pb-[92px]' : 'w-full'}`}>
+                                        {/* Browser Chrome for Laptop/Desktop */}
+                                        {previewDevice !== 'mobile' && previewDevice !== 'desktop' && (
+                                        <div className="bg-[#E5E7EB] h-10 flex items-center px-4 gap-4 border-b border-[#2E2E2F]/15">
                                             <div className="flex gap-1.5">
                                                 <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]" />
                                                 <div className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]" />
@@ -1864,7 +1878,7 @@ export const UserEvents: React.FC = () => {
                                             </div>
                                         </div>
                                     )}
-                                    <div className="h-14 border-b border-[#2E2E2F]/10 px-5 flex items-center justify-between bg-[#F2F2F2]">
+                                    <div className="h-14 border-b border-[#2E2E2F]/15 px-5 flex items-center justify-between bg-[#F2F2F2]">
                                         <img
                                             src={(organizerProfile?.plan?.features?.enable_custom_branding || organizerProfile?.plan?.features?.custom_branding) && organizerProfile?.profileImageUrl ? getImageUrl(organizerProfile.profileImageUrl) : BRAND_LOGO_URL}
                                             alt="Event Logo"
@@ -1889,10 +1903,10 @@ export const UserEvents: React.FC = () => {
                                                         {formData.eventName || 'Event title'}
                                                     </h2>
                                                     <div className="flex items-center gap-2 shrink-0">
-                                                        <div className="w-9 h-9 rounded-xl border bg-[#F2F2F2] border-[#2E2E2F]/10 flex items-center justify-center">
+                                                        <div className="w-9 h-9 rounded-xl border bg-[#F2F2F2] border-[#2E2E2F]/15 flex items-center justify-center">
                                                             <ICONS.Heart className="w-4 h-4 text-[#2E2E2F]/40" />
                                                         </div>
-                                                        <div className="w-9 h-9 rounded-xl border bg-[#F2F2F2] border-[#2E2E2F]/10 flex items-center justify-center">
+                                                        <div className="w-9 h-9 rounded-xl border bg-[#F2F2F2] border-[#2E2E2F]/15 flex items-center justify-center">
                                                             <ICONS.Download className="w-4 h-4 text-[#2E2E2F]/40" />
                                                         </div>
                                                     </div>
@@ -1936,7 +1950,7 @@ export const UserEvents: React.FC = () => {
                                                 <h3 className="text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] mb-4">ORGANIZED BY</h3>
                                                 <div className="rounded-[1.2rem] border-2 border-[#2E2E2F]/15 bg-[#F2F2F2] p-4 flex flex-col gap-4">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="w-12 h-12 rounded-full overflow-hidden bg-[#2E2E2F] text-[#F2F2F2] flex items-center justify-center text-lg font-bold shrink-0">
+                                                        <div className="w-12 h-12 rounded-full overflow-hidden text-[#F2F2F2] flex items-center justify-center text-lg font-bold shrink-0" style={{ backgroundColor: previewAccentColor }}>
                                                             {organizerProfile?.profileImageUrl ? (
                                                                 <img src={getImageUrl(organizerProfile.profileImageUrl)} alt={organizerProfile.organizerName || 'Organizer'} className="w-full h-full object-cover" />
                                                             ) : (
@@ -2029,34 +2043,39 @@ export const UserEvents: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    {previewDevice === 'mobile' && (
-                                        <div className="px-5 py-4 border-t border-[#2E2E2F]/10 bg-[#F2F2F2] flex items-center justify-between gap-3">
-                                            <div>
-                                                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#2E2E2F]/45">Starting from</p>
-                                                <p className="text-lg font-black text-[#2E2E2F]">
-                                                    {formData.ticketTypes && formData.ticketTypes.length > 0
-                                                        ? formData.ticketTypes.some((t: any) => t.priceAmount === 0)
-                                                            ? 'FREE'
-                                                            : `PHP ${Math.min(...formData.ticketTypes.map((t: any) => t.priceAmount)).toLocaleString()}`
-                                                        : 'Add inventory'}
-                                                </p>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                className={`px-6 py-3 rounded-xl text-sm font-black transition-all ${formData.ticketTypes && formData.ticketTypes.length > 0 ? 'text-white shadow-lg' : 'bg-[#2E2E2F]/10 text-[#2E2E2F]/45 cursor-not-allowed'}`}
-                                                style={formData.ticketTypes && formData.ticketTypes.length > 0 ? { backgroundColor: previewAccentColor } : {}}
-                                                disabled={!formData.ticketTypes || formData.ticketTypes.length === 0}
-                                            >
-                                                {formData.ticketTypes && formData.ticketTypes.length > 0 ? 'Get Tickets' : 'Locked'}
-                                            </button>
-                                        </div>
-                                    )}
+                                    
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </Modal>
+                </div>
+                {/* Mobile-only bottom action buttons */}
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-[#2E2E2F]/15 md:hidden z-50 flex gap-2">
+                    <button
+                        type="button"
+                        onClick={handleNextWizardStep}
+                        className="flex-1 py-3 bg-[#38BDF2] text-white rounded-xl font-bold text-sm"
+                    >
+                        Next
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleSubmit}
+                        className="flex-1 py-3 bg-[#38BDF2] text-white rounded-xl font-bold text-sm"
+                    >
+                        Save
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => { if (isPreviewMode) { setIsPreviewMode(false); } else { setPreviewDevice('mobile'); setIsPreviewMode(true); } }}
+                        className="flex-1 py-3 bg-[#F2F2F2] text-[#3A3247] rounded-xl font-bold text-sm border-2 border-[#2E2E2F]/15 flex items-center justify-center gap-2"
+                    >
+                        {isPreviewMode ? 'Close' : 'Preview'}
+                    </button>
+                </div>
+                </div>
+            )}
 
             <Modal
                 isOpen={isTicketModalOpen}

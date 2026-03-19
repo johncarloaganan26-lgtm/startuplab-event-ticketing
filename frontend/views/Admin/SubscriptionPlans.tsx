@@ -248,7 +248,7 @@ export const SubscriptionPlans: React.FC = () => {
   return (
     <div className="space-y-10 animate-in fade-in duration-700 pb-20">
       {notification && (
-        <Card className={`px-5 py-4 rounded-2xl border ${notification.type === 'success' ? 'bg-[#38BDF2]/20 border-[#38BDF2]/40 text-[#2E2E2F]' : 'bg-[#2E2E2F]/10 border-[#2E2E2F]/30 text-[#2E2E2F]'}`}>
+        <Card className={`px-5 py-4 rounded-xl border ${notification.type === 'success' ? 'bg-[#38BDF2]/20 border-[#38BDF2]/40 text-[#2E2E2F]' : 'bg-[#2E2E2F]/10 border-[#2E2E2F]/30 text-[#2E2E2F]'}`}>
           <p className="font-bold text-sm tracking-tight">{notification.message}</p>
         </Card>
       )}
@@ -256,7 +256,7 @@ export const SubscriptionPlans: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <label className="block text-[10px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] mb-3 ml-1">Pricing Plans</label>
-          <div className="bg-[#F2F2F2] p-1 rounded-2xl border border-[#2E2E2F]/10 flex items-center self-start">
+          <div className="bg-[#F2F2F2] p-1 rounded-xl border border-[#2E2E2F]/10 flex items-center self-start">
             <button
               onClick={() => setBillingCycle('monthly')}
               className={`min-h-[32px] px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-colors ${billingCycle === 'monthly' ? 'bg-[#38BDF2] text-[#F2F2F2]' : 'bg-[#F2F2F2] text-[#2E2E2F] hover:bg-[#2E2E2F] hover:text-[#F2F2F2]'}`}
@@ -330,7 +330,7 @@ export const SubscriptionPlans: React.FC = () => {
                   <div className="space-y-2">
                     <label className="block text-[10px] font-black text-[#2E2E2F]/60 uppercase tracking-widest ml-1">Description</label>
                     <textarea
-                      className="block w-full px-5 py-4 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-[1.5rem] focus:outline-none focus:ring-2 focus:ring-[#38BDF2]/30 transition-all font-bold text-sm min-h-[140px] resize-none text-[#2E2E2F]"
+                      className="block w-full px-5 py-4 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#38BDF2]/30 transition-all font-bold text-sm min-h-[140px] resize-none text-[#2E2E2F]"
                       placeholder="Describe what this plan includes..."
                       value={draft.description}
                       onChange={(e) => setDraft((prev) => ({ ...prev, description: e.target.value }))}
@@ -410,7 +410,7 @@ export const SubscriptionPlans: React.FC = () => {
                   onToggle: (value: boolean) => setDraft((prev) => ({ ...prev, isActive: value })),
                 },
               ].map((toggle) => (
-                <div key={toggle.id} className="flex items-center justify-between p-6 rounded-[2rem] bg-[#F2F2F2] border border-[#2E2E2F]/5 group/modal-toggle hover:border-[#38BDF2]/20 transition-all">
+                <div key={toggle.id} className="flex items-center justify-between p-6 rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/5 group/modal-toggle hover:border-[#38BDF2]/20 transition-all">
                   <div>
                     <p className="text-[13px] font-black text-[#2E2E2F] uppercase tracking-tight">{toggle.label}</p>
                     <p className="text-[10px] text-[#2E2E2F]/50 font-bold uppercase tracking-widest mt-0.5">{toggle.desc}</p>
@@ -425,14 +425,14 @@ export const SubscriptionPlans: React.FC = () => {
             <Button
               variant="outline"
               onClick={closeModal}
-              className="flex-1 rounded-2xl py-4 !bg-[#F2F2F2] !text-[#2E2E2F] border-[#2E2E2F]/10 hover:!bg-[#E0E0E0] font-black text-[11px] uppercase tracking-widest"
+              className="flex-1 rounded-xl py-4 !bg-[#F2F2F2] !text-[#2E2E2F] border-[#2E2E2F]/10 hover:!bg-[#E0E0E0] font-black text-[11px] uppercase tracking-widest"
               disabled={submitting}
             >
               Cancel
             </Button>
             <Button
               onClick={() => void handleSavePlan()}
-              className="flex-[2] rounded-2xl py-4 shadow-2xl shadow-[#38BDF2]/30 font-black text-[11px] uppercase tracking-[0.2em]"
+              className="flex-[2] rounded-xl py-4 shadow-2xl shadow-[#38BDF2]/30 font-black text-[11px] uppercase tracking-[0.2em]"
               disabled={submitting}
             >
               {submitting ? 'Saving...' : (editingPlan ? 'Save Changes' : 'Create Plan')}
@@ -443,3 +443,4 @@ export const SubscriptionPlans: React.FC = () => {
     </div>
   );
 };
+

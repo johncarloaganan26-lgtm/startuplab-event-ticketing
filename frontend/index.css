@@ -586,3 +586,19 @@ img {
   }
 }
 
+@media (min-width: 1280px) {
+  .create-event-desktop-scale {
+    zoom: 0.75;
+  }
+}
+
+@supports not (zoom: 1) {
+  @media (min-width: 1280px) {
+    .create-event-desktop-scale {
+      transform: scale(0.75);
+      transform-origin: top left;
+      width: calc(100% / 0.75);
+    }
+  }
+}
+

@@ -90,7 +90,7 @@ export const LoginPerspective: React.FC = () => {
             <img
               src="https://xmjdcbzgdfylbqkjoyyb.supabase.co/storage/v1/object/public/startuplab-business-ticketing/assets/assets/image%20(1).svg"
               alt="StartupLab Business Center Logo"
-              className="mx-auto mb-6 w-[240px] max-w-full h-auto"
+              className="mx-auto mb-6 w-[180px] lg:w-[240px] max-w-full h-auto"
               style={{ objectFit: 'contain' }}
             />
             <p className="text-[#2E2E2F]/70 text-lg font-medium">Sign in to your account</p>

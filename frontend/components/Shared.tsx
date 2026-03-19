@@ -30,7 +30,7 @@ export const Card: React.FC<{
   <div
     onClick={onClick}
     style={style}
-    className={`bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-2xl overflow-hidden ${className} shadow-sm hover:shadow-md transition-shadow`}
+    className={`bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl overflow-hidden ${className} shadow-sm hover:shadow-md transition-shadow`}
     {...props}
   >
     {children}
@@ -116,7 +116,7 @@ export const PasswordInput: React.FC<{
   icon?: React.ReactNode;
 }> = ({ value, onChange, placeholder, required, className = '', icon }) => {
   const [showPassword, setShowPassword] = React.useState(false);
-  
+
   // Use a local copy of ICONS since it's not exported from Shared.tsx
   const EyeIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -163,6 +163,7 @@ export const Modal: React.FC<{
   closeOnBackdrop?: boolean;
   className?: string;
   contentClassName?: string;
+  variant?: 'dialog' | 'page';
 }> = ({
   isOpen,
   onClose,
@@ -174,15 +175,31 @@ export const Modal: React.FC<{
   showClose = true,
   closeOnBackdrop = true,
   className = '',
-  contentClassName = ''
+  contentClassName = '',
+  variant = 'dialog'
 }) => {
     if (!isOpen) return null;
+
+    if (variant === 'page') {
+      return (
+        <div className={className}>
+          <div className={contentClassName}>
+            {children}
+          </div>
+          {footer && (
+            <div className="border-t border-[#2E2E2F]/10 bg-[#F2F2F2]">
+              {footer}
+            </div>
+          )}
+        </div>
+      );
+    }
 
     const sizes = {
       sm: 'max-w-xs sm:max-w-md',
       md: 'max-w-sm sm:max-w-xl',
       lg: 'max-w-md sm:max-w-3xl',
-      xl: 'max-w-lg sm:max-w-4xl'
+      xl: 'max-w-lg sm:max-w-5xl'
     };
 
     return (
@@ -198,7 +215,7 @@ export const Modal: React.FC<{
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
-          className={`relative z-[110] bg-[#F2F2F2] sm:rounded-3xl rounded-t-3xl border-x-0 sm:border-x border-b-0 sm:border-b border-[#2E2E2F]/10 w-full ${sizes[size]
+          className={`relative z-[110] bg-[#F2F2F2] sm:rounded-xl rounded-t-3xl border-x-0 sm:border-x border-b-0 sm:border-b border-[#2E2E2F]/10 w-full ${sizes[size]
             } max-h-[90vh] sm:max-h-[85vh] overflow-hidden ${className}`}
         >
           <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-[#2E2E2F]/10 flex items-start justify-between gap-3 sticky top-0 bg-[#F2F2F2] z-10">
@@ -277,7 +294,8 @@ export const Branding: React.FC<{ className?: string, light?: boolean }> = ({ cl
   <img
     src="https://xmjdcbzgdfylbqkjoyyb.supabase.co/storage/v1/object/public/startuplab-business-ticketing/assets/assets/image%20(1).svg"
     alt="StartupLab Business Ticketing Logo"
-    className={`h-20 sm:h-32 w-auto drop-shadow-xl transform transition-all duration-300 hover:scale-[1.03] cursor-pointer ${className}`}
+    className={`h-20 lg:h-32 w-auto drop-shadow-xl transform transition-all duration-300 hover:scale-[1.03] cursor-pointer ${className}`}
     style={{ filter: light ? 'invert(1) grayscale(1) brightness(2)' : undefined }}
   />
 );
+

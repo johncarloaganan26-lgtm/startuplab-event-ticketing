@@ -46,7 +46,7 @@ export const AcceptInvite: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F2F2F2] px-4">
-      <Card className="p-10 w-full max-w-md bg-[#F2F2F2] border border-[#2E2E2F]/20 rounded-[2.5rem]">
+      <Card className="p-10 w-full max-w-md bg-[#F2F2F2] border border-[#2E2E2F]/20 rounded-xl">
         <h2 className="text-2xl font-black mb-6 text-[#2E2E2F]">Complete Your Account</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-1.5 w-full">
@@ -104,3 +104,4 @@ export const AcceptInvite: React.FC = () => {
     </div>
   );
 };
+

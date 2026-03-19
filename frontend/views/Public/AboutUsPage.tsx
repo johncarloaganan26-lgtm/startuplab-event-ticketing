@@ -86,7 +86,7 @@ export const AboutUsPage: React.FC = () => {
 
         <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {featureCards.map((feature) => (
-            <article key={feature.title} className="rounded-2xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-5">
+            <article key={feature.title} className="rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-5">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: `${ACCENT}26`, color: ACCENT }}>
                 <feature.Icon className="w-5 h-5" />
               </div>
@@ -96,7 +96,7 @@ export const AboutUsPage: React.FC = () => {
           ))}
         </section>
 
-        <section className="rounded-[1.6rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] p-6 sm:p-8">
+        <section className="rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-6 sm:p-8">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/50 mb-4">Meet Our Team</p>
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-[#2E2E2F]">The people behind StartupLab Ticketing</h2>
           <p className="mt-3 text-sm sm:text-base text-[#2E2E2F]/70 leading-relaxed">
@@ -104,7 +104,7 @@ export const AboutUsPage: React.FC = () => {
           </p>
         </section>
 
-        <section className="rounded-[1.6rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] p-6 sm:p-8">
+        <section className="rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-6 sm:p-8">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/50 mb-4">Community Voices</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {testimonials.map((item) => (
@@ -131,11 +131,11 @@ export const AboutUsPage: React.FC = () => {
           </div>
         </section>
 
-        <section className="rounded-[1.6rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] p-6 sm:p-8">
+        <section className="rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-6 sm:p-8">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/50 mb-4">Impact</p>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {impactStats.map((item) => (
-              <div key={item.label} className="rounded-2xl border border-[#2E2E2F]/10 bg-[#F2F2F2] px-4 py-5">
+              <div key={item.label} className="rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] px-4 py-5">
                 <p className="text-2xl font-black tracking-tight" style={{ color: ACCENT }}>{item.value}</p>
                 <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#2E2E2F]/60 mt-2">{item.label}</p>
               </div>
@@ -146,3 +146,4 @@ export const AboutUsPage: React.FC = () => {
     </div>
   );
 };
+

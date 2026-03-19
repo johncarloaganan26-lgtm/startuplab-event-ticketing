@@ -45,11 +45,11 @@ const InfoPageLayout: React.FC<InfoPageProps> = ({
     <div className="bg-[#F2F2F2]">
       <div className="max-w-[88rem] mx-auto px-6 py-12 sm:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8 lg:gap-10">
-          <article className={`rounded-[1.8rem] border border-[#2E2E2F]/10 p-6 sm:p-8 lg:p-10 ${articleClassName}`}>
+          <article className={`rounded-xl border border-[#2E2E2F]/10 p-6 sm:p-8 lg:p-10 ${articleClassName}`}>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#38BDF2] mb-4">{eyebrow}</p>
             <h1 className="text-3xl lg:text-4xl font-black tracking-tight text-[#2E2E2F] mb-4">{title}</h1>
             <p className="text-[#2E2E2F]/70 text-sm sm:text-base leading-relaxed mb-8">{intro}</p>
-            <div className="mb-8 overflow-hidden rounded-2xl border border-[#2E2E2F]/10">
+            <div className="mb-8 overflow-hidden rounded-xl border border-[#2E2E2F]/10">
               <img
                 src={heroImage}
                 alt={heroAlt}
@@ -58,7 +58,7 @@ const InfoPageLayout: React.FC<InfoPageProps> = ({
               />
             </div>
             {highlights.length > 0 && (
-              <div className="mb-8 rounded-2xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-4 sm:p-5">
+              <div className="mb-8 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-4 sm:p-5">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/50 mb-3">Platform Scope</p>
                 <div className="flex flex-wrap gap-2">
                   {highlights.map((item) => (
@@ -103,7 +103,7 @@ const InfoPageLayout: React.FC<InfoPageProps> = ({
             </p>
           </article>
 
-          <aside className="rounded-[1.5rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] p-5 h-fit lg:sticky lg:top-28">
+          <aside className="rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-5 h-fit lg:sticky lg:top-28">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/50 mb-4">Related Pages</p>
             <div className="space-y-2.5">
               {LEGAL_LINKS.map((link) => (
@@ -376,3 +376,4 @@ export const RefundPolicyPage: React.FC = () => (
 );
 
 export const PublicEventsPage: React.FC = () => <EventList />;
+

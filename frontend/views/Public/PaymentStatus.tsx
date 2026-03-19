@@ -92,8 +92,8 @@ export const PaymentStatusView: React.FC = () => {
   if (status === 'failed' || status === 'expired') {
     return (
       <div className="max-w-xl mx-auto px-4 py-16">
-        <Card className="p-10 text-center rounded-[2.5rem] bg-[#F2F2F2] border-[#2E2E2F]/10">
-          <div className="w-16 h-16 bg-[#2E2E2F]/5 text-[#2E2E2F]/40 rounded-3xl flex items-center justify-center mx-auto mb-8">
+        <Card className="p-10 text-center rounded-xl bg-[#F2F2F2] border-[#2E2E2F]/10">
+          <div className="w-16 h-16 bg-[#2E2E2F]/5 text-[#2E2E2F]/40 rounded-xl flex items-center justify-center mx-auto mb-8">
             <ICONS.CheckCircle className="w-8 h-8 opacity-20" />
           </div>
           <h1 className="text-3xl font-black text-[#2E2E2F] tracking-tighter mb-4">
@@ -105,7 +105,7 @@ export const PaymentStatusView: React.FC = () => {
               : 'We encountered an error processing your payment. No funds were captured.'}
           </p>
           <div className="flex flex-col gap-4">
-            <Button onClick={() => navigate('/')} variant="primary" className="w-full py-4 rounded-2xl">
+            <Button onClick={() => navigate('/')} variant="primary" className="w-full py-4 rounded-xl">
               Back to Events
             </Button>
             <p className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/40">Enterprise Support • Contact help@startuplab.com</p>
@@ -118,7 +118,7 @@ export const PaymentStatusView: React.FC = () => {
   if (status === 'pending') {
     return (
       <div className="max-w-xl mx-auto px-4 py-16">
-        <Card className="p-10 text-center rounded-[2.5rem] bg-[#F2F2F2] border-[#2E2E2F]/10">
+        <Card className="p-10 text-center rounded-xl bg-[#F2F2F2] border-[#2E2E2F]/10">
           <div className="relative w-12 h-12 mx-auto mb-8">
             <div className="absolute inset-0 rounded-full border-4 border-[#38BDF2]/10 border-t-[#38BDF2] animate-spin"></div>
           </div>
@@ -138,7 +138,7 @@ export const PaymentStatusView: React.FC = () => {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between items-start gap-10 mb-16">
         <div className="max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#38BDF2]/10 rounded-lg text-[#38BDF2] text-[10px] font-black uppercase tracking-widest mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#38BDF2]/10 rounded-xl text-[#38BDF2] text-[10px] font-black uppercase tracking-widest mb-6">
             <span className="w-2 h-2 bg-[#38BDF2] rounded-full animate-pulse"></span>
             Registration Verified
           </div>
@@ -152,12 +152,12 @@ export const PaymentStatusView: React.FC = () => {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-          <Button variant="outline" className="rounded-2xl px-8 py-4 border-[#2E2E2F]/10 hover:bg-[#2E2E2F] hover:text-white transition-all duration-300" onClick={() => navigate('/')}>
+          <Button variant="outline" className="rounded-xl px-8 py-4 border-[#2E2E2F]/10 hover:bg-[#2E2E2F] hover:text-white transition-all duration-300" onClick={() => navigate('/')}>
             BACK TO EVENTS
           </Button>
           {!isOnlineEvent && tickets.length > 0 && (
             <Button
-              className="rounded-2xl px-8 py-4 bg-[#38BDF2] text-[#F2F2F2] shadow-lg shadow-[#38BDF2]/20 scale-105 hover:scale-110 active:scale-95 transition-all duration-300"
+              className="rounded-xl px-8 py-4 bg-[#38BDF2] text-[#F2F2F2] shadow-lg shadow-[#38BDF2]/20 scale-105 hover:scale-110 active:scale-95 transition-all duration-300"
               onClick={() => navigate(`/tickets/${tickets[activeTicketIndex].ticketId}`)}
             >
               VIEW TICKET {tickets.length > 1 ? `#${activeTicketIndex + 1}` : ''}
@@ -169,7 +169,7 @@ export const PaymentStatusView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Access Card */}
         <div className="lg:col-span-2 space-y-8">
-          <Card className="rounded-[2.5rem] bg-[#F2F2F2] border border-[#2E2E2F]/10 overflow-hidden shadow-xl shadow-[#2E2E2F]/5">
+          <Card className="rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/10 overflow-hidden shadow-xl shadow-[#2E2E2F]/5">
             <div className="p-8 sm:p-12">
               {isOnlineEvent ? (
                 /* ONLINE VERSION */
@@ -181,12 +181,12 @@ export const PaymentStatusView: React.FC = () => {
                         This event is hosted digitally. You can join the session directly from this portal or via the link sent to your email.
                       </p>
                     </div>
-                    <div className="hidden sm:flex w-20 h-20 bg-[#38BDF2] rounded-3xl items-center justify-center text-[#F2F2F2] shrink-0">
+                    <div className="hidden sm:flex w-20 h-20 bg-[#38BDF2] rounded-xl items-center justify-center text-[#F2F2F2] shrink-0">
                       <ICONS.Layout className="w-10 h-10" />
                     </div>
                   </div>
 
-                  <div className="bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-8">
+                  <div className="bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-8">
                     <div className="flex-1 w-full sm:w-auto text-center sm:text-left overflow-hidden">
                       <p className="text-[10px] font-black text-[#2E2E2F]/40 uppercase tracking-widest mb-2">Connection Link</p>
                       <p className="text-sm font-bold text-[#2E2E2F] truncate mb-1 pr-4">{meetLink}</p>
@@ -196,7 +196,7 @@ export const PaymentStatusView: React.FC = () => {
                       </p>
                     </div>
                     <Button
-                      className="w-full sm:w-auto px-10 py-5 rounded-2xl bg-[#38BDF2] text-[#F2F2F2] text-sm font-black tracking-wide"
+                      className="w-full sm:w-auto px-10 py-5 rounded-xl bg-[#38BDF2] text-[#F2F2F2] text-sm font-black tracking-wide"
                       onClick={() => { window.open(meetLink, '_blank'); }}
                     >
                       JOIN LIVE SESSION
@@ -204,11 +204,11 @@ export const PaymentStatusView: React.FC = () => {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div className="p-5 rounded-2xl bg-[#F2F2F2] border border-[#2E2E2F]/5">
+                    <div className="p-5 rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/5">
                       <p className="text-[9px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em] mb-2">Access Method</p>
                       <p className="text-sm font-bold text-[#2E2E2F]">{provider}</p>
                     </div>
-                    <div className="p-5 rounded-2xl bg-[#F2F2F2] border border-[#2E2E2F]/5">
+                    <div className="p-5 rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/5">
                       <p className="text-[9px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em] mb-2">Entry Status</p>
                       <p className="text-sm font-bold text-[#38BDF2]">Auto-Confirmed</p>
                     </div>
@@ -224,16 +224,16 @@ export const PaymentStatusView: React.FC = () => {
                         Present this QR code at the event for check-in.
                       </p>
                     </div>
-                    <div className="hidden sm:flex w-20 h-20 bg-[#2E2E2F] rounded-3xl items-center justify-center text-[#F2F2F2] shrink-0">
+                    <div className="hidden sm:flex w-20 h-20 bg-[#2E2E2F] rounded-xl items-center justify-center text-[#F2F2F2] shrink-0">
                       <ICONS.Ticket className="w-10 h-10" />
                     </div>
                   </div>
 
                   <div className="flex flex-col items-center justify-center gap-10">
                     {tickets.length > 0 ? (
-                      <div className="relative group w-full max-w-[340px]">
-                        <div className="absolute -inset-6 bg-[#38BDF2]/5 rounded-[3.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <Card className="relative p-8 sm:p-10 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-[2.5rem] shadow-2xl shadow-[#2E2E2F]/10 overflow-hidden">
+                      <div className="relative group w-full max-w-[340px] md:max-w-[280px] lg:max-w-[340px]">
+                        <div className="absolute -inset-6 bg-[#38BDF2]/5 rounded-xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <Card className="relative p-8 sm:p-10 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl shadow-2xl shadow-[#2E2E2F]/10 overflow-hidden">
                           <div className="flex justify-center mb-8">
                             <QRCode
                               value={tickets[activeTicketIndex].qrPayload || tickets[activeTicketIndex].ticketCode}
@@ -255,7 +255,7 @@ export const PaymentStatusView: React.FC = () => {
                     )}
 
                     {tickets.length > 1 && (
-                      <div className="flex items-center gap-4 bg-[#2E2E2F] p-2 rounded-2xl shadow-xl border border-[#F2F2F2]/5">
+                      <div className="flex items-center gap-4 bg-[#2E2E2F] p-2 rounded-xl shadow-xl border border-[#F2F2F2]/5">
                         <Button
                           size="sm"
                           variant="ghost"
@@ -279,7 +279,7 @@ export const PaymentStatusView: React.FC = () => {
                       </div>
                     )}
 
-                    <div className="max-w-md w-full bg-[#38BDF2]/5 border border-[#38BDF2]/10 rounded-3xl py-5 px-8 text-center sm:text-left flex items-center gap-6">
+                    <div className="max-w-md w-full bg-[#38BDF2]/5 border border-[#38BDF2]/10 rounded-xl py-5 px-8 text-center sm:text-left flex items-center gap-6">
                       <div className="w-10 h-10 bg-[#38BDF2] rounded-xl flex items-center justify-center text-[#F2F2F2] shrink-0">
                         <ICONS.CheckCircle className="w-5 h-5" />
                       </div>
@@ -291,11 +291,11 @@ export const PaymentStatusView: React.FC = () => {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div className="p-6 rounded-2xl bg-[#F2F2F2] border border-[#2E2E2F]/5">
+                    <div className="p-6 rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/5">
                       <p className="text-[9px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em] mb-2">Access Method</p>
                       <p className="text-sm font-bold text-[#2E2E2F]">In-Person Verification</p>
                     </div>
-                    <div className="p-6 rounded-2xl bg-[#F2F2F2] border border-[#2E2E2F]/5">
+                    <div className="p-6 rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/5">
                       <p className="text-[9px] font-black text-[#2E2E2F]/40 uppercase tracking-[0.2em] mb-2">Entry Status</p>
                       <p className="text-sm font-bold text-[#38BDF2]">Registration Verified</p>
                     </div>
@@ -307,7 +307,7 @@ export const PaymentStatusView: React.FC = () => {
 
           {/* Verification Steps */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-            <Card className="p-8 rounded-[2rem] bg-[#F2F2F2] border border-[#2E2E2F]/5">
+            <Card className="p-8 rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/5">
               <div className="w-10 h-10 bg-[#38BDF2]/10 rounded-xl flex items-center justify-center text-[#38BDF2] mb-6">
                 <ICONS.Layout className="w-5 h-5" />
               </div>
@@ -316,7 +316,7 @@ export const PaymentStatusView: React.FC = () => {
                 A confirmation receipt and detailed instructions have been dispatched to your registered address.
               </p>
             </Card>
-            <Card className="p-8 rounded-[2rem] bg-[#F2F2F2] border border-[#2E2E2F]/5">
+            <Card className="p-8 rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/5">
               <div className="w-10 h-10 bg-[#38BDF2]/10 rounded-xl flex items-center justify-center text-[#38BDF2] mb-6">
                 <ICONS.Users className="w-5 h-5" />
               </div>
@@ -336,7 +336,7 @@ export const PaymentStatusView: React.FC = () => {
 
         {/* Sidebar Info */}
         <div className="space-y-8">
-          <Card className="p-8 rounded-[2.5rem] bg-[#2E2E2F] text-[#F2F2F2]">
+          <Card className="p-8 rounded-xl bg-[#2E2E2F] text-[#F2F2F2]">
             <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#F2F2F2]/40 mb-8">Event Logistics</h3>
             <div className="space-y-8">
               <div>
@@ -374,4 +374,5 @@ export const PaymentStatusView: React.FC = () => {
     </div>
   );
 };
+
 

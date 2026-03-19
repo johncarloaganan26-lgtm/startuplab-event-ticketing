@@ -97,7 +97,7 @@ export const OnsiteLocationAssistant: React.FC<OnsiteLocationAssistantProps> = (
   const openMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((value || query || DEFAULT_MAP_QUERY).trim())}`;
 
   return (
-    <div className="rounded-2xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-4 md:p-5 space-y-4">
+    <div className="rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] p-4 md:p-5 space-y-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-[11px] font-black uppercase tracking-widest text-[#2E2E2F]/60">Add location details</p>
         <a
@@ -163,3 +163,4 @@ export const OnsiteLocationAssistant: React.FC<OnsiteLocationAssistantProps> = (
     </div>
   );
 };
+

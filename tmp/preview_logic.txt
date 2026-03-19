@@ -1,0 +1,49 @@
+Line 116:     const [isPreviewMode, setIsPreviewMode] = useState(false);
+Line 208:     const isFullScreenMode = isCreateRoute || isEditRoute || isModalOpen;
+Line 321:     const isCreatePreviewOpen = isFullScreenMode && isPreviewMode;
+Line 322:     const isCreateDesktopPreviewMode = isCreatePreviewOpen && previewDevice === 'desktop';
+Line 323:     const isCreateMobilePreviewMode = isCreatePreviewOpen && previewDevice === 'mobile';
+Line 324:     const shouldShowCreatePreviewDock = isFullScreenMode && !isCreatePreviewOpen;
+Line 325:     const shouldShowStepRail = isFullScreenMode ? !isCreateDesktopPreviewMode : !isSidebarHidden;
+Line 326:     const shouldShowPreviewPanel = isFullScreenMode ? (isCreateMobilePreviewMode || isCreateDesktopPreviewMode) : isPreviewMode;
+Line 327:     const shouldShowMainEditor = !isCreateDesktopPreviewMode;
+Line 331:         if (isFullScreenMode && !isPreviewMode && (formData.eventName || formData.description)) {
+Line 332:             const timeout = setTimeout(() => setIsPreviewMode(true), 300);
+Line 335:     }, [formData.eventName, formData.description, isFullScreenMode, isPreviewMode]);
+Line 336:     const createBuilderLayoutClass = isCreateDesktopPreviewMode
+Line 338:         : isCreateMobilePreviewMode
+Line 341:     const createPreviewPanelClass = isCreateDesktopPreviewMode
+Line 343:         : isCreateMobilePreviewMode
+Line 485:         setIsPreviewMode(false);
+Line 547:         setIsPreviewMode(false);
+Line 707:         setIsPreviewMode(false);
+Line 858:             setIsPreviewMode(false);
+Line 877:         setIsPreviewMode(false);
+Line 947:             className={isFullScreenMode ? 'space-y-0' : 'space-y-0'}
+Line 948:             style={isFullScreenMode ? { zoom: '0.8' } as any : {}}
+Line 958:             {!isFullScreenMode && (
+Line 1375:                 isOpen={isFullScreenMode}
+Line 1381:                 className={isFullScreenMode ? '' : 'max-w-[96vw]'}
+Line 1383:                 <div className={isFullScreenMode ? createBuilderLayoutClass : `grid grid-cols-1 gap-6 ${isSidebarHidden ? 'xl:grid-cols-1' : !isPreviewMode ? 'xl:grid-cols-[300px_minmax(0,1fr)]' : previewDevice === 'desktop' ? 'xl:grid-cols-[300px_minmax(0,1fr)_minmax(800px,1100px)]' : 'xl:grid-cols-[300px_minmax(0,1fr)_380px]'}`}>
+Line 1385:                         <div className={`space-y-5 xl:sticky self-start xl:overflow-y-auto ${isFullScreenMode ? 'xl:top-8 xl:max-h-[calc(100vh-4rem)] xl:pr-2' : 'xl:top-0 xl:max-h-[calc(70vh-1rem)] xl:pr-1'} custom-scrollbar`}>
+Line 1421:                                             if (!isFullScreenMode) setIsPreviewMode(false);
+Line 1447:                             {isFullScreenMode && (
+Line 1452:                                             if (isPreviewMode) {
+Line 1453:                                                 setIsPreviewMode(false);
+Line 1457:                                             setIsPreviewMode(true);
+Line 1459:                                         className={`inline-flex items-center gap-2 rounded-full border-2 px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] transition-colors ${isPreviewMode ? 'border-[#38BDF2]/40 bg-[#38BDF2]/10 text-[#2E2E2F]' : 'border-[#2E2E2F]/15 bg-[#F2F2F2] text-[#2E2E2F]/60 hover:border-[#38BDF2]/40 hover:bg-[#38BDF2]/10 hover:text-[#2E2E2F]'}`}
+Line 1462:                                         {isPreviewMode ? 'Hide preview' : 'Preview'}
+Line 1466:                             {!isFullScreenMode && (
+Line 1476:                                     {!isPreviewMode && (
+Line 1479:                                             onClick={() => setIsPreviewMode(true)}
+Line 1979:                                     setIsPreviewMode(true);
+Line 1989:                     <div className={isFullScreenMode ? createPreviewPanelClass : `${shouldShowPreviewPanel ? 'flex flex-col' : 'hidden'} xl:sticky self-start xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:pr-1 overflow-hidden`}>
+Line 1990:                         <div className={`flex items-center justify-between shrink-0 mb-3 ${isCreateDesktopPreviewMode ? 'rounded-full border border-[#2E2E2F]/10 bg-[#F2F2F2]/90 px-4 py-3 shadow-[0_20px_50px_-30px_rgba(46,46,47,0.35)] backdrop-blur' : ''}`}>
+Line 1993:                                 <h4 className={`${isCreateDesktopPreviewMode ? 'text-xl' : 'text-[30px]'} font-black text-[#2E2E2F] tracking-tight`}>Preview</h4>
+Line 1996:                                 {!isFullScreenMode && (
+Line 1999:                                         onClick={() => setIsPreviewMode(false)}
+Line 2005:                                 {isFullScreenMode && (
+Line 2008:                                         onClick={() => setIsPreviewMode(false)}
+Line 2036:                         <div className={isCreateDesktopPreviewMode ? 'rounded-[2rem] border border-[#2E2E2F]/10 bg-[linear-gradient(180deg,#F2F2F2_0%,#EDF2F4_100%)] p-5 shadow-[0_40px_120px_-40px_rgba(46,46,47,0.4)] flex-1 min-h-0 overflow-y-auto custom-scrollbar' : 'rounded-[2rem] border border-[#2E2E2F]/10 bg-[#F2F2F2] p-2 shadow-[0_30px_90px_-40px_rgba(46,46,47,0.35)] md:p-5 flex-1 min-h-0 overflow-y-auto custom-scrollbar'}>
+Line 2037:                             <div className={`${isCreateDesktopPreviewMode ? 'mx-auto max-w-7xl' : previewDevice === 'mobile' ? 'max-w-[360px] mx-auto' : 'max-w-none'}`}>
+Line 2038:                                 <div className={`${isCreateDesktopPreviewMode ? 'rounded-[2rem]' : 'rounded-[2rem]'} border border-[#2E2E2F]/12 bg-[#F2F2F2] shadow-2xl overflow-hidden`}>

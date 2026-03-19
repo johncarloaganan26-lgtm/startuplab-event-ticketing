@@ -135,7 +135,7 @@ export const ArchiveEvents: React.FC = () => {
       {notification && (
         <div className="fixed top-24 right-8 z-[120]">
           <Card
-            className={`px-5 py-3 rounded-2xl border ${
+            className={`px-5 py-3 rounded-xl border ${
               notification.type === 'success' 
                 ? 'bg-green-50 border-green-200 text-green-800' 
                 : 'bg-red-50 border-red-200 text-red-800'
@@ -148,14 +148,14 @@ export const ArchiveEvents: React.FC = () => {
 
       {/* Error Message */}
       {error && (
-        <Card className="p-4 rounded-2xl border-red-200 bg-red-50">
+        <Card className="p-4 rounded-xl border-red-200 bg-red-50">
           <p className="text-red-600 font-semibold text-sm">{error}</p>
         </Card>
       )}
 
       {/* Empty State */}
       {events.length === 0 ? (
-        <Card className="p-12 rounded-2xl border-[#2E2E2F]/10 text-center">
+        <Card className="p-12 rounded-xl border-[#2E2E2F]/10 text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#F2F2F2] flex items-center justify-center">
             <svg className="w-8 h-8 text-[#2E2E2F]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
@@ -172,7 +172,7 @@ export const ArchiveEvents: React.FC = () => {
         </Card>
       ) : (
         /* Table View */
-        <Card className="overflow-hidden rounded-2xl border-[#2E2E2F]/10">
+        <Card className="overflow-hidden rounded-xl border-[#2E2E2F]/10">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -290,3 +290,4 @@ export const ArchiveEvents: React.FC = () => {
     </div>
   );
 };
+

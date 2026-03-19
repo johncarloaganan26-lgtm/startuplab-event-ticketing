@@ -169,10 +169,10 @@ export const UserHome: React.FC = () => {
     };
 
     return (
-        <div className="space-y-12 max-w-6xl">
+        <div className="space-y-12 max-w-6xl mx-auto pt-10">
             {notification && (
                 <div className="fixed top-8 right-8 z-[120] animate-in slide-in-from-top-4 duration-300">
-                    <Card className={`flex items-center gap-4 px-6 py-4 rounded-2xl border-2 shadow-xl ${notification.type === 'success'
+                    <Card className={`flex items-center gap-4 px-6 py-4 rounded-xl border-2 shadow-xl ${notification.type === 'success'
                         ? 'bg-[#38BDF2]/10 border-[#38BDF2]/40 text-[#2E2E2F]'
                         : 'bg-red-50 border-red-500/40 text-red-700'}`}>
                         <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${notification.type === 'success' ? 'bg-[#38BDF2] text-white' : 'bg-red-500 text-white'}`}>
@@ -184,10 +184,10 @@ export const UserHome: React.FC = () => {
             )}
 
             {/* Welcome Section */}
-            <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 rounded-[5px] p-10 md:p-14 mb-4">
+            <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 rounded-xl p-10 md:p-14 mb-4">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
                     <div className="max-w-2xl">
-                        <div className="w-12 h-12 rounded-2xl bg-[#2E2E2F]/10 flex items-center justify-center mb-8">
+                        <div className="w-12 h-12 rounded-xl bg-[#2E2E2F]/10 flex items-center justify-center mb-8">
                             <ICONS.Home className="w-6 h-6 text-[#2E2E2F]" />
                         </div>
                         <h1 className="text-4xl md:text-6xl font-black text-[#2E2E2F] tracking-tighter leading-none mb-6">
@@ -219,7 +219,7 @@ export const UserHome: React.FC = () => {
             {organizerProfile && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* Current Plan Card */}
-                    <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 rounded-[5px] p-6 flex flex-col justify-between min-h-[160px] shadow-sm transition-all hover:border-[#38BDF2]/30">
+                    <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 rounded-xl p-6 flex flex-col justify-between min-h-[160px] shadow-sm transition-all hover:border-[#38BDF2]/30">
                         <div>
                             <p className="text-[9px] font-black uppercase tracking-widest text-[#2E2E2F]/60 mb-2">Current Plan</p>
                             <p className="text-2xl font-black text-[#2E2E2F] tracking-tight">{organizerProfile.plan?.name || 'No Active Plan'}</p>
@@ -236,7 +236,7 @@ export const UserHome: React.FC = () => {
                     </div>
 
                     {/* Paid Events Limit Widget */}
-                    <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 rounded-[5px] p-6 flex flex-col justify-between min-h-[160px] shadow-sm transition-all hover:border-[#38BDF2]/30">
+                    <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 rounded-xl p-6 flex flex-col justify-between min-h-[160px] shadow-sm transition-all hover:border-[#38BDF2]/30">
                         {organizerProfile && (() => {
                             const pricedLimit = Number(organizerProfile.plan?.limits?.max_priced_events || organizerProfile.plan?.max_priced_events || organizerProfile.plan?.maxPricedEvents || 0);
                             const usedCount = stats.paidEventsCount;
@@ -278,9 +278,9 @@ export const UserHome: React.FC = () => {
 
                     {/* Email Quota Widget */}
                     {emailQuota && (
-                        <div className="bg-[#F2F2F2] border-[#2E2E2F]/15 border-2 rounded-[5px] p-6 flex flex-col justify-between min-h-[160px] shadow-sm transition-all hover:border-[#38BDF2]/30">
+                        <div className="bg-[#F2F2F2] border-[#2E2E2F]/15 border-2 rounded-xl p-6 flex flex-col justify-between min-h-[160px] shadow-sm transition-all hover:border-[#38BDF2]/30">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="p-2 bg-[#2E2E2F]/10 rounded-lg">
+                                <div className="p-2 bg-[#2E2E2F]/10 rounded-xl">
                                     <ICONS.Mail className="w-5 h-5 text-[#2E2E2F]" strokeWidth={2} />
                                 </div>
                                 <div>
@@ -317,10 +317,10 @@ export const UserHome: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Create First Event Card */}
                 <div
-                    className="group relative bg-[#F2F2F2] border-2 border-[#2E2E2F]/5 rounded-[5px] p-8 flex flex-col items-start transition-all duration-300 hover:border-[#2E2E2F]/20 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.05)] hover:-translate-y-1"
-                    onClick={() => navigate('/my-events?openModal=true')}
+                    className="group relative bg-[#F2F2F2] border-2 border-[#2E2E2F]/5 rounded-xl p-8 flex flex-col items-start transition-all duration-300 hover:border-[#2E2E2F]/20 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.05)] hover:-translate-y-1"
+                    onClick={() => navigate('/my-events/create')}
                 >
-                    <div className="w-14 h-14 rounded-2xl bg-[#2E2E2F]/10 text-[#2E2E2F] flex items-center justify-center mb-8 group-hover:bg-[#2E2E2F] group-hover:text-white transition-all">
+                    <div className="w-14 h-14 rounded-xl bg-[#2E2E2F]/10 text-[#2E2E2F] flex items-center justify-center mb-8 group-hover:bg-[#2E2E2F] group-hover:text-white transition-all">
                         <ICONS.Plus className="w-8 h-8 stroke-[3]" />
                     </div>
                     <h2 className="text-2xl font-black text-[#2E2E2F] tracking-tight mb-3">Create First Event</h2>
@@ -334,10 +334,10 @@ export const UserHome: React.FC = () => {
 
                 {/* Manage Events Card */}
                 <div
-                    className="group relative bg-[#F2F2F2] border-2 border-[#2E2E2F]/5 rounded-[5px] p-8 flex flex-col items-start transition-all duration-300 hover:border-[#2E2E2F]/20 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.05)] hover:-translate-y-1"
+                    className="group relative bg-[#F2F2F2] border-2 border-[#2E2E2F]/5 rounded-xl p-8 flex flex-col items-start transition-all duration-300 hover:border-[#2E2E2F]/20 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.05)] hover:-translate-y-1"
                     onClick={() => navigate('/my-events')}
                 >
-                    <div className="w-14 h-14 rounded-2xl bg-[#2E2E2F]/10 text-[#2E2E2F] flex items-center justify-center mb-8 group-hover:bg-[#2E2E2F] group-hover:text-white transition-all">
+                    <div className="w-14 h-14 rounded-xl bg-[#2E2E2F]/10 text-[#2E2E2F] flex items-center justify-center mb-8 group-hover:bg-[#2E2E2F] group-hover:text-white transition-all">
                         <ICONS.Calendar className="w-7 h-7 stroke-[2]" />
                     </div>
                     <h2 className="text-2xl font-black text-[#2E2E2F] tracking-tight mb-3">Manage My Events</h2>
@@ -351,10 +351,10 @@ export const UserHome: React.FC = () => {
 
                 {/* Help & Support Card */}
                 <div
-                    className="group relative bg-[#F2F2F2] border-2 border-[#2E2E2F]/5 rounded-[5px] p-8 flex flex-col items-start transition-all duration-300 hover:border-[#2E2E2F]/20 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.05)] hover:-translate-y-1"
+                    className="group relative bg-[#F2F2F2] border-2 border-[#2E2E2F]/5 rounded-xl p-8 flex flex-col items-start transition-all duration-300 hover:border-[#2E2E2F]/20 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.05)] hover:-translate-y-1"
                     onClick={() => navigate('/organizer-support')}
                 >
-                    <div className="w-14 h-14 rounded-2xl bg-[#2E2E2F]/10 text-[#2E2E2F] flex items-center justify-center mb-8 group-hover:bg-[#2E2E2F] group-hover:text-white transition-all">
+                    <div className="w-14 h-14 rounded-xl bg-[#2E2E2F]/10 text-[#2E2E2F] flex items-center justify-center mb-8 group-hover:bg-[#2E2E2F] group-hover:text-white transition-all">
                         <ICONS.MessageSquare className="w-7 h-7 stroke-[2]" />
                     </div>
                     <h2 className="text-2xl font-black text-[#2E2E2F] tracking-tight mb-3">Help & Support</h2>
@@ -426,7 +426,7 @@ export const UserHome: React.FC = () => {
                                     <div className="w-1/3">
                                         <label className="block text-[11px] font-black uppercase tracking-widest text-[#2E2E2F]/40 mb-2.5">Status</label>
                                         <select
-                                            className="w-full px-4 py-[13.5px] bg-[#F2F2F2] border-2 border-[#2E2E2F]/10 rounded-2xl text-[11px] font-black uppercase tracking-widest outline-none focus:border-[#38BDF2] transition-colors appearance-none"
+                                            className="w-full px-4 py-[13.5px] bg-[#F2F2F2] border-2 border-[#2E2E2F]/10 rounded-xl text-[11px] font-black uppercase tracking-widest outline-none focus:border-[#38BDF2] transition-colors appearance-none"
                                             value={formData.status}
                                             onChange={(e) => setFormData({ ...formData, status: e.target.value as EventStatus })}
                                         >
@@ -438,7 +438,7 @@ export const UserHome: React.FC = () => {
                                 <div>
                                     <label className="block text-[11px] font-black uppercase tracking-widest text-[#2E2E2F]/40 mb-2.5">The Narrative</label>
                                     <textarea
-                                        className="w-full px-5 py-4 bg-[#F2F2F2] border-2 border-[#2E2E2F]/10 rounded-3xl text-sm min-h-[140px] focus:border-[#38BDF2] transition-colors outline-none resize-none"
+                                        className="w-full px-5 py-4 bg-[#F2F2F2] border-2 border-[#2E2E2F]/10 rounded-xl text-sm min-h-[140px] focus:border-[#38BDF2] transition-colors outline-none resize-none"
                                         placeholder="Tell the story of your event..."
                                         value={formData.description}
                                         onChange={e => setFormData({ ...formData, description: e.target.value })}
@@ -526,3 +526,4 @@ export const UserHome: React.FC = () => {
         </div>
     );
 };
+

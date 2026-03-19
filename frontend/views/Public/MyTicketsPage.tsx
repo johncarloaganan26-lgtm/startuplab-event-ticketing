@@ -116,7 +116,7 @@ const MyTicketsPage: React.FC = () => {
                         <button
                             onClick={() => navigate('/user-settings?tab=account')}
                             title="Edit Profile"
-                            className="w-7 h-7 rounded-lg border border-[#2E2E2F]/10 flex items-center justify-center hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/30 transition-colors group"
+                            className="w-7 h-7 rounded-xl border border-[#2E2E2F]/10 flex items-center justify-center hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/30 transition-colors group"
                         >
                             <svg className="w-3.5 h-3.5 text-[#2E2E2F]/40 group-hover:text-[#38BDF2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -161,7 +161,7 @@ const MyTicketsPage: React.FC = () => {
             <div className="mb-8">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-black text-[#2E2E2F] tracking-tight">Orders</h2>
-                    <div className="flex gap-2 p-1.5 bg-[#EAEAEA] rounded-2xl border border-[#2E2E2F]/5">
+                    <div className="flex gap-2 p-1.5 bg-[#EAEAEA] rounded-xl border border-[#2E2E2F]/5">
                         <button
                             onClick={() => setActiveTab('upcoming')}
                             className={`px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all duration-300 ${activeTab === 'upcoming' ? 'bg-[#EAEAEA] text-[#38BDF2] shadow-sm scale-105' : 'text-[#2E2E2F]/40 hover:text-[#2E2E2F]'}`}
@@ -180,7 +180,7 @@ const MyTicketsPage: React.FC = () => {
                 {loading && orders.length === 0 ? (
                     <div className="flex flex-col gap-5">
                         {[1, 2, 3].map(i => (
-                            <div key={i} className="h-32 rounded-[2rem] bg-[#EAEAEA] animate-pulse" />
+                            <div key={i} className="h-32 rounded-xl bg-[#EAEAEA] animate-pulse" />
                         ))}
                     </div>
                 ) : filteredOrders.length > 0 ? (
@@ -189,12 +189,12 @@ const MyTicketsPage: React.FC = () => {
                             <div
                                 key={order.orderId}
                                 onClick={() => navigate(`/payment-status?sessionId=${order.orderId}`)}
-                                className="group cursor-pointer p-8 rounded-[2rem] bg-[#EAEAEA] border border-[#2E2E2F]/5 hover:border-[#38BDF2]/30 transition-all duration-500 hover:shadow-2xl hover:shadow-[#38BDF2]/10 hover:scale-[1.02]"
+                                className="group cursor-pointer p-8 rounded-xl bg-[#EAEAEA] border border-[#2E2E2F]/5 hover:border-[#38BDF2]/30 transition-all duration-500 hover:shadow-2xl hover:shadow-[#38BDF2]/10 hover:scale-[1.02]"
                             >
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-3 mb-4">
-                                            <div className="px-3 py-1 bg-[#EAEAEA] rounded-lg shadow-sm border border-[#2E2E2F]/5">
+                                            <div className="px-3 py-1 bg-[#EAEAEA] rounded-xl shadow-sm border border-[#2E2E2F]/5">
                                                 <p className="text-[9px] font-black text-[#38BDF2] uppercase tracking-widest leading-none">
                                                     {order.status === 'PAID' ? 'Confirmed' : order.status}
                                                 </p>
@@ -239,7 +239,7 @@ const MyTicketsPage: React.FC = () => {
                                             onClick={(e) => handleViewTicket(order, e)}
                                             title="View ticket"
                                             disabled={ticketLoadingId === order.orderId}
-                                            className={`w-14 h-14 rounded-2xl border flex items-center justify-center transition-all duration-500 shadow-sm ${
+                                            className={`w-14 h-14 rounded-xl border flex items-center justify-center transition-all duration-500 shadow-sm ${
                                                 ticketLoadingId === order.orderId
                                                     ? 'bg-[#38BDF2]/20 border-[#38BDF2]/30 opacity-80 cursor-wait'
                                                     : 'bg-[#38BDF2]/10 border-[#38BDF2]/20 group-hover:bg-[#38BDF2] group-hover:border-[#38BDF2]'
@@ -263,8 +263,8 @@ const MyTicketsPage: React.FC = () => {
                     </div>
                 ) : (
                     /* Empty State */
-                    <div className="flex flex-col items-center justify-center py-20 bg-[#EAEAEA]/50 rounded-[2.5rem] border border-dashed border-[#2E2E2F]/10">
-                        <div className="w-16 h-16 rounded-[2rem] bg-[#38BDF2]/10 border border-[#38BDF2]/20 flex items-center justify-center mb-6">
+                    <div className="flex flex-col items-center justify-center py-20 bg-[#EAEAEA]/50 rounded-xl border border-dashed border-[#2E2E2F]/10">
+                        <div className="w-16 h-16 rounded-xl bg-[#38BDF2]/10 border border-[#38BDF2]/20 flex items-center justify-center mb-6">
                             <ICONS.Ticket className="w-9 h-9 text-[#38BDF2]" />
                         </div>
                         <p className="text-base font-bold text-[#2E2E2F]/70 mb-2">
@@ -294,4 +294,5 @@ const MyTicketsPage: React.FC = () => {
 };
 
 export default MyTicketsPage;
+
 

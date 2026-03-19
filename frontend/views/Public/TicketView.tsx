@@ -48,7 +48,7 @@ export const TicketView: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-start">
         {/* Main Ticket Card */}
         <div className="md:col-span-3">
-          <Card className="rounded-[2.5rem] bg-[#F2F2F2] border border-[#2E2E2F]/10 overflow-hidden shadow-2xl shadow-[#2E2E2F]/5 p-8 sm:p-12 relative">
+          <Card className="rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/10 overflow-hidden shadow-2xl shadow-[#2E2E2F]/5 p-8 sm:p-12 relative">
             <div className="flex flex-col items-center gap-10">
               <div className="text-center">
                 <Badge
@@ -61,7 +61,7 @@ export const TicketView: React.FC = () => {
               </div>
 
               {showMeetLinkOnly ? (
-                <div className="w-full bg-[#38BDF2]/5 border border-[#38BDF2]/10 rounded-[2rem] p-8 text-center">
+                <div className="w-full bg-[#38BDF2]/5 border border-[#38BDF2]/10 rounded-xl p-8 text-center">
                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#2E2E2F]/40 mb-6">SECURE CONNECTION</p>
                   <Button size="md" className="w-full mb-4" onClick={() => { window.location.href = meetLink; }}>
                     JOIN LIVE SESSION
@@ -70,8 +70,8 @@ export const TicketView: React.FC = () => {
                 </div>
               ) : (
                 <div className="relative group w-full max-w-[280px]">
-                  <div className="absolute -inset-6 bg-[#38BDF2]/5 rounded-[3.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <Card className="relative p-6 sm:p-8 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-[2rem] shadow-xl shadow-[#2E2E2F]/5">
+                  <div className="absolute -inset-6 bg-[#38BDF2]/5 rounded-xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <Card className="relative p-6 sm:p-8 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl shadow-xl shadow-[#2E2E2F]/5">
                     <div className="flex justify-center mb-6">
                       <QRCode
                         value={ticket.qrPayload || ticket.ticketCode}
@@ -89,7 +89,7 @@ export const TicketView: React.FC = () => {
                 </div>
               )}
 
-              <div className="w-full bg-[#F2F2F2] border border-[#2E2E2F]/5 rounded-2xl p-5 flex items-center gap-4">
+              <div className="w-full bg-[#F2F2F2] border border-[#2E2E2F]/5 rounded-xl p-5 flex items-center gap-4">
                 <div className="w-10 h-10 bg-[#38BDF2] rounded-xl flex items-center justify-center text-[#F2F2F2] shrink-0 shadow-lg shadow-[#38BDF2]/20">
                   <ICONS.CheckCircle className="w-5 h-5" />
                 </div>
@@ -104,7 +104,7 @@ export const TicketView: React.FC = () => {
 
         {/* Sidebar Info Section */}
         <div className="md:col-span-2 space-y-6">
-          <Card className="p-8 rounded-[2.5rem] bg-[#F2F2F2] border border-[#2E2E2F]/10">
+          <Card className="p-8 rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/10">
             <h3 className="text-sm font-black text-[#2E2E2F] uppercase tracking-widest mb-8 pb-4 border-b border-[#2E2E2F]/5 flex items-center gap-3">
               <ICONS.Users className="w-4 h-4 text-[#38BDF2]" />
               Attendee Details
@@ -136,7 +136,7 @@ export const TicketView: React.FC = () => {
             </div>
           </Card>
 
-          <Card className="p-8 rounded-[2.5rem] bg-[#2E2E2F] border border-[#2E2E2F]/10 text-[#F2F2F2]">
+          <Card className="p-8 rounded-xl bg-[#2E2E2F] border border-[#2E2E2F]/10 text-[#F2F2F2]">
             <div className="flex items-center justify-between mb-6">
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F2F2F2]/40">Status</p>
               <div className="w-2 h-2 rounded-full bg-[#38BDF2] animate-pulse"></div>
@@ -173,3 +173,4 @@ export const TicketView: React.FC = () => {
     </div>
   );
 };
+

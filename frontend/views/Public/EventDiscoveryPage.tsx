@@ -174,7 +174,7 @@ export const EventDiscoveryPage: React.FC = () => {
         <div className="flex min-h-screen bg-[#F2F2F2]">
             {/* Edge Left Filter Sidebar */}
             <aside
-                className={`hidden lg:block bg-white/40 backdrop-blur-xl border-r border-[#2E2E2F]/5 sticky top-0 h-screen overflow-y-auto transition-all duration-500 ease-in-out z-20 ${isSidebarCollapsed ? 'w-20' : 'w-[340px]'
+                className={`hidden md:block bg-white/40 backdrop-blur-xl border-r border-[#2E2E2F]/5 sticky top-0 h-screen overflow-y-auto transition-all duration-500 ease-in-out z-20 ${isSidebarCollapsed ? 'w-16 md:w-20' : 'w-[240px] md:w-[340px]'
                     }`}
             >
                 <div className="flex flex-col h-full">
@@ -188,7 +188,7 @@ export const EventDiscoveryPage: React.FC = () => {
                         )}
                         <button
                             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                            className={`w-10 h-10 rounded-2xl bg-[#F2F2F2] border border-[#2E2E2F]/10 flex items-center justify-center text-[#2E2E2F] hover:bg-[#38BDF2] hover:text-white transition-all transform active:scale-90 ${isSidebarCollapsed ? 'mx-auto' : ''}`}
+                            className={`w-10 h-10 rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/10 flex items-center justify-center text-[#2E2E2F] hover:bg-[#38BDF2] hover:text-white transition-all transform active:scale-90 ${isSidebarCollapsed ? 'mx-auto' : ''}`}
                         >
                             <svg className={`w-5 h-5 transition-transform duration-500 ${isSidebarCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
@@ -221,7 +221,7 @@ export const EventDiscoveryPage: React.FC = () => {
                                                 className={`flex items-center gap-4 w-full group transition-all ${isChecked ? 'text-[#38BDF2]' : 'text-[#2E2E2F]/70 hover:text-[#38BDF2]'
                                                     }`}
                                             >
-                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isChecked ? 'bg-[#38BDF2]/10' : 'bg-[#F2F2F2] group-hover:bg-[#38BDF2]/5'
+                                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${isChecked ? 'bg-[#38BDF2]/10' : 'bg-[#F2F2F2] group-hover:bg-[#38BDF2]/5'
                                                     }`}>
                                                     <cat.Icon className="w-4 h-4" />
                                                 </div>
@@ -271,7 +271,7 @@ export const EventDiscoveryPage: React.FC = () => {
                                             className={`flex items-center gap-4 w-full group transition-all ${selectedPrice === price.id ? 'text-[#38BDF2]' : 'text-[#2E2E2F]/70 hover:text-[#38BDF2]'
                                                 }`}
                                         >
-                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${selectedPrice === price.id ? 'bg-[#38BDF2]/10' : 'bg-[#F2F2F2] group-hover:bg-[#38BDF2]/5'}`}>
+                                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${selectedPrice === price.id ? 'bg-[#38BDF2]/10' : 'bg-[#F2F2F2] group-hover:bg-[#38BDF2]/5'}`}>
                                                 <price.icon className="w-4 h-4" />
                                             </div>
                                             <span className="font-bold text-sm tracking-tight">{price.label}</span>
@@ -317,7 +317,7 @@ export const EventDiscoveryPage: React.FC = () => {
                             </p>
                         </div>
 
-                        <div className="flex items-center bg-white px-5 py-3 rounded-2xl border border-[#2E2E2F]/5 shadow-sm whitespace-nowrap">
+                        <div className="flex items-center bg-white px-5 py-3 rounded-xl border border-[#2E2E2F]/5 shadow-sm whitespace-nowrap">
                             <span className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/40 mr-3">Sort By</span>
                             <select
                                 value={sortBy}
@@ -371,7 +371,7 @@ export const EventDiscoveryPage: React.FC = () => {
                     {/* No Events State */}
                     {combinedEvents.length === 0 && (
                         <div>
-                            <div className="w-24 h-24 bg-[#F2F2F2] rounded-[2rem] border-2 border-[#2E2E2F]/5 flex items-center justify-center mb-8">
+                            <div className="w-24 h-24 bg-[#F2F2F2] rounded-xl border-2 border-[#2E2E2F]/5 flex items-center justify-center mb-8">
                                 <ICONS.Search className="w-10 h-10 text-[#2E2E2F]/10" />
                             </div>
                             <h3 className="text-2xl font-black text-[#2E2E2F] uppercase tracking-tighter mb-4">No Sessions Matching Selection</h3>
@@ -379,7 +379,7 @@ export const EventDiscoveryPage: React.FC = () => {
                                 We couldn't find any results specifically for these filters. Try broadening your date or category selection.
                             </p>
                             <Button
-                                className="px-12 py-5 rounded-2xl font-black uppercase tracking-widest bg-[#2E2E2F] text-white hover:bg-[#38BDF2] transition-colors"
+                                className="px-12 py-5 rounded-xl font-black uppercase tracking-widest bg-[#2E2E2F] text-white hover:bg-[#38BDF2] transition-colors"
                                 onClick={() => {
                                     navigate('/browse-events');
                                     setSelectedCategories([]);
@@ -398,8 +398,8 @@ export const EventDiscoveryPage: React.FC = () => {
             {/* Interaction Notification Toast */}
             {interactionNotice && (
                 <div className="fixed bottom-12 right-12 z-[100] animate-in slide-in-from-bottom-6 duration-500">
-                    <div className="bg-[#2E2E2F] text-white px-8 py-6 rounded-[2.5rem] shadow-2xl flex items-center gap-5 border border-white/10 backdrop-blur-xl">
-                        <div className="w-10 h-10 rounded-2xl bg-[#38BDF2] flex items-center justify-center">
+                    <div className="bg-[#2E2E2F] text-white px-8 py-6 rounded-xl shadow-2xl flex items-center gap-5 border border-white/10 backdrop-blur-xl">
+                        <div className="w-10 h-10 rounded-xl bg-[#38BDF2] flex items-center justify-center">
                             <ICONS.Check className="w-5 h-5 text-white" strokeWidth={4} />
                         </div>
                         <div className="pr-4">
@@ -412,3 +412,4 @@ export const EventDiscoveryPage: React.FC = () => {
         </div>
     );
 };
+

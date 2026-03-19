@@ -227,11 +227,11 @@ export const OrganizerProfilePage: React.FC = () => {
                 </div>
 
                 {/* Profile Header section */}
-                <div className="px-6 md:px-12">
-                    <div className="relative flex flex-col md:flex-row gap-6 md:gap-10 pb-10">
+                <div className="px-6 lg:px-12">
+                    <div className="relative flex flex-col lg:flex-row gap-6 lg:gap-10 pb-10">
                         {/* Profile Pic overlap - positioned relatively to clear cover */}
-                        <div className="relative -mt-16 md:-mt-24 shrink-0 z-10">
-                            <div className="w-32 h-32 md:w-56 md:h-56 rounded-[3rem] border-[10px] border-[#F2F2F2] overflow-hidden bg-gradient-to-br from-[#38BDF2] to-[#A5E1FF] shadow-[0_25px_60px_rgba(0,0,0,0.12)]">
+                        <div className="relative -mt-16 lg:-mt-24 shrink-0 z-10">
+                            <div className="w-32 h-32 lg:w-56 lg:h-56 rounded-xl border-[10px] border-[#F2F2F2] overflow-hidden bg-gradient-to-br from-[#38BDF2] to-[#A5E1FF] shadow-[0_25px_60px_rgba(0,0,0,0.12)]">
                                 {organizer.profileImageUrl ? (
                                     <img src={organizerImage} alt={organizer.organizerName} className="w-full h-full object-cover" />
                                 ) : (
@@ -246,22 +246,22 @@ export const OrganizerProfilePage: React.FC = () => {
                         </div>
 
                         {/* Name, Stats and Actions - Aligned better */}
-                        <div className="flex-1 flex flex-col md:flex-row md:items-end justify-between pt-4 md:pt-6 gap-6">
+                        <div className="flex-1 flex flex-col lg:flex-row lg:items-end justify-between pt-4 lg:pt-6 gap-6">
                             <div className="space-y-3">
-                                <h1 className="text-4xl md:text-[3.5rem] font-black text-[#2E2E2F] tracking-tight leading-[1.1]">
+                                <h1 className="text-3xl sm:text-4xl lg:text-[3.5rem] font-black text-[#2E2E2F] tracking-tight leading-[1.1]">
                                     {organizer.organizerName}
                                 </h1>
                                 <div className="flex flex-wrap items-center gap-4 text-[#2E2E2F]/50 font-black text-[10px] uppercase tracking-[0.2em]">
-                                    <div className="flex items-center gap-2 bg-[#2E2E2F]/5 px-3 py-1.5 rounded-lg">
+                                    <div className="flex items-center gap-2 bg-[#2E2E2F]/5 px-3 py-1.5 rounded-xl">
                                         <ICONS.Users className="w-3.5 h-3.5" />
                                         <span>{formatCompactCount(organizer.followersCount)} followers</span>
                                     </div>
-                                    <div className="flex items-center gap-2 bg-[#2E2E2F]/5 px-3 py-1.5 rounded-lg">
+                                    <div className="flex items-center gap-2 bg-[#2E2E2F]/5 px-3 py-1.5 rounded-xl">
                                         <ICONS.Calendar className="w-3.5 h-3.5" />
                                         <span>{organizer.eventsHostedCount || 0} events hosted</span>
                                     </div>
                                     {organizer.websiteUrl && (
-                                        <div className="flex items-center gap-2 bg-[#2E2E2F]/5 px-3 py-1.5 rounded-lg">
+                                        <div className="flex items-center gap-2 bg-[#2E2E2F]/5 px-3 py-1.5 rounded-xl">
                                             <ICONS.Globe className="w-3.5 h-3.5" />
                                             <a href={organizer.websiteUrl} target="_blank" rel="noopener noreferrer" className="hover:text-[#38BDF2] transition-colors">Website</a>
                                         </div>
@@ -284,10 +284,10 @@ export const OrganizerProfilePage: React.FC = () => {
                             </div>
 
                             {/* CTAs */}
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full lg:w-auto">
                                 <button
                                     onClick={handleFollow}
-                                    className={`flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300 shadow-md ${following
+                                    className={`w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300 shadow-md ${following
                                         ? 'bg-[#2E2E2F] !text-white opacity-40 cursor-default border-none shadow-none'
                                         : '!text-white hover:opacity-90 border-none hover:shadow-lg'
                                         }`}
@@ -301,7 +301,7 @@ export const OrganizerProfilePage: React.FC = () => {
                                         if (organizer.websiteUrl) window.open(organizer.websiteUrl, '_blank');
                                         else setInteractionNotice('No contact method specified.');
                                     }}
-                                    className="flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-md active:scale-95 text-white hover:opacity-90"
+                                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-md active:scale-95 text-white hover:opacity-90"
                                     style={{ backgroundColor: brandColor }}
                                 >
                                     <ICONS.Mail className="w-4 h-4" />
@@ -331,16 +331,16 @@ export const OrganizerProfilePage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="max-w-[1250px] mx-auto mt-8 px-4 pb-24 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+            <div className="max-w-[1250px] mx-auto mt-8 px-4 pb-24 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 lg:gap-8">
                 {/* Main Content Area - Left */}
                 <div className="space-y-8">
                     {interactionNotice && (
-                        <Card className="bg-[#38BDF2]/10 border border-[#38BDF2]/30 rounded-[1.5rem] p-5 text-xs font-black uppercase tracking-widest text-[#38BDF2] animate-in fade-in slide-in-from-top-2">
+                        <Card className="bg-[#38BDF2]/10 border border-[#38BDF2]/30 rounded-xl p-5 text-xs font-black uppercase tracking-widest text-[#38BDF2] animate-in fade-in slide-in-from-top-2">
                             {interactionNotice}
                         </Card>
                     )}
 
-                    <div className="bg-[#F2F2F2] p-8 rounded-[2rem] shadow-sm border border-[#2E2E2F]/10 overflow-hidden">
+                    <div className="bg-[#F2F2F2] p-8 rounded-xl shadow-sm border border-[#2E2E2F]/10 overflow-hidden">
                         <div className="flex items-center justify-between mb-8">
                             <h2 className="text-2xl font-black text-[#2E2E2F] tracking-tight uppercase tracking-wider">
                                 {activeTab === 'upcoming' ? 'Upcoming & Live Events' : 'Past Events Archive'}
@@ -352,13 +352,13 @@ export const OrganizerProfilePage: React.FC = () => {
                         </div>
 
                         {displayEvents.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {displayEvents.map(event => (
                                     <EventMiniCard key={event.eventId} event={event} brandColor={brandColor} isPast={activeTab === 'past'} />
                                 ))}
                             </div>
                         ) : (
-                            <div className="py-20 text-center bg-[#F2F2F2]/50 rounded-[2rem] border-2 border-dashed border-[#2E2E2F]/10">
+                            <div className="py-20 text-center bg-[#F2F2F2]/50 rounded-xl border-2 border-dashed border-[#2E2E2F]/10">
                                 <ICONS.Calendar className="w-12 h-12 text-[#2E2E2F]/10 mx-auto mb-4" />
                                 <p className="text-[#2E2E2F]/40 font-black uppercase tracking-widest text-sm">
                                     {activeTab === 'upcoming' ? 'No upcoming events scheduled yet.' : 'No past events found.'}
@@ -370,7 +370,7 @@ export const OrganizerProfilePage: React.FC = () => {
 
                 {/* Sidebar - Right */}
                 <div className="space-y-8">
-                    <Card className="p-8 rounded-[2rem] bg-[#F2F2F2] border border-[#2E2E2F]/10 shadow-sm">
+                    <Card className="p-8 rounded-xl bg-[#F2F2F2] border border-[#2E2E2F]/10 shadow-sm">
                         <h2 className="text-xl font-black text-[#2E2E2F] mb-6 tracking-tight uppercase tracking-widest text-xs opacity-50">About Organizer</h2>
                         {organizer.bio ? (
                             <div className="space-y-8">
@@ -414,7 +414,7 @@ export const OrganizerProfilePage: React.FC = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="py-10 text-center rounded-[1.5rem] bg-[#F2F2F2]/30 border border-dashed border-[#2E2E2F]/10">
+                            <div className="py-10 text-center rounded-xl bg-[#F2F2F2]/30 border border-dashed border-[#2E2E2F]/10">
                                 <p className="text-[#2E2E2F]/30 text-[10px] font-black uppercase tracking-widest">No detailed bio provided</p>
                             </div>
                         )}
@@ -442,7 +442,7 @@ const EventMiniCard: React.FC<{ event: Event; brandColor: string; isPast?: boole
 
     return (
         <Card
-            className="group overflow-hidden border border-[#2E2E2F]/10 rounded-3xl bg-[#F2F2F2] transition-all cursor-pointer shadow-sm hover:shadow-xl hover:scale-[1.01]"
+            className="group overflow-hidden border border-[#2E2E2F]/10 rounded-xl bg-[#F2F2F2] transition-all cursor-pointer shadow-sm hover:shadow-xl hover:scale-[1.01]"
             style={{ borderColor: brandColor ? `${brandColor}40` : '#2E2E2F1A' }}
             onClick={() => navigate(`/events/${event.slug}`)}
         >
@@ -489,8 +489,9 @@ const EventMiniCard: React.FC<{ event: Event; brandColor: string; isPast?: boole
                 )}
                 <button
                     onClick={handleLike}
-                    className={`absolute top-4 right-4 w-9 h-9 rounded-xl flex items-center justify-center transition-all ${liked ? 'text-white' : 'bg-white/90 text-[#2E2E2F] border border-[#2E2E2F]/10'}`}
+                    className={`absolute top-4 right-4 w-11 h-11 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-all ${liked ? 'text-white' : 'bg-white/90 text-[#2E2E2F] border border-[#2E2E2F]/10'}`}
                     style={liked ? { backgroundColor: brandColor } : {}}
+                    aria-label={liked ? 'Unlike event' : 'Like event'}
                 >
                     <ICONS.Heart className="w-4 h-4" />
                 </button>
@@ -508,3 +509,4 @@ const EventMiniCard: React.FC<{ event: Event; brandColor: string; isPast?: boole
         </Card>
     );
 };
+

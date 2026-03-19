@@ -59,7 +59,7 @@ const Branding: React.FC<{ className?: string, light?: boolean }> = ({ className
   <img
     src="https://xmjdcbzgdfylbqkjoyyb.supabase.co/storage/v1/object/public/startuplab-business-ticketing/assets/assets/image%20(1).svg"
     alt="StartupLab Business Ticketing Logo"
-    className={`w-40 h-auto drop-shadow-md transform transition-all duration-300 hover:scale-[1.03] cursor-pointer ${className}`}
+    className={`block max-w-full transform transition-all duration-300 hover:scale-[1.03] cursor-pointer ${className}`}
     style={{ filter: light ? 'invert(1) grayscale(1) brightness(2)' : undefined }}
   />
 );
@@ -398,10 +398,13 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     if (!role) return;
     const staffAllowed = ['/events', '/attendees', '/checkin', '/settings'];
     const adminAllowed = ['/dashboard', '/events', '/attendees', '/checkin', '/settings'];
-    const userAllowed = ['/user-home', '/my-events', '/user-settings', '/organizer-settings', '/account-settings', '/user/attendees', '/user/checkin', '/user/archive', '/user/reports', '/dashboard', '/organizer-support', '/subscription'];
+    const userAllowed = ['/user-home', '/my-events', '/my-events/create', '/my-events/edit', '/user-settings', '/organizer-settings', '/account-settings', '/user/attendees', '/user/checkin', '/user/archive', '/user/reports', '/dashboard', '/organizer-support', '/subscription'];
 
     if (role === UserRole.ORGANIZER) {
-      if (!userAllowed.includes(location.pathname)) {
+      const isAllowed = userAllowed.some(path =>
+        location.pathname === path || location.pathname.startsWith(path + '/')
+      );
+      if (!isAllowed) {
         navigate('/user-home', { replace: true });
       }
       return;
@@ -474,7 +477,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       if (!currentTab && tab === 'team') return true;
       return currentTab === tab;
     }
-    return location.pathname === itemPath;
+    return location.pathname === itemPath || location.pathname.startsWith(`${itemPath}/`);
   };
 
 
@@ -505,16 +508,16 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     <div className="min-h-screen flex flex-col md:flex-row bg-[#F2F2F2] font-sans selection:bg-[#38BDF2]/30">
       {/* Sidebar for desktop */}
       <aside
-        className={`bg-[#F2F2F2] border-r-[4px] border-[#2E2E2F]/35 hidden md:flex flex-col fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-64' : 'w-20'}`}
+        className={`bg-[#F2F2F2] border-r border-[#2E2E2F]/15 hidden md:flex flex-col fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-64' : 'w-20'}`}
         style={{ overflow: desktopSidebarOpen ? 'hidden' : 'visible' }}
       >
-        <div className={`py-6 px-4 flex items-center justify-center border-b-[3px] border-[#2E2E2F]/30 shrink-0 ${desktopSidebarOpen ? 'h-24' : 'h-20'}`}>
+        <div className={`flex items-center justify-center border-b border-[#2E2E2F]/10 shrink-0 h-20`}>
           <Link to="/dashboard" className="flex items-center justify-center group transition-all duration-500 transform hover:scale-[1.05] active:scale-[0.95]">
             {organizerSidebarLogoUrl ? (
               <img
                 src={organizerSidebarLogoUrl}
                 alt={organizerSidebarName || 'Logo'}
-                className={desktopSidebarOpen ? "h-14 w-auto max-w-full object-contain" : "h-10 w-10 object-contain rounded-lg shadow-sm border border-[#2E2E2F]/10"}
+                className={desktopSidebarOpen ? "h-14 w-auto max-w-full object-contain" : "h-10 w-10 object-contain rounded-xl border border-[#2E2E2F]/10"}
               />
             ) : desktopSidebarOpen ? (
               <Branding className="h-14 w-auto" />
@@ -523,7 +526,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             )}
           </Link>
         </div>
-        <nav className={`flex-1 py-6 ${desktopSidebarOpen ? 'px-4' : 'px-2'} flex flex-col gap-1 overflow-y-auto overflow-x-visible scrollbar-none scroll-smooth`}
+        <nav className={`flex-1 pt-10 pb-6 ${desktopSidebarOpen ? 'px-4' : 'px-2'} flex flex-col gap-1 overflow-y-auto overflow-x-visible scrollbar-none scroll-smooth`}
           style={{ width: desktopSidebarOpen ? '100%' : '260px', paddingRight: desktopSidebarOpen ? '0' : '180px' }}>
           {menuItems.map((item: any, idx) => {
             const isActive = checkIsActiveAdmin(item.path);
@@ -536,7 +539,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 <Link
                   to={item.path}
                   className={`flex transition-all duration-300 group relative shrink-0 ${desktopSidebarOpen
-                    ? 'flex-row items-center gap-3 px-4 py-3 rounded-2xl'
+                    ? 'flex-row items-center gap-3 px-4 py-3 rounded-xl'
                     : 'flex-col items-center justify-center gap-1 py-4 px-1 rounded-xl'
                     } ${isActive
                       ? 'bg-[#38BDF2] text-white shadow-lg shadow-[#38BDF2]/20'
@@ -571,7 +574,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       <main
         className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'md:pl-64' : 'md:pl-20'}`}
       >
-        <header className="h-20 bg-[#F2F2F2] border-b-[3px] border-[#2E2E2F]/30 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-20 w-full">
+        <header className="h-20 bg-[#F2F2F2] border-b border-[#2E2E2F]/15 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-20 w-full">
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
@@ -598,7 +601,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             {(!(role === UserRole.STAFF && canReceiveNotifications === false)) && (
               <div className="relative group">
                 <button
-                  className="w-11 h-11 flex items-center justify-center rounded-2xl border border-[#38BDF2]/20 bg-transparent hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/40 hover:scale-105 active:scale-95 transition-all shadow-sm relative"
+                  className="w-11 h-11 flex items-center justify-center rounded-xl border border-[#38BDF2]/20 bg-transparent hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/40 hover:scale-105 active:scale-95 transition-all shadow-sm relative"
                   onClick={() => setNotificationOpen(!notificationOpen)}
                 >
                   <ICONS.Bell className="w-5 h-5 text-[#2E2E2F] group-hover:text-[#38BDF2] transition-colors" />
@@ -611,7 +614,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 {notificationOpen && (
                   <>
                     <div className="fixed inset-0 z-[100] bg-[#2E2E2F]/10 backdrop-blur-[2px]" onClick={() => setNotificationOpen(false)} />
-                    <div className="fixed left-3 right-3 top-24 bottom-24 sm:left-auto sm:right-6 sm:bottom-6 w-auto sm:w-full sm:max-w-[420px] bg-[#F2F2F2] rounded-[2rem] sm:rounded-[2.5rem] border border-[#2E2E2F]/5 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.15)] z-[101] flex flex-col overflow-hidden animate-in slide-in-from-right-8 fade-in duration-500">
+                    <div className="fixed left-3 right-3 top-24 bottom-24 sm:left-auto sm:right-6 sm:bottom-6 w-auto sm:w-full sm:max-w-[420px] bg-[#F2F2F2] rounded-xl sm:rounded-xl border border-[#2E2E2F]/5 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.15)] z-[101] flex flex-col overflow-hidden animate-in slide-in-from-right-8 fade-in duration-500">
                       <div className="p-8 border-b border-[#2E2E2F]/5 flex items-start justify-between bg-[#F2F2F2]/80 backdrop-blur-xl sticky top-0 z-10">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
@@ -624,7 +627,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                           </div>
                           <p className="text-[#2E2E2F]/40 text-xs font-bold uppercase tracking-widest">Stay synchronized with your team</p>
                         </div>
-                        <button onClick={() => setNotificationOpen(false)} className="w-10 h-10 rounded-2xl bg-[#F2F2F2] flex items-center justify-center text-[#2E2E2F]/40 hover:text-[#2E2E2F] hover:bg-[#2E2E2F]/5 transition-all">
+                        <button onClick={() => setNotificationOpen(false)} className="w-10 h-10 rounded-xl bg-[#F2F2F2] flex items-center justify-center text-[#2E2E2F]/40 hover:text-[#2E2E2F] hover:bg-[#2E2E2F]/5 transition-all">
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -651,13 +654,13 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                             {notifications.map((n) => (
                               <div
                                 key={n.notificationId || Math.random()}
-                                className={`p-5 rounded-[2rem] transition-all group relative border ${n.isRead
+                                className={`p-5 rounded-xl transition-all group relative border ${n.isRead
                                   ? 'bg-transparent border-transparent opacity-60'
                                   : 'bg-[#F2F2F2] border-[#2E2E2F]/5 hover:border-[#38BDF2]/30 shadow-sm'
                                   }`}
                               >
                                 <div className="flex items-start gap-4">
-                                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${n.isRead ? 'bg-[#2E2E2F]/5 text-[#2E2E2F]/30' : 'bg-[#38BDF2]/10 text-[#38BDF2]'
+                                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${n.isRead ? 'bg-[#2E2E2F]/5 text-[#2E2E2F]/30' : 'bg-[#38BDF2]/10 text-[#38BDF2]'
                                     }`}>
                                     <ICONS.Bell className="w-5 h-5" />
                                   </div>
@@ -684,7 +687,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                           </div>
                         ) : (
                           <div className="flex flex-col items-center justify-center p-12 text-center h-full">
-                            <div className="w-24 h-24 bg-[#F2F2F2] rounded-[2rem] flex items-center justify-center mb-8">
+                            <div className="w-24 h-24 bg-[#F2F2F2] rounded-xl flex items-center justify-center mb-8">
                               <ICONS.Bell className="w-10 h-10 text-[#2E2E2F]/10" />
                             </div>
                             <h3 className="text-xl font-black text-[#2E2E2F] tracking-tighter uppercase mb-2">Clean Slate</h3>
@@ -705,7 +708,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 transition-colors"
                 onClick={() => setUserMenuOpen((v) => !v)}
               >
-                <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#38BDF2]/20 text-[#2E2E2F] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl overflow-hidden bg-[#38BDF2]/20 text-[#2E2E2F] flex items-center justify-center">
                   {imageUrl ? (
                     <img src={imageUrl} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
@@ -723,7 +726,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
               {userMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
-                  <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-2xl shadow-[0_10px_40px_-10px_rgba(46,46,47,0.1)] z-50 p-2 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
+                  <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl shadow-[0_10px_40px_-10px_rgba(46,46,47,0.1)] z-50 p-2 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
                     <div className="px-4 py-3 border-b border-[#2E2E2F]/5 mb-1">
                       <p className="text-[10px] font-medium text-[#2E2E2F]/40 uppercase tracking-widest mb-0.5">Account</p>
                       <p className="text-xs font-semibold text-[#2E2E2F] truncate">{displayName}</p>
@@ -805,8 +808,8 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         {sidebarOpen && (
           <div className="fixed inset-0 z-[100] flex md:hidden">
             <div className="fixed inset-0 bg-[#2E2E2F]/70 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-            <aside className="relative w-[min(18.5rem,calc(100vw-1rem))] bg-[#F2F2F2] border-r-[4px] border-[#2E2E2F]/35 flex flex-col h-full z-[110] animate-in slide-in-from-left duration-300 shadow-[12px_0_36px_-24px_rgba(46,46,47,0.3)]">
-              <div className="p-8 pb-4 flex items-center justify-between border-b-[3px] border-[#2E2E2F]/30">
+            <aside className="relative w-[min(18.5rem,calc(100vw-1rem))] bg-[#F2F2F2] border-r-[1px] border-[#2E2E2F]/35 flex flex-col h-full z-[110] animate-in slide-in-from-left duration-300 shadow-[12px_0_36px_-24px_rgba(46,46,47,0.3)]">
+              <div className="p-8 pb-4 flex items-center justify-between border-b-[1px] border-[#2E2E2F]/30">
                 <Link to="/dashboard" onClick={() => setSidebarOpen(false)} className="flex flex-col items-start gap-2 group transition-all duration-500">
                   {organizerSidebarLogoUrl ? (
                     <img
@@ -840,7 +843,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                     <Link
                       key={item.path}
                       to={item.path}
-                      className={`flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group ${isActive
+                      className={`flex items-center gap-4 px-5 py-4 rounded-xl transition-all duration-300 group ${isActive
                         ? 'bg-[#38BDF2] text-white shadow-lg shadow-[#38BDF2]/20'
                         : 'text-[#111111] hover:bg-[#38BDF2] hover:text-white hover:shadow-lg hover:shadow-[#38BDF2]/20'
                         }`}
@@ -857,7 +860,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 <div className="mt-8 pt-8 border-t border-[#2E2E2F]/10">
                   <button
                     onClick={() => { handleLogout(); setSidebarOpen(false); }}
-                    className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-[#111111]/80 hover:bg-red-50 hover:text-red-500 transition-all duration-300 group"
+                    className="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-[#111111]/80 hover:bg-red-50 hover:text-red-500 transition-all duration-300 group"
                   >
                     <svg className="w-5 h-5 opacity-60 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -891,7 +894,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         >
           <div className="space-y-5">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl overflow-hidden border border-[#2E2E2F]/10 bg-[#F2F2F2] flex items-center justify-center">
+              <div className="w-16 h-16 rounded-xl overflow-hidden border border-[#2E2E2F]/10 bg-[#F2F2F2] flex items-center justify-center">
                 {avatarPreview ? (
                   <img src={avatarPreview} alt="Profile preview" className="w-full h-full object-cover" />
                 ) : (
@@ -1225,23 +1228,22 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F2F2F2]">
-      <header className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled 
-          ? 'bg-[#F2F2F2] shadow-[0_10px_30px_-10px_rgba(46,46,47,0.1)] border-b border-[#2E2E2F]/5' 
-          : 'bg-transparent border-b border-transparent'
-      }`}>
-        <div className="max-w-[88rem] mx-auto w-full px-2 sm:px-6 py-3 lg:py-0 lg:h-20 flex flex-wrap lg:flex-nowrap items-center gap-2 sm:gap-4">
+      <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
+        ? 'bg-[#F2F2F2] shadow-[0_10px_30px_-10px_rgba(46,46,47,0.1)] border-b border-[#2E2E2F]/5'
+        : 'bg-transparent border-b border-transparent'
+        }`}>
+        <div className="max-w-[88rem] mx-auto w-full px-2 lg:px-6 py-3 lg:py-0 lg:h-20 flex flex-wrap lg:flex-nowrap items-center gap-2 lg:gap-4">
           {/* Left: Branding Segment - Logo on mobile, hidden on lg */}
           <div className="flex lg:hidden flex-none items-center">
             <Link to="/" className="shrink-0 flex items-center gap-2">
-              <Branding className="h-10 sm:h-11 w-auto" />
+              <Branding className="h-20 w-auto" />
             </Link>
           </div>
           <div className="hidden lg:flex flex-none items-center">
             <Link to="/" className="shrink-0 flex items-center gap-3">
               {/* Desktop logo - shown only on desktop */}
               <span className="hidden lg:block">
-                <Branding />
+                <Branding className="h-20 w-auto" />
               </span>
             </Link>
           </div>
@@ -1250,7 +1252,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           <div className="hidden lg:flex flex-1 min-w-0 px-1 sm:px-4">
             {showHeaderSearchBar && (
               <form onSubmit={handleHeaderSearchSubmit} className="w-full">
-                <div className="flex items-center h-12 rounded-2xl border border-[#2E2E2F]/10 bg-[#F2F2F2] overflow-hidden shadow-[0_10px_30px_-15px_rgba(46,46,47,0.1)] focus-within:border-[#38BDF2]/50 focus-within:shadow-[0_15px_35px_-12px_rgba(56,189,242,0.15)] transition-all duration-300">
+                <div className="flex items-center h-12 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] overflow-hidden shadow-[0_10px_30px_-15px_rgba(46,46,47,0.1)] focus-within:border-[#38BDF2]/50 focus-within:shadow-[0_15px_35px_-12px_rgba(56,189,242,0.15)] transition-all duration-300">
                   <label className="flex items-center gap-3 px-5 py-3 min-w-0 flex-1 border-r border-[#2E2E2F]/5 hover:bg-[#38BDF2]/5 transition-colors">
                     <ICONS.Search className="w-4 h-4 text-[#2E2E2F] shrink-0" />
                     <input
@@ -1310,7 +1312,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                     </div>
 
                     {headerLocationMenuOpen && (
-                      <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 w-[320px] rounded-2xl border border-[#2E2E2F]/10 bg-white shadow-[0_24px_48px_-20px_rgba(46,46,47,0.35)] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 w-[320px] rounded-xl border border-[#2E2E2F]/10 bg-white shadow-[0_24px_48px_-20px_rgba(46,46,47,0.35)] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                         <button
                           type="button"
                           className="w-full px-5 py-4 flex items-center gap-4 text-left text-[#2E2E2F] hover:bg-[#38BDF2]/5 transition-colors border-b border-[#2E2E2F]/5 disabled:opacity-60 group/btn"
@@ -1416,7 +1418,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
             {/* Mobile Menu Button - Shown only on mobile */}
             <button
-              className="lg:hidden p-2 rounded-lg text-[#2E2E2F] hover:bg-[#38BDF2]/10 transition-colors"
+              className="lg:hidden p-2 rounded-xl text-[#2E2E2F] hover:bg-[#38BDF2]/10 transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle menu"
             >
@@ -1432,239 +1434,239 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             </button>
 
             <div className="flex items-center gap-1 shrink-0">
-            {isAuthenticated ? (
-              <>
-                <Link to="/live" className="hidden lg:flex items-center gap-2 px-6 py-2.5 bg-[#38BDF2] border border-[#38BDF2] text-white hover:bg-[#2E2E2F] hover:border-[#2E2E2F] rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-[#38BDF2]/20">
-                  Watch Live
-                  {hasLiveEvents && (
-                    <span className="relative flex h-2 w-2 ml-0.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
-                    </span>
-                  )}
-                </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link to="/live" className="hidden lg:flex items-center gap-2 px-6 py-2.5 bg-[#38BDF2] border border-[#38BDF2] text-white hover:bg-[#2E2E2F] hover:border-[#2E2E2F] rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-[#38BDF2]/20">
+                    Watch Live
+                    {hasLiveEvents && (
+                      <span className="relative flex h-2 w-2 ml-0.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                      </span>
+                    )}
+                  </Link>
 
-                <div className="relative">
-                  <button
-                    className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 transition-colors"
-                    onClick={() => setUserMenuOpen((v) => !v)}
-                  >
-                    <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#38BDF2]/20 text-[#2E2E2F] flex items-center justify-center">
-                      {imageUrl ? (
-                        <img src={imageUrl} alt="Profile" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="font-semibold text-xs text-[#2E2E2F]">{initials}</span>
-                      )}
-                    </div>
-                    <div className="hidden sm:block text-left leading-tight">
-                      <p className="text-xs font-semibold text-[#2E2E2F] truncate max-w-[120px]">{displayName}</p>
-                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#2E2E2F]/45 mt-0.5">{roleLabel}</p>
-                    </div>
-                    <svg className="w-4 h-4 text-[#2E2E2F]/50" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  {userMenuOpen && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
-                      <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-2xl shadow-xl z-50 p-2 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
-                        <div className="px-4 py-3 border-b border-[#2E2E2F]/5 mb-1">
-                          <p className="text-[10px] font-medium text-[#2E2E2F]/40 uppercase tracking-widest mb-0.5">Account</p>
-                          <p className="text-xs font-semibold text-[#2E2E2F] truncate">{displayName}</p>
-                          <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#2E2E2F]/45 mt-1">{roleLabel}</p>
-                        </div>
-                        {isOrganizer ? (
-                          isAttendingView ? (
+                  <div className="relative">
+                    <button
+                      className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 transition-colors"
+                      onClick={() => setUserMenuOpen((v) => !v)}
+                    >
+                      <div className="w-8 h-8 rounded-xl overflow-hidden bg-[#38BDF2]/20 text-[#2E2E2F] flex items-center justify-center">
+                        {imageUrl ? (
+                          <img src={imageUrl} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="font-semibold text-xs text-[#2E2E2F]">{initials}</span>
+                        )}
+                      </div>
+                      <div className="hidden sm:block text-left leading-tight">
+                        <p className="text-xs font-semibold text-[#2E2E2F] truncate max-w-[120px]">{displayName}</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#2E2E2F]/45 mt-0.5">{roleLabel}</p>
+                      </div>
+                      <svg className="w-4 h-4 text-[#2E2E2F]/50" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {userMenuOpen && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
+                        <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl shadow-xl z-50 p-2 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
+                          <div className="px-4 py-3 border-b border-[#2E2E2F]/5 mb-1">
+                            <p className="text-[10px] font-medium text-[#2E2E2F]/40 uppercase tracking-widest mb-0.5">Account</p>
+                            <p className="text-xs font-semibold text-[#2E2E2F] truncate">{displayName}</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#2E2E2F]/45 mt-1">{roleLabel}</p>
+                          </div>
+                          {isOrganizer ? (
+                            isAttendingView ? (
+                              <>
+                                <button
+                                  className={publicUserMenuActionClass}
+                                  onClick={() => {
+                                    setPublicMode('attending');
+                                    setUserMenuOpen(false);
+                                    navigate('/browse-events');
+                                  }}
+                                >
+                                  <ICONS.Calendar className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                                  <span>Browse Events</span>
+                                </button>
+                                <button
+                                  className={publicUserMenuActionClass}
+                                  onClick={() => {
+                                    setPublicMode('attending');
+                                    setUserMenuOpen(false);
+                                    navigate('/my-tickets');
+                                  }}
+                                >
+                                  <ICONS.Ticket className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                                  <span>My Tickets</span>
+                                </button>
+                                <button
+                                  className={publicUserMenuActionClass}
+                                  onClick={() => {
+                                    setPublicMode('organizer');
+                                    setUserMenuOpen(false);
+                                    navigate('/my-events');
+                                  }}
+                                >
+                                  <ICONS.Users className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                                  <span>Organize Events</span>
+                                </button>
+                                <button
+                                  className={publicUserMenuActionClass}
+                                  onClick={() => {
+                                    setPublicMode('attending');
+                                    setUserMenuOpen(false);
+                                    navigate('/liked');
+                                  }}
+                                >
+                                  <ICONS.Heart className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                                  <span>Liked</span>
+                                </button>
+                                <button
+                                  className={publicUserMenuActionClass}
+                                  onClick={() => {
+                                    setPublicMode('attending');
+                                    setUserMenuOpen(false);
+                                    navigate('/followings');
+                                  }}
+                                >
+                                  <ICONS.Users className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                                  <span>Followings</span>
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  className={publicUserMenuActionClass}
+                                  onClick={() => {
+                                    setPublicMode('organizer');
+                                    setUserMenuOpen(false);
+                                    navigate('/user-settings?tab=organizer');
+                                  }}
+                                >
+                                  <ICONS.Users className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                                  <span>Organizer Profile</span>
+                                </button>
+                                <button
+                                  className={publicUserMenuActionClass}
+                                  onClick={() => {
+                                    setPublicMode('organizer');
+                                    setUserMenuOpen(false);
+                                    navigate('/user-settings?tab=team');
+                                  }}
+                                >
+                                  <ICONS.Shield className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                                  <span>Team & Access</span>
+                                </button>
+                                <button
+                                  className={publicUserMenuActionClass}
+                                  onClick={() => {
+                                    setPublicMode('organizer');
+                                    setUserMenuOpen(false);
+                                    navigate('/user-settings?tab=email');
+                                  }}
+                                >
+                                  <ICONS.Mail className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                                  <span>Email Settings</span>
+                                </button>
+                                <button
+                                  className={publicUserMenuActionClass}
+                                  onClick={() => {
+                                    setPublicMode('organizer');
+                                    setUserMenuOpen(false);
+                                    navigate('/user-settings?tab=payments');
+                                  }}
+                                >
+                                  <ICONS.CreditCard className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                                  <span>Payment Gateway</span>
+                                </button>
+                                <button
+                                  className={publicUserMenuActionClass}
+                                  onClick={() => {
+                                    setPublicMode('organizer');
+                                    setUserMenuOpen(false);
+                                    navigate('/user-settings?tab=account');
+                                  }}
+                                >
+                                  <ICONS.Settings className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                                  <span>Account</span>
+                                </button>
+                              </>
+                            )
+                          ) : (
                             <>
                               <button
                                 className={publicUserMenuActionClass}
-                                onClick={() => {
-                                  setPublicMode('attending');
-                                  setUserMenuOpen(false);
-                                  navigate('/browse-events');
-                                }}
+                                onClick={() => { setUserMenuOpen(false); navigate('/browse-events'); }}
                               >
                                 <ICONS.Calendar className="w-4 h-4 opacity-70 group-hover:opacity-100" />
                                 <span>Browse Events</span>
                               </button>
                               <button
                                 className={publicUserMenuActionClass}
-                                onClick={() => {
-                                  setPublicMode('attending');
-                                  setUserMenuOpen(false);
-                                  navigate('/my-tickets');
-                                }}
+                                onClick={() => { setUserMenuOpen(false); navigate('/my-tickets'); }}
                               >
                                 <ICONS.Ticket className="w-4 h-4 opacity-70 group-hover:opacity-100" />
                                 <span>My Tickets</span>
                               </button>
                               <button
                                 className={publicUserMenuActionClass}
-                                onClick={() => {
-                                  setPublicMode('organizer');
-                                  setUserMenuOpen(false);
-                                  navigate('/my-events');
-                                }}
-                              >
-                                <ICONS.Users className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                                <span>Organize Events</span>
-                              </button>
-                              <button
-                                className={publicUserMenuActionClass}
-                                onClick={() => {
-                                  setPublicMode('attending');
-                                  setUserMenuOpen(false);
-                                  navigate('/liked');
-                                }}
+                                onClick={() => { setUserMenuOpen(false); navigate('/liked'); }}
                               >
                                 <ICONS.Heart className="w-4 h-4 opacity-70 group-hover:opacity-100" />
                                 <span>Liked</span>
                               </button>
                               <button
                                 className={publicUserMenuActionClass}
-                                onClick={() => {
-                                  setPublicMode('attending');
-                                  setUserMenuOpen(false);
-                                  navigate('/followings');
-                                }}
+                                onClick={() => { setUserMenuOpen(false); navigate('/followings'); }}
                               >
                                 <ICONS.Users className="w-4 h-4 opacity-70 group-hover:opacity-100" />
                                 <span>Followings</span>
                               </button>
                             </>
-                          ) : (
-                            <>
-                              <button
-                                className={publicUserMenuActionClass}
-                                onClick={() => {
-                                  setPublicMode('organizer');
-                                  setUserMenuOpen(false);
-                                  navigate('/user-settings?tab=organizer');
-                                }}
-                              >
-                                <ICONS.Users className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                                <span>Organizer Profile</span>
-                              </button>
-                              <button
-                                className={publicUserMenuActionClass}
-                                onClick={() => {
-                                  setPublicMode('organizer');
-                                  setUserMenuOpen(false);
-                                  navigate('/user-settings?tab=team');
-                                }}
-                              >
-                                <ICONS.Shield className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                                <span>Team & Access</span>
-                              </button>
-                              <button
-                                className={publicUserMenuActionClass}
-                                onClick={() => {
-                                  setPublicMode('organizer');
-                                  setUserMenuOpen(false);
-                                  navigate('/user-settings?tab=email');
-                                }}
-                              >
-                                <ICONS.Mail className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                                <span>Email Settings</span>
-                              </button>
-                              <button
-                                className={publicUserMenuActionClass}
-                                onClick={() => {
-                                  setPublicMode('organizer');
-                                  setUserMenuOpen(false);
-                                  navigate('/user-settings?tab=payments');
-                                }}
-                              >
-                                <ICONS.CreditCard className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                                <span>Payment Gateway</span>
-                              </button>
-                              <button
-                                className={publicUserMenuActionClass}
-                                onClick={() => {
-                                  setPublicMode('organizer');
-                                  setUserMenuOpen(false);
-                                  navigate('/user-settings?tab=account');
-                                }}
-                              >
-                                <ICONS.Settings className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                                <span>Account</span>
-                              </button>
-                            </>
-                          )
-                        ) : (
-                          <>
+                          )}
+                          <div className="border-t border-[#2E2E2F]/5 mt-1 pt-1">
                             <button
-                              className={publicUserMenuActionClass}
-                              onClick={() => { setUserMenuOpen(false); navigate('/browse-events'); }}
+                              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-red-50 hover:text-red-500 transition-colors text-left group"
+                              onClick={() => {
+                                setUserMenuOpen(false);
+                                handleLogout();
+                              }}
                             >
-                              <ICONS.Calendar className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                              <span>Browse Events</span>
+                              <svg className="w-4 h-4 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                              </svg>
+                              <span>Logout</span>
                             </button>
-                            <button
-                              className={publicUserMenuActionClass}
-                              onClick={() => { setUserMenuOpen(false); navigate('/my-tickets'); }}
-                            >
-                              <ICONS.Ticket className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                              <span>My Tickets</span>
-                            </button>
-                            <button
-                              className={publicUserMenuActionClass}
-                              onClick={() => { setUserMenuOpen(false); navigate('/liked'); }}
-                            >
-                              <ICONS.Heart className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                              <span>Liked</span>
-                            </button>
-                            <button
-                              className={publicUserMenuActionClass}
-                              onClick={() => { setUserMenuOpen(false); navigate('/followings'); }}
-                            >
-                              <ICONS.Users className="w-4 h-4 opacity-70 group-hover:opacity-100" />
-                              <span>Followings</span>
-                            </button>
-                          </>
-                        )}
-                        <div className="border-t border-[#2E2E2F]/5 mt-1 pt-1">
-                          <button
-                            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-red-50 hover:text-red-500 transition-colors text-left group"
-                            onClick={() => {
-                              setUserMenuOpen(false);
-                              handleLogout();
-                            }}
-                          >
-                            <svg className="w-4 h-4 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                            <span>Logout</span>
-                          </button>
+                          </div>
                         </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className={`hidden lg:flex ${landingLoginButtonClass}`}>
-                  Login
-                </Link>
-                <Link to="/live" className="hidden lg:flex items-center gap-2 px-6 py-2.5 bg-[#38BDF2] border border-[#38BDF2] text-white hover:bg-[#2E2E2F] hover:border-[#2E2E2F] rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-[#38BDF2]/20">
-                  Watch Live
-                  {hasLiveEvents && (
-                    <span className="relative flex h-2 w-2 ml-0.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
-                    </span>
-                  )}
-                </Link>
-              </>
-            )}
+                      </>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className={`hidden lg:flex ${landingLoginButtonClass}`}>
+                    Login
+                  </Link>
+                  <Link to="/live" className="hidden lg:flex items-center gap-2 px-6 py-2.5 bg-[#38BDF2] border border-[#38BDF2] text-white hover:bg-[#2E2E2F] hover:border-[#2E2E2F] rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-[#38BDF2]/20">
+                    Watch Live
+                    {hasLiveEvents && (
+                      <span className="relative flex h-2 w-2 ml-0.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                      </span>
+                    )}
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 
           {showHeaderSearchBar && (
             <div className="w-full lg:hidden">
               <form onSubmit={handleHeaderSearchSubmit} className="space-y-2">
-                <div className="flex items-center h-12 rounded-2xl border border-[#2E2E2F]/10 bg-[#F2F2F2] overflow-hidden shadow-[0_10px_30px_-15px_rgba(46,46,47,0.12)] focus-within:border-[#38BDF2]/50 transition-all">
+                <div className="flex items-center h-12 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] overflow-hidden shadow-[0_10px_30px_-15px_rgba(46,46,47,0.12)] focus-within:border-[#38BDF2]/50 transition-all">
                   <label className="flex items-center gap-3 px-4 min-w-0 flex-1">
                     <ICONS.Search className="w-4 h-4 text-[#2E2E2F]/50 shrink-0" />
                     <input
@@ -1685,7 +1687,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 </div>
 
                 <div className="relative" ref={headerLocationMenuRef}>
-                  <div className="flex items-center h-12 rounded-2xl border border-[#2E2E2F]/10 bg-[#F2F2F2] overflow-hidden shadow-[0_10px_30px_-15px_rgba(46,46,47,0.12)]">
+                  <div className="flex items-center h-12 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] overflow-hidden shadow-[0_10px_30px_-15px_rgba(46,46,47,0.12)]">
                     <button
                       type="button"
                       className="flex min-w-0 flex-1 items-center gap-3 px-4 text-left text-[13px] font-bold text-[#2E2E2F] hover:bg-[#38BDF2]/5 transition-colors"
@@ -1724,7 +1726,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                   </div>
 
                   {headerLocationMenuOpen && (
-                    <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-2xl border border-[#2E2E2F]/10 bg-white shadow-[0_24px_48px_-20px_rgba(46,46,47,0.35)] animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-xl border border-[#2E2E2F]/10 bg-white shadow-[0_24px_48px_-20px_rgba(46,46,47,0.35)] animate-in fade-in slide-in-from-top-2 duration-200">
                       <button
                         type="button"
                         className="flex w-full items-center gap-4 border-b border-[#2E2E2F]/5 px-5 py-4 text-left text-[#2E2E2F] transition-colors hover:bg-[#38BDF2]/5 disabled:opacity-60"
@@ -1808,7 +1810,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                     <Link
                       key={link.path}
                       to={link.path}
-                      className="flex items-center gap-3 rounded-2xl px-4 py-3 text-xs font-semibold text-[#2E2E2F]/75 transition-colors hover:bg-white hover:text-[#38BDF2]"
+                      className="flex items-center gap-3 rounded-xl px-4 py-3 text-xs font-semibold text-[#2E2E2F]/75 transition-colors hover:bg-white hover:text-[#38BDF2]"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <span className="shrink-0 opacity-70">{link.icon}</span>
@@ -1825,110 +1827,110 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
               </div>
             )}
 
-          {/* Mobile Auth Buttons Dropdown */}
-          <div className="flex flex-col gap-0 py-0 px-0 bg-transparent overflow-hidden">
-            {!isAuthenticated ? (
-              <>
-                <Link 
-                  to="/signup" 
-                  className="flex items-center gap-3 px-4 py-3 text-[#38BDF2] hover:bg-white transition-colors text-xs font-semibold w-full [&>span:first-child]:hidden"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <span>▶</span>
-                  <span>Get Started</span>
-                </Link>
-                <Link 
-                  to="/login" 
-                  className="flex items-center gap-3 px-4 py-3 text-[#2E2E2F] hover:bg-white transition-colors text-xs font-semibold w-full border-t border-[#2E2E2F]/5"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  <span>Login</span>
-                </Link>
-              </>
-            ) : (
-              <>
-                <div className="px-4 py-3 border-b border-[#2E2E2F]/5">
-                  <p className="text-[9px] font-medium text-[#2E2E2F]/40 uppercase tracking-wider mb-0.5">Account</p>
-                  <p className="text-xs font-semibold text-[#2E2E2F] truncate">{displayName}</p>
-                  <p className="text-[9px] font-black uppercase tracking-[0.12em] text-[#2E2E2F]/45 mt-1">Attending</p>
-                </div>
-                
-                <Link 
-                  to="/browse-events"
-                  className="flex items-center gap-3 px-4 py-3 text-[#2E2E2F]/70 hover:bg-white hover:text-[#2E2E2F] transition-colors text-left group text-xs font-semibold w-full border-t border-[#2E2E2F]/5"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <ICONS.Calendar className="w-4 h-4 opacity-70 group-hover:opacity-100 shrink-0" />
-                  <span>Browse Events</span>
-                </Link>
-                <Link 
-                  to="/my-tickets"
-                  className="flex items-center gap-3 px-4 py-3 text-[#2E2E2F]/70 hover:bg-white hover:text-[#2E2E2F] transition-colors text-left group text-xs font-semibold w-full border-t border-[#2E2E2F]/5"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <ICONS.Ticket className="w-4 h-4 opacity-70 group-hover:opacity-100 shrink-0" />
-                  <span>My Tickets</span>
-                </Link>
-                
-                {isOrganizer && (
-                  <Link 
-                    to="/user-settings?tab=events"
+            {/* Mobile Auth Buttons Dropdown */}
+            <div className="flex flex-col gap-0 py-0 px-0 bg-transparent overflow-hidden">
+              {!isAuthenticated ? (
+                <>
+                  <Link
+                    to="/signup"
+                    className="flex items-center gap-3 px-4 py-3 text-[#38BDF2] hover:bg-white transition-colors text-xs font-semibold w-full [&>span:first-child]:hidden"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span>▶</span>
+                    <span>Get Started</span>
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 px-4 py-3 text-[#2E2E2F] hover:bg-white transition-colors text-xs font-semibold w-full border-t border-[#2E2E2F]/5"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Login</span>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <div className="px-4 py-3 border-b border-[#2E2E2F]/5">
+                    <p className="text-[9px] font-medium text-[#2E2E2F]/40 uppercase tracking-wider mb-0.5">Account</p>
+                    <p className="text-xs font-semibold text-[#2E2E2F] truncate">{displayName}</p>
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-[#2E2E2F]/45 mt-1">Attending</p>
+                  </div>
+
+                  <Link
+                    to="/browse-events"
                     className="flex items-center gap-3 px-4 py-3 text-[#2E2E2F]/70 hover:bg-white hover:text-[#2E2E2F] transition-colors text-left group text-xs font-semibold w-full border-t border-[#2E2E2F]/5"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <ICONS.Calendar className="w-4 h-4 opacity-70 group-hover:opacity-100 shrink-0" />
+                    <span>Browse Events</span>
+                  </Link>
+                  <Link
+                    to="/my-tickets"
+                    className="flex items-center gap-3 px-4 py-3 text-[#2E2E2F]/70 hover:bg-white hover:text-[#2E2E2F] transition-colors text-left group text-xs font-semibold w-full border-t border-[#2E2E2F]/5"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <ICONS.Ticket className="w-4 h-4 opacity-70 group-hover:opacity-100 shrink-0" />
+                    <span>My Tickets</span>
+                  </Link>
+
+                  {isOrganizer && (
+                    <Link
+                      to="/user-settings?tab=events"
+                      className="flex items-center gap-3 px-4 py-3 text-[#2E2E2F]/70 hover:bg-white hover:text-[#2E2E2F] transition-colors text-left group text-xs font-semibold w-full border-t border-[#2E2E2F]/5"
+                      onClick={() => {
+                        setPublicMode('organizer');
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <ICONS.Zap className="w-4 h-4 opacity-70 group-hover:opacity-100 shrink-0" />
+                      <span>Organize Events</span>
+                    </Link>
+                  )}
+
+                  <Link
+                    to="/liked"
+                    className="flex items-center gap-3 px-4 py-3 text-[#2E2E2F]/70 hover:bg-white hover:text-[#2E2E2F] transition-colors text-left group text-xs font-semibold w-full border-t border-[#2E2E2F]/5"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <ICONS.Heart className="w-4 h-4 opacity-70 group-hover:opacity-100 shrink-0" />
+                    <span>Liked</span>
+                  </Link>
+
+                  <Link
+                    to="/followings"
+                    className="flex items-center gap-3 px-4 py-3 text-[#2E2E2F]/70 hover:bg-white hover:text-[#2E2E2F] transition-colors text-left group text-xs font-semibold w-full border-t border-[#2E2E2F]/5"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <ICONS.Users className="w-4 h-4 opacity-70 group-hover:opacity-100 shrink-0" />
+                    <span>Followings</span>
+                  </Link>
+
+                  <button
+                    className="w-full flex items-center gap-3 px-4 py-3 text-[#2E2E2F]/70 hover:bg-red-50 hover:text-red-500 transition-colors text-left group text-xs font-semibold border-t border-[#2E2E2F]/5"
                     onClick={() => {
-                      setPublicMode('organizer');
                       setMobileMenuOpen(false);
+                      handleLogout();
                     }}
                   >
-                    <ICONS.Zap className="w-4 h-4 opacity-70 group-hover:opacity-100 shrink-0" />
-                    <span>Organize Events</span>
-                  </Link>
-                )}
-                
-                <Link 
-                  to="/liked"
-                  className="flex items-center gap-3 px-4 py-3 text-[#2E2E2F]/70 hover:bg-white hover:text-[#2E2E2F] transition-colors text-left group text-xs font-semibold w-full border-t border-[#2E2E2F]/5"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <ICONS.Heart className="w-4 h-4 opacity-70 group-hover:opacity-100 shrink-0" />
-                  <span>Liked</span>
-                </Link>
-                
-                <Link 
-                  to="/followings"
-                  className="flex items-center gap-3 px-4 py-3 text-[#2E2E2F]/70 hover:bg-white hover:text-[#2E2E2F] transition-colors text-left group text-xs font-semibold w-full border-t border-[#2E2E2F]/5"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <ICONS.Users className="w-4 h-4 opacity-70 group-hover:opacity-100 shrink-0" />
-                  <span>Followings</span>
-                </Link>
-                
-                <button
-                  className="w-full flex items-center gap-3 px-4 py-3 text-[#2E2E2F]/70 hover:bg-red-50 hover:text-red-500 transition-colors text-left group text-xs font-semibold border-t border-[#2E2E2F]/5"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    handleLogout();
-                  }}
-                >
-                  <svg className="w-4 h-4 opacity-70 group-hover:opacity-100 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  <span>Logout</span>
-                </button>
-              </>
-            )}
-          </div>
+                    <svg className="w-4 h-4 opacity-70 group-hover:opacity-100 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Logout</span>
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </>
       )}
       <main className="flex-1">{children}</main>
-      <footer className="bg-[#F2F2F2] text-[#2E2E2F]/70 py-16 px-8 border-t border-[#2E2E2F]/10">
+      <footer className="bg-[#F2F2F2] text-[#2E2E2F]/70 py-24 px-8 border-t border-[#2E2E2F]/10">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
             <div>
-              <Branding className="text-2xl" />
+              <Branding className="h-24 w-auto" />
               <p className="mt-4 text-sm font-medium max-w-sm text-[#2E2E2F]/70 leading-relaxed">
                 Your gateway to StartupLab events.<br />
                 From internal workshops to public showcases, this platform delivers seamless, secure registration for every StartupLab gathering.
@@ -1962,6 +1964,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 <Link to="/browse-events" className="block text-[#2E2E2F]/70 hover:text-[#38BDF2]">Events</Link>
                 <Link to="/pricing" className="block text-[#2E2E2F]/70 hover:text-[#38BDF2]">Pricing</Link>
                 <Link to="/contact-us" className="block text-[#2E2E2F]/70 hover:text-[#38BDF2]">Contact Us</Link>
+                <Link to="/faq" className="block text-[#2E2E2F]/70 hover:text-[#38BDF2]">FAQ</Link>
               </div>
             </div>
           </div>
@@ -2082,11 +2085,12 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   const initials = (email?.split('@')[0] || name?.trim() || displayName || 'U').split(' ').filter(Boolean).map((p) => p[0]).join('').slice(0, 2).toUpperCase();
   const hasOrganizerSidebarLogo = Boolean(organizerSidebarLogoUrl);
   const organizerSidebarLogoAlt = organizerSidebarName || 'Organizer logo';
+  const organizerProfilePath = '/user-settings?tab=organizer';
 
   React.useEffect(() => {
     const syncSession = async () => {
       const isUserPortalRoute = [
-        '/user-home', '/my-events', '/user-settings', '/organizer-settings',
+        '/user-home', '/my-events', '/my-events/create', '/my-events/edit', '/user-settings', '/organizer-settings',
         '/account-settings', '/user/attendees', '/user/checkin', '/user/archive',
         '/user/reports', '/dashboard', '/subscription'
       ].includes(location.pathname);
@@ -2204,7 +2208,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             { label: 'Reports', path: '/user/reports', icon: <ICONS.BarChart className="w-6 h-6" /> },
             { label: 'Archive', path: '/user/archive', icon: <ICONS.Archive className="w-6 h-6" /> },
             { label: 'Plans', path: '/subscription', icon: <ICONS.Layout className="w-6 h-6" /> },
-            { label: 'Organization Profile', path: '/user-settings?tab=organizer', icon: <ICONS.Users className="w-6 h-6" /> },
+            { label: 'Organization Profile', path: organizerProfilePath, icon: <ICONS.Users className="w-6 h-6" /> },
             { label: 'Team and Access', path: '/user-settings?tab=team', icon: <ICONS.Users className="w-6 h-6" /> },
             { label: 'Email Settings', path: '/user-settings?tab=email', icon: <ICONS.Mail className="w-6 h-6" /> },
             { label: 'Payment Settings', path: '/user-settings?tab=payments', icon: <ICONS.CreditCard className="w-6 h-6" /> },
@@ -2241,16 +2245,16 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     <div className="min-h-screen flex bg-[#F2F2F2]">
       {/* Sidebar for desktop */}
       <aside
-        className={`bg-[#F2F2F2] border-r-[3px] border-[#111111]/35 hidden md:flex flex-col fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-64' : 'w-20'}`}
+        className={`bg-[#F2F2F2] border-r-[1px] border-[#111111]/35 hidden md:flex flex-col fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'w-64' : 'w-20'}`}
         style={{ overflow: desktopSidebarOpen ? 'hidden' : 'visible' }}
       >
-        <div className={`py-6 px-4 flex items-center justify-center border-b-[3px] border-[#111111]/35 shrink-0 ${desktopSidebarOpen ? 'min-h-[152px]' : 'min-h-[108px]'}`}>
+        <div className={`flex items-center justify-center border-b-[1px] border-[#111111]/35 shrink-0 h-20`}>
           <Link to="/user-home" className="flex items-center justify-center group transition-all duration-500 transform hover:scale-[1.05] active:scale-[0.95]">
             {organizerSidebarLogoUrl ? (
               <img
                 src={organizerSidebarLogoUrl}
                 alt={organizerSidebarLogoAlt}
-                className={desktopSidebarOpen ? "h-20 w-auto max-w-full object-contain group-hover:rotate-1 transition-transform" : "h-12 w-12 object-contain group-hover:rotate-6 transition-transform rounded-xl shadow-lg border-2 border-[#38BDF2]/20"}
+                className={desktopSidebarOpen ? "h-20 w-auto max-w-full object-contain group-hover:rotate-1 transition-transform" : "h-12 w-12 object-contain group-hover:rotate-6 transition-transform rounded-xl border-2 border-[#38BDF2]/20"}
               />
             ) : (
               desktopSidebarOpen ? (
@@ -2261,7 +2265,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             )}
           </Link>
         </div>
-        <nav className={`flex-1 pt-1 pb-6 ${desktopSidebarOpen ? 'px-4' : 'px-2'} flex flex-col gap-0 overflow-y-auto overflow-x-visible scrollbar-none scroll-smooth`}
+        <nav className={`flex-1 pt-10 pb-6 ${desktopSidebarOpen ? 'px-4' : 'px-2'} flex flex-col gap-0 overflow-y-auto overflow-x-visible scrollbar-none scroll-smooth`}
           style={{ width: desktopSidebarOpen ? '100%' : '260px', paddingRight: desktopSidebarOpen ? '0' : '180px' }}>
           {menuItems.map((item: any, idx) => {
             const isActive = checkIsActive(item.path);
@@ -2274,8 +2278,8 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                 <Link
                   to={item.path}
                   className={`flex items-center transition-all duration-300 group relative shrink-0 ${desktopSidebarOpen
-                    ? 'flex-row gap-3 px-4 py-3 rounded-[5px] mx-0'
-                    : 'flex-row justify-center p-3 rounded-[5px] mx-1'
+                    ? 'flex-row gap-3 px-4 py-3 rounded-xl mx-0'
+                    : 'flex-row justify-center p-3 rounded-xl mx-1'
                     } ${isActive
                       ? 'bg-[#38BDF2] text-[#F2F2F2] shadow-lg shadow-[#38BDF2]/20'
                       : 'text-[#111111] hover:bg-[#38BDF2] hover:text-white hover:shadow-lg hover:shadow-[#38BDF2]/20'
@@ -2310,7 +2314,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
       <main
         className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'md:pl-64' : 'md:pl-20'}`}
       >
-        <header className="h-20 bg-[#F2F2F2] border-b-[3px] border-[#2E2E2F]/30 px-4 sm:px-8 flex items-center justify-between gap-4 sm:gap-6 sticky top-0 z-40 w-full">
+        <header className="h-20 bg-[#F2F2F2] border-b-[1px] border-[#2E2E2F]/30 px-4 sm:px-8 flex items-center justify-between gap-4 sm:gap-6 sticky top-0 z-40 w-full">
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
@@ -2328,7 +2332,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
               </svg>
             </button>
             <div className="ml-1 hidden sm:block">
-              <p className="text-[10px] uppercase font-black text-[#111111] tracking-[0.2em]">
+              <p className="text-[10px] uppercase font-semibold text-[#111111]/60 tracking-[0.2em]">
                 Organizer Portal
               </p>
             </div>
@@ -2338,7 +2342,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             {(!(role === UserRole.STAFF && canReceiveNotifications === false)) && (
               <div className="relative group">
                 <button
-                  className="w-11 h-11 flex items-center justify-center rounded-2xl border border-[#38BDF2]/20 bg-transparent hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/40 hover:scale-105 active:scale-95 transition-all shadow-sm relative"
+                  className="w-11 h-11 flex items-center justify-center rounded-xl border border-[#38BDF2]/20 bg-transparent hover:bg-[#38BDF2]/10 hover:border-[#38BDF2]/40 hover:scale-105 active:scale-95 transition-all shadow-sm relative"
                   onClick={() => setNotificationOpen(!notificationOpen)}
                 >
                   <ICONS.Bell className="w-5 h-5 text-[#2E2E2F] group-hover:text-[#38BDF2] transition-colors" />
@@ -2351,7 +2355,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                 {notificationOpen && (
                   <>
                     <div className="fixed inset-0 z-[100] bg-[#2E2E2F]/10 backdrop-blur-[2px]" onClick={() => setNotificationOpen(false)} />
-                    <div className="fixed left-3 right-3 top-24 bottom-24 sm:left-auto sm:right-6 sm:bottom-6 w-auto sm:w-full sm:max-w-[420px] bg-[#F2F2F2] rounded-[2rem] sm:rounded-[2.5rem] border border-[#2E2E2F]/5 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.15)] z-[101] flex flex-col overflow-hidden animate-in slide-in-from-right-8 fade-in duration-500">
+                    <div className="fixed left-3 right-3 top-24 bottom-24 sm:left-auto sm:right-6 sm:bottom-6 w-auto sm:w-full sm:max-w-[420px] bg-[#F2F2F2] rounded-xl sm:rounded-xl border border-[#2E2E2F]/5 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.15)] z-[101] flex flex-col overflow-hidden animate-in slide-in-from-right-8 fade-in duration-500">
                       <div className="p-8 border-b border-[#2E2E2F]/5 flex items-start justify-between bg-[#F2F2F2]/80 backdrop-blur-xl sticky top-0 z-10">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
@@ -2364,7 +2368,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                           </div>
                           <p className="text-[#2E2E2F]/40 text-xs font-bold uppercase tracking-widest">Stay up to date on important information</p>
                         </div>
-                        <button onClick={() => setNotificationOpen(false)} className="w-10 h-10 rounded-2xl bg-[#F2F2F2] flex items-center justify-center text-[#2E2E2F]/40 hover:text-[#2E2E2F] hover:bg-[#2E2E2F]/5 transition-all">
+                        <button onClick={() => setNotificationOpen(false)} className="w-10 h-10 rounded-xl bg-[#F2F2F2] flex items-center justify-center text-[#2E2E2F]/40 hover:text-[#2E2E2F] hover:bg-[#2E2E2F]/5 transition-all">
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -2391,13 +2395,13 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                             {notifications.map((n) => (
                               <div
                                 key={n.notificationId || Math.random()}
-                                className={`p-5 rounded-[2rem] transition-all group relative border ${n.isRead
+                                className={`p-5 rounded-xl transition-all group relative border ${n.isRead
                                   ? 'bg-transparent border-transparent opacity-60'
                                   : 'bg-[#F2F2F2] border-[#2E2E2F]/5 hover:border-[#38BDF2]/30 shadow-sm'
                                   }`}
                               >
                                 <div className="flex items-start gap-4">
-                                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${n.isRead ? 'bg-[#2E2E2F]/5 text-[#2E2E2F]/30' : 'bg-[#38BDF2]/10 text-[#38BDF2]'
+                                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${n.isRead ? 'bg-[#2E2E2F]/5 text-[#2E2E2F]/30' : 'bg-[#38BDF2]/10 text-[#38BDF2]'
                                     }`}>
                                     <ICONS.Bell className="w-5 h-5" />
                                   </div>
@@ -2424,7 +2428,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                           </div>
                         ) : (
                           <div className="flex flex-col items-center justify-center p-12 text-center h-full">
-                            <div className="w-24 h-24 bg-[#F2F2F2] rounded-[2rem] flex items-center justify-center mb-8">
+                            <div className="w-24 h-24 bg-[#F2F2F2] rounded-xl flex items-center justify-center mb-8">
                               <ICONS.Bell className="w-10 h-10 text-[#2E2E2F]/10" />
                             </div>
                             <h3 className="text-xl font-black text-[#2E2E2F] tracking-tighter uppercase mb-2">Clean Slate</h3>
@@ -2446,7 +2450,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
               className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] hover:bg-[#38BDF2]/10 transition-colors"
               onClick={() => setUserMenuOpen((v) => !v)}
             >
-              <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#38BDF2]/20 text-[#2E2E2F] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl overflow-hidden bg-[#38BDF2]/20 text-[#2E2E2F] flex items-center justify-center">
                 {imageUrl ? (
                   <img src={imageUrl} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
@@ -2464,7 +2468,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             {userMenuOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
-                <div className="absolute right-0 top-[calc(100%+8px)] w-60 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-2xl shadow-xl z-50 p-2 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
+                <div className="absolute right-0 top-[calc(100%+8px)] w-60 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl shadow-xl z-50 p-2 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
                   <div className="px-4 py-3 border-b border-[#2E2E2F]/5 mb-1">
                     <p className="text-[10px] font-medium text-[#2E2E2F]/40 uppercase tracking-widest mb-0.5">Account</p>
                     <p className="text-xs font-semibold text-[#2E2E2F] truncate">{displayName}</p>
@@ -2493,7 +2497,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                   <button
                     className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#2E2E2F]/70 hover:bg-[#38BDF2]/10 hover:text-[#38BDF2] transition-colors text-left group"
                     onClick={() => {
-                      navigate('/user-settings?tab=organizer');
+                      navigate(organizerProfilePath);
                       setUserMenuOpen(false);
                     }}
                   >
@@ -2575,8 +2579,8 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
         {sidebarOpen && (
           <div className="fixed inset-0 z-[100] flex lg:hidden">
             <div className="fixed inset-0 bg-[#2E2E2F]/70 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-            <aside className="relative w-[min(18.5rem,calc(100vw-1rem))] bg-[#F2F2F2] border-r-[3px] border-[#111111]/35 flex flex-col h-full z-50 animate-in slide-in-from-left duration-300 shadow-[12px_0_36px_-24px_rgba(46,46,47,0.3)]">
-              <div className="p-8 pb-3 flex items-center justify-between border-b-[3px] border-[#111111]/35">
+            <aside className="relative w-[min(18.5rem,calc(100vw-1rem))] bg-[#F2F2F2] border-r-[1px] border-[#111111]/35 flex flex-col h-full z-50 animate-in slide-in-from-left duration-300 shadow-[12px_0_36px_-24px_rgba(46,46,47,0.3)]">
+              <div className="p-8 pb-3 flex items-center justify-between border-b-[1px] border-[#111111]/35">
                 <Link to="/user-home" onClick={() => setSidebarOpen(false)} className="flex flex-col items-start gap-2 group transition-all duration-500">
                   {organizerSidebarLogoUrl ? (
                     <img
@@ -2592,7 +2596,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                     />
                   )}
                   {organizerSidebarName && (
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40 ml-0.5">
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#2E2E2F]/60 ml-0.5">
                       {organizerSidebarName}
                     </span>
                   )}
@@ -2605,14 +2609,14 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" d="M4 6h16M4 12h16M4 18h16" /></svg>
                 </button>
               </div>
-              <nav className="flex-1 px-4 pt-1 pb-24 space-y-0 overflow-y-auto scrollbar-none">
+              <nav className="flex-1 px-4 pt-4 pb-24 space-y-1 overflow-y-auto scrollbar-none">
                 {menuItems.map((item: any) => {
                   const isActive = checkIsActive(item.path);
                   return (
                     <Link
                       key={item.path}
                       to={item.path}
-                      className={`flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group ${isActive
+                      className={`flex items-center gap-4 px-5 py-4 rounded-xl transition-all duration-300 group ${isActive
                         ? 'bg-[#38BDF2] text-white shadow-lg shadow-[#38BDF2]/20'
                         : 'text-[#111111]/90 hover:bg-[#38BDF2] hover:text-white hover:shadow-lg hover:shadow-[#38BDF2]/20'
                         }`}
@@ -2755,63 +2759,67 @@ const App: React.FC = () => (
   <ToastProvider>
     <ToastContainer />
     <Router>
-    <ScrollToTop />
-    <HashBypassBridge />
-    <GlobalOnboardingGuard>
-    <Routes>
-      <Route path="/login" element={<LoginPerspective />} />
-      <Route path="/signup" element={<SignUpView />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/accept-invite" element={<AcceptInvite />} />
-      <Route path="/" element={<PublicLayout><EventList /></PublicLayout>} />
-      <Route path="/live" element={<PublicLayout><LivePage /></PublicLayout>} />
-      <Route path="/categories/:categoryKey" element={<PublicLayout><CategoryEvents /></PublicLayout>} />
-      <Route path="/events/:slug" element={<PublicLayout><EventDetails /></PublicLayout>} />
-      <Route path="/organizer/:id" element={<PublicLayout><OrganizerProfilePage /></PublicLayout>} />
-      <Route path="/events/:slug/register" element={<PublicLayout><RegistrationForm /></PublicLayout>} />
-      <Route path="/payment/status" element={<PublicLayout><PaymentStatusView /></PublicLayout>} />
-      <Route path="/tickets/:ticketId" element={<PublicLayout><TicketView /></PublicLayout>} />
-      <Route path="/about-us" element={<PublicLayout><AboutUsPage /></PublicLayout>} />
-      <Route path="/browse-events" element={<PublicLayout><PublicEventsPage /></PublicLayout>} />
-      <Route path="/liked" element={<PublicLayout><LikedEventsPage /></PublicLayout>} />
-      <Route path="/followings" element={<PublicLayout><FollowingsEventsPage /></PublicLayout>} />
-      <Route path="/my-tickets" element={<PublicLayout><MyTicketsPage /></PublicLayout>} />
-      <Route path="/privacy-policy" element={<PublicLayout><PrivacyPolicyPage /></PublicLayout>} />
-      <Route path="/terms-of-service" element={<PublicLayout><TermsOfServicePage /></PublicLayout>} />
-      <Route path="/contact-us" element={<PublicLayout><ContactUsPage /></PublicLayout>} />
-      <Route path="/pricing" element={<PublicLayout><PricingPage /></PublicLayout>} />
-      <Route path="/faq" element={<PublicLayout><FaqPage /></PublicLayout>} />
-      <Route path="/refund-policy" element={<PublicLayout><RefundPolicyPage /></PublicLayout>} />
-      <Route path="/onboarding" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><WelcomeView /></RequireRoleRoute>} />
+      <ScrollToTop />
+      <HashBypassBridge />
+      <GlobalOnboardingGuard>
+        <Routes>
+          <Route path="/login" element={<LoginPerspective />} />
+          <Route path="/signup" element={<SignUpView />} />
+          <Route path="/welcome" element={<WelcomeView />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/accept-invite" element={<AcceptInvite />} />
+          <Route path="/" element={<PublicLayout><EventList /></PublicLayout>} />
+          <Route path="/live" element={<PublicLayout><LivePage /></PublicLayout>} />
+          <Route path="/categories/:categoryKey" element={<PublicLayout><CategoryEvents /></PublicLayout>} />
+          <Route path="/events/:slug" element={<PublicLayout><EventDetails /></PublicLayout>} />
+          <Route path="/organizer/:id" element={<PublicLayout><OrganizerProfilePage /></PublicLayout>} />
+          <Route path="/events/:slug/register" element={<PublicLayout><RegistrationForm /></PublicLayout>} />
+          <Route path="/payment/status" element={<PublicLayout><PaymentStatusView /></PublicLayout>} />
+          <Route path="/tickets/:ticketId" element={<PublicLayout><TicketView /></PublicLayout>} />
+          <Route path="/about-us" element={<PublicLayout><AboutUsPage /></PublicLayout>} />
+          <Route path="/browse-events" element={<PublicLayout><PublicEventsPage /></PublicLayout>} />
+          <Route path="/liked" element={<PublicLayout><LikedEventsPage /></PublicLayout>} />
+          <Route path="/followings" element={<PublicLayout><FollowingsEventsPage /></PublicLayout>} />
+          <Route path="/my-tickets" element={<PublicLayout><MyTicketsPage /></PublicLayout>} />
+          <Route path="/privacy-policy" element={<PublicLayout><PrivacyPolicyPage /></PublicLayout>} />
+          <Route path="/terms-of-service" element={<PublicLayout><TermsOfServicePage /></PublicLayout>} />
+          <Route path="/contact-us" element={<PublicLayout><ContactUsPage /></PublicLayout>} />
+          <Route path="/pricing" element={<PublicLayout><PricingPage /></PublicLayout>} />
+          <Route path="/faq" element={<PublicLayout><FaqPage /></PublicLayout>} />
+          <Route path="/refund-policy" element={<PublicLayout><RefundPolicyPage /></PublicLayout>} />
+          <Route path="/onboarding" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><WelcomeView /></RequireRoleRoute>} />
 
-      {/* User Portal Routes */}
-      <Route path="/user-home" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><UserHome /></UserPortalLayout></RequireRoleRoute>} />
-      <Route path="/my-events" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><UserEvents /></UserPortalLayout></RequireRoleRoute>} />
-      <Route path="/user-settings" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><UserSettings /></UserPortalLayout></RequireRoleRoute>} />
-      <Route path="/organizer-settings" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><Navigate to="/user-settings?tab=organizer" replace /></RequireRoleRoute>} />
-      <Route path="/payment-settings" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><Navigate to="/user-settings?tab=payments" replace /></RequireRoleRoute>} />
-      <Route path="/account-settings" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><Navigate to="/user-settings?tab=account" replace /></RequireRoleRoute>} />
-      <Route path="/user/attendees" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><RegistrationsList /></UserPortalLayout></RequireRoleRoute>} />
-      <Route path="/user/checkin" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><CheckIn /></UserPortalLayout></RequireRoleRoute>} />
-      <Route path="/user/archive" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><ArchiveEvents /></UserPortalLayout></RequireRoleRoute>} />
-        <Route path="/user/reports" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><OrganizerReports /></UserPortalLayout></RequireRoleRoute>} />
-      <Route path="/subscription" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><OrganizerSubscription /></UserPortalLayout></RequireRoleRoute>} />
-      <Route path="/organizer-support" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><OrganizerSupport /></UserPortalLayout></RequireRoleRoute>} />
-      <Route path="/subscription/success" element={<PublicLayout><SubscriptionSuccess /></PublicLayout>} />
+          {/* User Portal Routes */}
+          <Route path="/user-home" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><UserHome /></UserPortalLayout></RequireRoleRoute>} />
+          <Route path="/my-events" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><UserEvents /></UserPortalLayout></RequireRoleRoute>} />
+          <Route path="/my-events/create" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><UserEvents /></UserPortalLayout></RequireRoleRoute>} />
+          <Route path="/my-events/edit/:eventId" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><UserEvents /></UserPortalLayout></RequireRoleRoute>} />
+          <Route path="/user-settings" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><UserSettings /></UserPortalLayout></RequireRoleRoute>} />
+          <Route path="/organizer-settings" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><Navigate to="/user-settings?tab=organizer" replace /></RequireRoleRoute>} />
+          <Route path="/payment-settings" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><Navigate to="/user-settings?tab=payments" replace /></RequireRoleRoute>} />
+          <Route path="/account-settings" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><Navigate to="/user-settings?tab=account" replace /></RequireRoleRoute>} />
+          <Route path="/user/attendees" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><RegistrationsList /></UserPortalLayout></RequireRoleRoute>} />
+          <Route path="/user/checkin" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><CheckIn /></UserPortalLayout></RequireRoleRoute>} />
+          <Route path="/user/archive" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><ArchiveEvents /></UserPortalLayout></RequireRoleRoute>} />
+          <Route path="/user/reports" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><OrganizerReports /></UserPortalLayout></RequireRoleRoute>} />
+          <Route path="/subscription" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><OrganizerSubscription /></UserPortalLayout></RequireRoleRoute>} />
+          <Route path="/organizer-support" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><OrganizerSupport /></UserPortalLayout></RequireRoleRoute>} />
+          <Route path="/subscription/success" element={<PublicLayout><SubscriptionSuccess /></PublicLayout>} />
 
-      {/* Admin Portal Routes */}
-      <Route path="/dashboard" element={<RequireRoleRoute allow={[UserRole.ADMIN, UserRole.ORGANIZER]}><DashboardWrapper /></RequireRoleRoute>} />
-      <Route path="/events" element={<RequireRoleRoute allow={[UserRole.ADMIN, UserRole.STAFF]}><PortalLayout><EventsManagement /></PortalLayout></RequireRoleRoute>} />
-      <Route path="/attendees" element={<RequireRoleRoute allow={[UserRole.ADMIN, UserRole.STAFF]}><PortalLayout><RegistrationsList /></PortalLayout></RequireRoleRoute>} />
-      <Route path="/checkin" element={<RequireRoleRoute allow={[UserRole.ADMIN, UserRole.STAFF]}><PortalLayout><CheckIn /></PortalLayout></RequireRoleRoute>} />
-      <Route path="/settings" element={<RequireRoleRoute allow={[UserRole.ADMIN, UserRole.STAFF]}><PortalLayout><SettingsView /></PortalLayout></RequireRoleRoute>} />
+          {/* Admin Portal Routes */}
+          <Route path="/dashboard" element={<RequireRoleRoute allow={[UserRole.ADMIN, UserRole.ORGANIZER]}><DashboardWrapper /></RequireRoleRoute>} />
+          <Route path="/events" element={<RequireRoleRoute allow={[UserRole.ADMIN, UserRole.STAFF]}><PortalLayout><EventsManagement /></PortalLayout></RequireRoleRoute>} />
+          <Route path="/attendees" element={<RequireRoleRoute allow={[UserRole.ADMIN, UserRole.STAFF]}><PortalLayout><RegistrationsList /></PortalLayout></RequireRoleRoute>} />
+          <Route path="/checkin" element={<RequireRoleRoute allow={[UserRole.ADMIN, UserRole.STAFF]}><PortalLayout><CheckIn /></PortalLayout></RequireRoleRoute>} />
+          <Route path="/settings" element={<RequireRoleRoute allow={[UserRole.ADMIN, UserRole.STAFF]}><PortalLayout><SettingsView /></PortalLayout></RequireRoleRoute>} />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-    </GlobalOnboardingGuard>
-  </Router>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </GlobalOnboardingGuard>
+    </Router>
   </ToastProvider>
 );
 export default App;
+
 

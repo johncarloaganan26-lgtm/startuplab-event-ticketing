@@ -67,7 +67,7 @@ export const OrganizerCard: React.FC<OrganizerCardProps> = ({
             <button
                 type="button"
                 onClick={handleClick}
-                className="group text-left rounded-2xl border border-[#2E2E2F]/10 bg-[#F2F2F2] overflow-hidden hover:border-[#38BDF2]/45 transition-all min-w-[200px]"
+                className="group text-left rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] overflow-hidden hover:border-[#38BDF2]/45 transition-all min-w-[200px]"
             >
                 <div className="aspect-[4/3] bg-[#2E2E2F]/5">
                     {organizerImage ? (
@@ -97,7 +97,7 @@ export const OrganizerCard: React.FC<OrganizerCardProps> = ({
         return (
             <div
                 onClick={handleClick}
-                className="group cursor-pointer rounded-2xl border border-[#2E2E2F]/10 bg-[#F2F2F2] overflow-hidden hover:border-[#38BDF2]/45 transition-all"
+                className="group cursor-pointer rounded-xl border border-[#2E2E2F]/10 bg-[#F2F2F2] overflow-hidden hover:border-[#38BDF2]/45 transition-all"
             >
                 <div className="aspect-[4/3] bg-[#2E2E2F]/5">
                     {organizerImage ? (
@@ -124,7 +124,7 @@ export const OrganizerCard: React.FC<OrganizerCardProps> = ({
 
     // Default variant - full card with details
     return (
-        <div className="bg-[#F2F2F2] rounded-[2rem] border border-[#2E2E2F]/10 p-6 hover:border-[#38BDF2]/40 transition-all">
+        <div className="bg-[#F2F2F2] rounded-xl border border-[#2E2E2F]/10 p-6 hover:border-[#38BDF2]/40 transition-all">
             <div className="flex items-start gap-4 mb-4">
                 <div 
                     onClick={handleClick}
@@ -231,3 +231,4 @@ export const OrganizerCard: React.FC<OrganizerCardProps> = ({
         </div>
     );
 };
+

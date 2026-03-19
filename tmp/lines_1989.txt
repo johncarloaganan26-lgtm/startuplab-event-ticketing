@@ -1,0 +1,4 @@
+Line 1989: "                    <div className={isFullScreenMode ? createPreviewPanelClass : `${shouldShowPreviewPanel ? 'flex flex-col' : 'hidden'} xl:sticky self-start xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:pr-1`}>\n"
+Line 326: '    const shouldShowPreviewPanel = isFullScreenMode ? (isCreateMobilePreviewMode || isCreateDesktopPreviewMode) : isPreviewMode;\n'
+Line 341: '    const createPreviewPanelClass = isCreateDesktopPreviewMode\n'
+Line 1989: "                    <div className={isFullScreenMode ? createPreviewPanelClass : `${shouldShowPreviewPanel ? 'flex flex-col' : 'hidden'} xl:sticky self-start xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:pr-1`}>\n"

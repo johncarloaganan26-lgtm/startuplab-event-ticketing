@@ -42,7 +42,15 @@ const toFormState = (profile: OrganizerProfile | null, fallbackName: string): Fo
   brandColor: profile?.brandColor || '#38BDF2',
 });
 
-export const OrganizerSettings: React.FC = () => {
+type OrganizerSettingsProps = {
+  onboardingMode?: boolean;
+  onSaved?: (profile: OrganizerProfile) => void;
+};
+
+export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
+  onboardingMode = false,
+  onSaved,
+}) => {
   const { name } = useUser();
   const navigate = useNavigate();
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -208,12 +216,17 @@ export const OrganizerSettings: React.FC = () => {
         profileImageUrl: formData.profileImageUrl || null,
         coverImageUrl: formData.coverImageUrl || null,
         brandColor: formData.brandColor || null,
+        ...(onboardingMode ? { isOnboarded: true } : {}),
       };
 
       const saved = await apiService.upsertOrganizer(payload);
       setProfile(saved);
       setFormData(toFormState(saved, name || ''));
-      setNotification({ message: 'Organizer profile updated.', type: 'success' });
+      setNotification({
+        message: onboardingMode ? 'Organizer profile setup complete.' : 'Organizer profile updated.',
+        type: 'success'
+      });
+      onSaved?.(saved);
     } catch (error) {
       setNotification({
         message: extractErrorMessage(error, 'Failed to save organizer profile.'),
@@ -232,7 +245,7 @@ export const OrganizerSettings: React.FC = () => {
       {notification && (
         <div className="fixed top-24 right-8 z-[120]">
           <Card
-            className={`px-5 py-3 rounded-2xl border-2 shadow-sm ${notification.type === 'success'
+            className={`px-5 py-3 rounded-xl border-2 shadow-sm ${notification.type === 'success'
               ? 'bg-[#38BDF2]/20 border-[#38BDF2]/40 text-[#2E2E2F]'
               : 'bg-[#2E2E2F]/10 border-[#2E2E2F]/30 text-[#2E2E2F]'
               }`}
@@ -243,13 +256,13 @@ export const OrganizerSettings: React.FC = () => {
       )}
 
       <form onSubmit={handleSave} className="space-y-6">
-        <Card className="p-8 rounded-[2rem] border-2 border-[#2E2E2F]/15 bg-[#F2F2F2]">
+        <Card className="p-8 rounded-xl border-2 border-[#2E2E2F]/15 bg-[#F2F2F2]">
           <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-8 items-start">
             <div className="space-y-6">
               <div className="space-y-3">
                 <label className="text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide">Cover Photo</label>
                 <div
-                  className={`relative rounded-[1.5rem] border-2 border-dashed ${dragActive ? 'border-[#38BDF2] bg-[#38BDF2]/10' : 'border-[#2E2E2F]/20 bg-[#F2F2F2]'
+                  className={`relative rounded-xl border-2 border-dashed ${dragActive ? 'border-[#38BDF2] bg-[#38BDF2]/10' : 'border-[#2E2E2F]/20 bg-[#F2F2F2]'
                     } p-4 transition-colors group cursor-pointer`}
                   onClick={() => {
                     const input = document.createElement('input');
@@ -265,7 +278,7 @@ export const OrganizerSettings: React.FC = () => {
                   onDragLeave={() => setDragActive(false)}
                   onDrop={(e) => handleDrop(e, true)}
                 >
-                  <div className="aspect-[3/1] rounded-2xl overflow-hidden bg-[#F2F2F2] border border-[#2E2E2F]/10 flex items-center justify-center">
+                  <div className="aspect-[3/1] rounded-xl overflow-hidden bg-[#F2F2F2] border border-[#2E2E2F]/10 flex items-center justify-center">
                     {formData.coverImageUrl || localCoverPreviewUrl ? (
                       <img src={formData.coverImageUrl || localCoverPreviewUrl} alt="Cover" className="w-full h-full object-cover" />
                     ) : (
@@ -276,7 +289,7 @@ export const OrganizerSettings: React.FC = () => {
                     )}
                   </div>
                   {!canCustomBrand && (
-                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex flex-col items-center justify-center rounded-[1.5rem]">
+                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex flex-col items-center justify-center rounded-xl">
                       <Badge type="info" className="mb-2 bg-[#2E2E2F] text-white">PRO ONLY</Badge>
                     </div>
                   )}
@@ -286,14 +299,14 @@ export const OrganizerSettings: React.FC = () => {
               <div className="space-y-3">
                 <label className="text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide">Brand Logo / Avatar</label>
                 <div
-                  className={`w-32 relative rounded-[1.5rem] border-2 border-dashed ${dragActive ? 'border-[#38BDF2] bg-[#38BDF2]/10' : 'border-[#2E2E2F]/20 bg-[#F2F2F2]'
+                  className={`w-32 relative rounded-xl border-2 border-dashed ${dragActive ? 'border-[#38BDF2] bg-[#38BDF2]/10' : 'border-[#2E2E2F]/20 bg-[#F2F2F2]'
                     } p-3 transition-colors`}
                   onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
                   onDragLeave={() => setDragActive(false)}
                   onDrop={(e) => handleDrop(e, false)}
                 >
                   <div
-                    className="aspect-square rounded-2xl overflow-hidden bg-[#F2F2F2] border border-[#2E2E2F]/10 flex items-center justify-center cursor-pointer"
+                    className="aspect-square rounded-xl overflow-hidden bg-[#F2F2F2] border border-[#2E2E2F]/10 flex items-center justify-center cursor-pointer"
                     onClick={() => fileInputRef.current?.click()}
                   >
                     {displayImageUrl ? (
@@ -310,7 +323,7 @@ export const OrganizerSettings: React.FC = () => {
                     onChange={handleFileInputChange}
                   />
                   {!canCustomBrand && (
-                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex flex-col items-center justify-center rounded-[1.5rem]">
+                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex flex-col items-center justify-center rounded-xl">
                       <Badge type="info" className="mb-2 bg-[#2E2E2F] text-white text-[8px]">PRO</Badge>
                     </div>
                   )}
@@ -327,7 +340,7 @@ export const OrganizerSettings: React.FC = () => {
                     {!canCustomBrand && <Badge type="info" className="text-[8px] bg-[#2E2E2F] text-white uppercase px-2 font-black">Professional Feature</Badge>}
                   </div>
 
-                  <div className="p-5 rounded-3xl border-2 border-[#2E2E2F]/10 bg-white/50 space-y-4 relative overflow-hidden group">
+                  <div className="p-5 rounded-xl border-2 border-[#2E2E2F]/10 bg-white/50 space-y-4 relative overflow-hidden group">
                     <div className={`flex items-center gap-5 ${!canCustomBrand ? 'opacity-40 grayscale' : ''}`}>
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[10px] font-black text-[#2E2E2F]/40 uppercase tracking-widest ml-1">Brand Color</label>
@@ -389,7 +402,7 @@ export const OrganizerSettings: React.FC = () => {
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-[#2E2E2F]/70 mb-1.5">Bio / Description (Text only)</label>
                   <textarea
-                    className="w-full px-3 py-2 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-lg outline-none focus:ring-2 focus:ring-[#38BDF2]/40 min-h-[120px]"
+                    className="w-full px-3 py-2 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl outline-none focus:ring-2 focus:ring-[#38BDF2]/40 min-h-[120px]"
                     value={formData.bio}
                     onChange={(event) => handleFormChange('bio', stripHtml(event.target.value))}
                     placeholder="Introduce your organization..."
@@ -401,7 +414,7 @@ export const OrganizerSettings: React.FC = () => {
                     Event Page Description (Short)
                   </label>
                   <textarea
-                    className="w-full px-3 py-2 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-lg outline-none focus:ring-2 focus:ring-[#38BDF2]/40 min-h-[90px]"
+                    className="w-full px-3 py-2 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl outline-none focus:ring-2 focus:ring-[#38BDF2]/40 min-h-[90px]"
                     maxLength={280}
                     value={formData.eventPageDescription}
                     onChange={(event) => handleFormChange('eventPageDescription', stripHtml(event.target.value))}
@@ -443,7 +456,7 @@ export const OrganizerSettings: React.FC = () => {
                       <label className="text-[10px] font-bold text-[#2E2E2F]/40 uppercase tracking-widest">Hex Code</label>
                       <div className="flex items-center gap-3">
                         <div
-                          className="w-12 h-12 rounded-2xl shadow-sm border border-[#2E2E2F]/10 transition-transform hover:scale-105"
+                          className="w-12 h-12 rounded-xl shadow-sm border border-[#2E2E2F]/10 transition-transform hover:scale-105"
                           style={{ backgroundColor: formData.brandColor }}
                         />
                         <input
@@ -464,7 +477,7 @@ export const OrganizerSettings: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex-1 p-5 rounded-2xl bg-white/50 border border-[#2E2E2F]/5 hidden sm:block">
+                    <div className="flex-1 p-5 rounded-xl bg-white/50 border border-[#2E2E2F]/5 hidden sm:block">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px]" style={{ backgroundColor: formData.brandColor }}>
                           <ICONS.CheckCircle className="w-4 h-4" />
@@ -479,7 +492,7 @@ export const OrganizerSettings: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="p-6 rounded-2xl border-2 border-[#2E2E2F]/15 bg-[#F2F2F2]">
+        <Card className="p-6 rounded-xl border-2 border-[#2E2E2F]/15 bg-[#F2F2F2]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide">Organizer Snapshot</p>
@@ -490,16 +503,20 @@ export const OrganizerSettings: React.FC = () => {
             </div>
 
             <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate('/subscription')}
-                className="px-6 py-3 rounded-xl font-black tracking-widest text-[10px]"
-              >
-                Subscription
-              </Button>
+              {!onboardingMode && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate('/subscription')}
+                  className="px-6 py-3 rounded-xl font-black tracking-widest text-[10px]"
+                >
+                  Subscription
+                </Button>
+              )}
               <Button type="submit" className="px-8 py-3 rounded-xl font-black tracking-widest text-[10px]" disabled={loading || saving || uploading}>
-                {saving ? 'Saving...' : 'Save Organizer Profile'}
+                {saving
+                  ? (onboardingMode ? 'Finishing Setup...' : 'Saving...')
+                  : (onboardingMode ? 'Complete Setup' : 'Save Organizer Profile')}
               </Button>
             </div>
           </div>
@@ -508,3 +525,4 @@ export const OrganizerSettings: React.FC = () => {
     </div>
   );
 };
+

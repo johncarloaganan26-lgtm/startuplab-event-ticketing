@@ -345,7 +345,7 @@ export const AdminDashboard: React.FC = () => {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
+          <div className="rounded-xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2E2E2F]">Order Summary</p>
               {renderStatusBadge(order?.status)}
@@ -359,7 +359,7 @@ export const AdminDashboard: React.FC = () => {
               <p className="text-sm font-black text-[#2E2E2F]">{order?.currency || 'PHP'} {Number(order?.totalAmount || 0).toLocaleString()}</p>
             </div>
           </div>
-          <div className="rounded-2xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
+          <div className="rounded-xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2E2E2F]">Buyer</p>
             <div className="mt-3 space-y-2">
               <p className="text-sm font-bold text-[#2E2E2F]">{order?.buyerName || '—'}</p>
@@ -370,7 +370,7 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
+        <div className="rounded-xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2E2E2F]">Event</p>
           <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
@@ -388,7 +388,7 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
+        <div className="rounded-xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
           <div className="flex items-center justify-between">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2E2E2F]">Order Items</p>
             <Badge type="info" className="text-[10px] font-semibold uppercase tracking-wide">{orderItems.length} items</Badge>
@@ -410,7 +410,7 @@ export const AdminDashboard: React.FC = () => {
           )}
         </div>
 
-        <div className="rounded-2xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
+        <div className="rounded-xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
           <div className="flex items-center justify-between">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2E2E2F]">Attendees</p>
             <Badge type="neutral" className="text-[10px] font-semibold uppercase tracking-wide">{attendees.length} total</Badge>
@@ -433,7 +433,7 @@ export const AdminDashboard: React.FC = () => {
           )}
         </div>
 
-        <div className="rounded-2xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
+        <div className="rounded-xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
           <div className="flex items-center justify-between">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2E2E2F]">Tickets</p>
             <Badge type="neutral" className="text-[10px] font-semibold uppercase tracking-wide">{tickets.length} total</Badge>
@@ -457,7 +457,7 @@ export const AdminDashboard: React.FC = () => {
           )}
         </div>
 
-        <div className="rounded-2xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
+        <div className="rounded-xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
           <div className="flex items-center justify-between">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2E2E2F]">Payments</p>
             <Badge type="neutral" className="text-[10px] font-semibold uppercase tracking-wide">{payments.length} total</Badge>
@@ -501,7 +501,7 @@ export const AdminDashboard: React.FC = () => {
           {renderStatusBadge(ticket?.status)}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-4">
-          <div className="border border-[#2E2E2F]/20 rounded-2xl p-3 bg-[#F2F2F2] flex items-center justify-center">
+          <div className="border border-[#2E2E2F]/20 rounded-xl p-3 bg-[#F2F2F2] flex items-center justify-center">
             {ticket?.qrPayload || ticket?.ticketCode ? (
               <QRCode value={ticket?.qrPayload || ticket?.ticketCode} size={120} fgColor="#2E2E2F" bgColor="#F2F2F2" />
             ) : (
@@ -526,7 +526,7 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
+          <div className="rounded-xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2E2E2F]">Attendee</p>
             <div className="mt-3 space-y-2">
               <p className="text-sm font-bold text-[#2E2E2F]">{attendee?.name || '—'}</p>
@@ -535,7 +535,7 @@ export const AdminDashboard: React.FC = () => {
               <p className="text-xs text-[#2E2E2F]">Company: {attendee?.company || '—'}</p>
             </div>
           </div>
-          <div className="rounded-2xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
+          <div className="rounded-xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2E2E2F]">Event</p>
             <div className="mt-3 space-y-2">
               <p className="text-sm font-bold text-[#2E2E2F]">{event?.eventName || '—'}</p>
@@ -580,7 +580,7 @@ export const AdminDashboard: React.FC = () => {
 
     return (
       <div className="space-y-8">
-        <div className="rounded-2xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
+        <div className="rounded-xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2E2E2F]">Action Type</p>
@@ -600,13 +600,13 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
+        <div className="rounded-xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2E2E2F]">Log Details</p>
           {renderDetailFields(log.details, 'No additional details.')}
         </div>
 
         {paymentTransaction && (
-          <div className="rounded-2xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
+          <div className="rounded-xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2E2E2F]">Payment Transaction</p>
             <div className="mt-3 space-y-2">
               <div className="flex items-center justify-between">
@@ -622,7 +622,7 @@ export const AdminDashboard: React.FC = () => {
         )}
 
         {webhookEvent && (
-          <div className="rounded-2xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
+          <div className="rounded-xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2E2E2F]">Webhook Event</p>
             <div className="mt-3 space-y-2">
               <div className="flex items-center justify-between">
@@ -638,7 +638,7 @@ export const AdminDashboard: React.FC = () => {
         )}
 
         {ticketDetails && (
-          <div className="rounded-2xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
+          <div className="rounded-xl border border-[#2E2E2F]/20 bg-[#F2F2F2] p-4">
             {renderTicketDetails(ticketDetails)}
           </div>
         )}
@@ -790,7 +790,7 @@ export const AdminDashboard: React.FC = () => {
                 return (
                   <div
                     key={tx.orderId}
-                    className={`flex gap-3 items-start pb-4 border-b border-[#2E2E2F]/20 last:border-0 rounded-xl p-2 -m-2 hover:bg-[#38BDF2]/10 transition-colors ${isSubscription ? 'cursor-default' : 'cursor-pointer'}`}
+                    className={`flex gap-3 items-start pb-4 border-b border-[#2E2E2F]/10 last:border-0 rounded-xl p-2 -m-2 hover:bg-[#38BDF2]/10 transition-colors ${isSubscription ? 'cursor-default' : 'cursor-pointer'}`}
                     onClick={isSubscription ? undefined : () => openDetail('transaction', tx.orderId)}
                   >
                     <div className="w-10 h-10 rounded-full bg-[#F2F2F2] border border-[#2E2E2F]/20 flex items-center justify-center text-[#2E2E2F] flex-shrink-0">
@@ -837,7 +837,7 @@ export const AdminDashboard: React.FC = () => {
               {orders.map((order) => (
                 <div
                   key={order.orderId}
-                  className="flex gap-3 items-start pb-4 border-b border-[#2E2E2F]/20 last:border-0 cursor-pointer rounded-xl p-2 -m-2 hover:bg-[#38BDF2]/10 transition-colors"
+                  className="flex gap-3 items-start pb-4 border-b border-[#2E2E2F]/10 last:border-0 cursor-pointer rounded-xl p-2 -m-2 hover:bg-[#38BDF2]/10 transition-colors"
                   onClick={() => openDetail('order', order.orderId)}
                 >
                   <div className="w-10 h-10 rounded-full bg-[#F2F2F2] border border-[#2E2E2F]/20 flex items-center justify-center text-[#2E2E2F] flex-shrink-0">
@@ -892,7 +892,7 @@ export const AdminDashboard: React.FC = () => {
                   return (
                     <div
                       key={log.auditLogId}
-                      className="flex gap-3 items-start pb-4 border-b border-[#2E2E2F]/20 last:border-0 cursor-pointer rounded-xl p-2 -m-2 hover:bg-[#38BDF2]/10 transition-colors"
+                      className="flex gap-3 items-start pb-4 border-b border-[#2E2E2F]/10 last:border-0 cursor-pointer rounded-xl p-2 -m-2 hover:bg-[#38BDF2]/10 transition-colors"
                       onClick={() => openDetail('audit', log.auditLogId)}
                     >
                       <div className="w-10 h-10 rounded-full bg-[#F2F2F2] border border-[#2E2E2F]/20 flex items-center justify-center text-[#2E2E2F] flex-shrink-0">
@@ -918,7 +918,7 @@ export const AdminDashboard: React.FC = () => {
         )}
 
         <Card className="p-8 flex flex-col items-center justify-center text-center border-dashed border-2 bg-[#F2F2F2] border-[#2E2E2F]/30">
-          <div className="w-20 h-20 bg-[#F2F2F2] border border-[#2E2E2F]/20 text-[#2E2E2F] rounded-3xl flex items-center justify-center mb-6">
+          <div className="w-20 h-20 bg-[#F2F2F2] border border-[#2E2E2F]/20 text-[#2E2E2F] rounded-xl flex items-center justify-center mb-6">
             {isAdmin ? <ICONS.Layout className="w-10 h-10" /> : <ICONS.Calendar className="w-10 h-10" />}
           </div>
           <h3 className="text-xl font-black text-[#2E2E2F] mb-2">{isAdmin ? 'New Plan?' : 'New Events?'}</h3>
@@ -930,12 +930,12 @@ export const AdminDashboard: React.FC = () => {
               if (isAdmin) {
                 navigate('/settings?tab=plans&openPlanModal=1');
               } else if (isOrganizer) {
-                navigate('/my-events?openModal=true');
+                navigate('/my-events/create');
               } else {
                 navigate('/events?openModal=true');
               }
             }}
-            className="bg-[#38BDF2] text-[#F2F2F2] px-8 py-3 rounded-2xl font-bold hover:bg-[#38BDF2] transition-colors"
+            className="bg-[#38BDF2] text-[#F2F2F2] px-8 py-3 rounded-xl font-bold hover:bg-[#38BDF2] transition-colors"
           >
             {isAdmin ? 'Create Plan' : 'Create Events'}
           </button>
@@ -948,3 +948,4 @@ export const AdminDashboard: React.FC = () => {
     </div>
   );
 };
+
