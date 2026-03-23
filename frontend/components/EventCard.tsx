@@ -68,10 +68,10 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEventClick }) => 
           </div>
         )}
 
-        {/* Promoted Badge - Top Right */}
+        {/* Promoted Badge - Top Left */}
         {event.is_promoted && (
-          <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-xl text-xs font-bold text-[#2E2E2F] flex items-center gap-1.5 shadow-md animate-in fade-in slide-in-from-top-2 duration-500">
-            <ICONS.Info className="w-4 h-4 text-[#38BDF2]" strokeWidth={2.5} />
+          <div className="absolute top-5 left-5 bg-[#38BDF2] px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest text-white flex items-center gap-1.5 shadow-lg animate-in fade-in zoom-in duration-500 z-20">
+            <ICONS.Info className="w-3.5 h-3.5 text-white" strokeWidth={5} />
             <span>PROMOTED</span>
           </div>
         )}
@@ -150,7 +150,9 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEventClick }) => 
         {/* Ticket Progress (if available) */}
         {event.ticketsAvailable !== undefined && event.totalTickets !== undefined && (
           <div className="flex items-center gap-2 text-[11px] font-bold text-[#38BDF2]">
-            <ICONS.Users className="w-4 h-4 text-[#2E2E2F]/40" />
+            <div className="w-4 shrink-0 flex items-center justify-center">
+              <ICONS.Users className="w-4 h-4 text-[#2E2E2F]/40" />
+            </div>
             <span>{(event.totalTickets - event.ticketsAvailable)} registered / {event.totalTickets} slots</span>
           </div>
         )}
@@ -158,8 +160,10 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEventClick }) => 
         {/* Promoted Duration (if promoted) */}
         {event.is_promoted && event.promotionEndDate && (
           <div className="pt-2">
-            <p className="text-[8px] text-[#38BDF2] font-bold uppercase tracking-widest flex items-center gap-1">
-              <ICONS.Info className="w-3 h-3" strokeWidth={2.5} />
+            <p className="text-[8px] text-[#38BDF2] font-bold uppercase tracking-widest flex items-center gap-2">
+              <div className="w-4 shrink-0 flex items-center justify-center">
+                <ICONS.Info className="w-3 h-3" strokeWidth={2.5} />
+              </div>
               {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(
                 new Date(event.promotionEndDate)
               )}

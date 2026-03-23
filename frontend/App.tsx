@@ -579,7 +579,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       <main
         className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'md:pl-64' : 'md:pl-20'}`}
       >
-        <header className="h-24 !bg-[#F2F2F2] border-b border-[#D1D5DB] px-4 sm:px-8 flex items-center justify-between sticky top-0 z-[300] w-full">
+        <header className="h-24 !bg-[#F2F2F2] border-b border-[#D1D5DB] px-4 sm:px-8 flex items-center justify-between sticky top-0 z-[500] w-full">
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
@@ -2317,7 +2317,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
       <main
         className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${desktopSidebarOpen ? 'md:pl-64' : 'md:pl-20'}`}
       >
-        <header className="h-24 bg-[#F2F2F2] border-b border-[#D1D5DB] px-4 sm:px-8 flex items-center justify-between gap-4 sm:gap-6 sticky top-0 z-[300] w-full">
+        <header className="h-24 bg-[#F2F2F2] border-b border-[#D1D5DB] px-4 sm:px-8 flex items-center justify-between gap-4 sm:gap-6 sticky top-0 z-[500] w-full">
           <div className="flex items-center gap-3">
             <button
               onClick={() => {

@@ -1825,8 +1825,8 @@ export const UserEvents: React.FC = () => {
 
                     <div className={`${
                         previewDevice === 'desktop'
-                            ? `fixed top-1/2 right-6 xl:right-8 w-[calc(100vw-3rem)] max-w-[1140px] h-[92vh] z-[150] bg-[#F2F2F2] shadow-[0_20px_60px_rgba(0,0,0,0.12)] rounded-[12px] flex flex-col overflow-hidden custom-scrollbar transform transition-all duration-500 ease-in-out border border-[#2E2E2F]/15 -translate-y-1/2 ${isPreviewMode ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0'}`
-                            : `${isPreviewMode ? 'fixed inset-0 top-16 z-50 bg-[#F2F2F2] overflow-y-auto' : 'hidden'} xl:sticky xl:top-0 self-start space-y-3 xl:max-h-[calc(70vh-1rem)] xl:overflow-y-auto xl:pr-1`
+                            ? `fixed top-24 right-6 xl:right-8 w-[calc(100vw-3rem)] max-w-[1140px] h-[calc(100vh-7rem)] z-[450] bg-[#F2F2F2] shadow-[0_40px_100px_rgba(0,0,0,0.2)] rounded-[12px] flex flex-col overflow-hidden custom-scrollbar transform transition-all duration-500 ease-in-out border border-[#2E2E2F]/15 ${isPreviewMode ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0'}`
+                            : `${isPreviewMode ? 'fixed inset-0 top-24 z-[450] bg-[#F2F2F2] overflow-y-auto' : 'hidden'} xl:sticky xl:top-0 self-start space-y-3 xl:max-h-[calc(70vh-1rem)] xl:overflow-y-auto xl:pr-1`
                     }`}>
                         <div className={`flex flex-col h-full w-full ${previewDevice === 'desktop' ? '' : 'pb-32'}`}>
                             <div className={`flex items-center justify-between flex-shrink-0 ${previewDevice === 'desktop' ? 'py-6 px-10' : 'mb-3'}`}>

@@ -44,8 +44,8 @@ export const OrganizerCard: React.FC<OrganizerCardProps> = ({ organizer, isFollo
 
             {/* Profile Pic Overlap */}
             <div className="px-5 pb-6">
-                <div className="relative -mt-10 mb-5 ml-1">
-                    <div className="w-24 h-24 rounded-full border-[6px] border-[#F2F2F2] overflow-hidden bg-gradient-to-br from-[#38BDF2] to-[#A5E1FF] shadow-lg transition-transform duration-300 group-hover:scale-105">
+                <div className="relative -mt-9 mb-4 ml-1">
+                    <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full border-[5px] border-[#F2F2F2] overflow-hidden bg-gradient-to-br from-[#38BDF2] to-[#A5E1FF] shadow-lg transition-transform duration-300 group-hover:scale-105">
                         {profileImage ? (
                             <img src={profileImage} alt={organizer.organizerName} className="w-full h-full object-cover" />
                         ) : (
@@ -56,7 +56,7 @@ export const OrganizerCard: React.FC<OrganizerCardProps> = ({ organizer, isFollo
 
                 {/* Info */}
                 <div className="space-y-1.5">
-                    <h3 className="text-xl font-bold text-[#050505] truncate tracking-tight">{organizer.organizerName}</h3>
+                    <h3 className="text-lg font-bold text-[#050505] truncate tracking-tight">{organizer.organizerName}</h3>
                     <div className="flex items-center gap-1.5">
                         <p className="text-[13px] text-[#65676B] font-semibold">{organizer.isVerified ? 'Verified Community' : 'Community Organizer'}</p>
                         {organizer.isVerified && <ICONS.CheckCircle className="w-3.5 h-3.5 text-[#38BDF2] stroke-[3px]" />}
