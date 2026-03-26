@@ -669,3 +669,16 @@ img {
     }
   }
 }
+
+/* ========================================
+   ADMIN UI OVERRIDES
+   ======================================== */
+
+.hide-admin-ui header, 
+.hide-admin-ui aside {
+  display: none !important;
+}
+
+.hide-admin-ui main {
+  padding-left: 0 !important;
+}

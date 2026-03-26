@@ -30,7 +30,7 @@ const resolveImageUrl = (value: unknown): string | null => {
 const WelcomeView: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { role, email, name, imageUrl, isAuthenticated, isOnboarded, setUser } = useUser();
+  const { userId, role, email, name, imageUrl, isAuthenticated, isOnboarded, setUser } = useUser();
   const { setPublicMode } = useEngagement();
   const [isProfileStep, setIsProfileStep] = React.useState(false);
 
@@ -46,21 +46,22 @@ const WelcomeView: React.FC = () => {
   }, [isAuthenticated, role, isOnboarded, navigate]);
 
   const handleOrganizerSaved = React.useCallback((saved: OrganizerProfile) => {
-    if (!email) return;
+    if (!email || !userId) return;
     setUser({
+      userId,
       role: UserRole.ORGANIZER,
       email,
-      name: name || saved.organizerName || null,
-      imageUrl: resolveImageUrl(saved.profileImageUrl) || imageUrl || null,
+      name: name || saved.organizerName || undefined,
+      imageUrl: resolveImageUrl(saved.profileImageUrl) || imageUrl || undefined,
       isOnboarded: true,
     });
     navigate('/user-home', { replace: true });
-  }, [email, imageUrl, name, navigate, setUser]);
+  }, [userId, email, imageUrl, name, navigate, setUser]);
 
   if (isAuthenticated && role === UserRole.ORGANIZER && isProfileStep) {
     return (
       <div className="h-screen bg-[#F2F2F2] px-4 py-6 sm:px-6 sm:py-8 overflow-y-auto">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto" style={{ zoom: '0.8', transformOrigin: 'top center' }}>
           <div className="mb-4">
             <button
               onClick={() => setIsProfileStep(false)}

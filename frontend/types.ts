@@ -264,4 +264,6 @@ export interface AnalyticsSummary {
   attendanceRate: number;
   paymentSuccessRate: number;
   totalPaidEvents?: number;
+  totalPlanRevenue?: number;
+  activeSubscriptions?: number;
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, PasswordInput, PasswordRequirements } from './Shared';
+import { Card, Button, PasswordInput, PasswordRequirements, Checkbox } from './Shared';
 import { ICONS } from '../constants';
 import { supabase } from "../supabase/supabaseClient.js";
 import { useUser } from '../context/UserContext';
@@ -376,21 +376,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialVi
                 </div>
               </div>
 
-              <label className="flex items-start gap-3 px-1 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  required
-                  checked={agreedToTerms}
-                  onChange={(e) => setAgreedToTerms(e.target.checked)}
-                  className="w-4 h-4 rounded border-2 border-[#2E2E2F]/20 text-[#38BDF2] accent-[#38BDF2] mt-1"
-                />
-                <span className="text-[11px] text-[#2E2E2F]/60 font-medium leading-relaxed">
-                  I agree to the{' '}
-                  <a href="/terms" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[#38BDF2] font-bold hover:underline">Terms of Service</a>
-                  {' '}and{' '}
-                  <a href="/privacy" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[#38BDF2] font-bold hover:underline">Privacy Policy</a>.
-                </span>
-              </label>
+              <Checkbox
+                checked={agreedToTerms}
+                onChange={setAgreedToTerms}
+                className="px-1"
+                label={
+                  <span className="text-[11px] text-[#2E2E2F]/60 font-medium leading-relaxed">
+                    I agree to the{' '}
+                    <a href="/terms" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[#38BDF2] font-bold hover:underline">Terms of Service</a>
+                    {' '}and{' '}
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[#38BDF2] font-bold hover:underline">Privacy Policy</a>.
+                  </span>
+                }
+              />
 
               <Button
                 type="submit"

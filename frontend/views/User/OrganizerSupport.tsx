@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Input, PageLoader } from '../../components/Shared';
+import { Card, Button, Input, PageLoader, Checkbox } from '../../components/Shared';
 import { apiService } from '../../services/apiService';
 import { ICONS } from '../../constants';
 import { useToast } from '../../context/ToastContext';
@@ -21,6 +21,150 @@ export const OrganizerSupport: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { showToast } = useToast();
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+
+  const toggleRow = (id: string) => {
+    setSelectedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleAll = () => {
+    if (selectedRows.size === history.length) {
+      setSelectedRows(new Set());
+    } else {
+      setSelectedRows(new Set(history.map(t => t.notification_id)));
+    }
+  };
+
+  const handlePrintSupport = () => {
+    const selected = history.filter(t => selectedRows.has(t.notification_id));
+    const printData = selected.length > 0 ? selected : history;
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      const watermarkLogo = profile?.profileImageUrl || 'https://xmjdcbzgdfylbqkjoyyb.supabase.co/storage/v1/object/public/startuplab-business-ticketing/assets/assets/image%20(1).svg';
+      printWindow.document.write(`
+        <html><head><title>Support History Report</title>
+        <style>
+          @page { size: portrait; margin: 20mm; }
+          body { font-family: 'Inter', sans-serif; color: #2E2E2F; padding: 0; margin: 0; position: relative; min-height: 100vh; }
+          .watermark-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            z-index: -1000;
+            pointer-events: none;
+            overflow: hidden;
+          }
+          .watermark {
+            width: 120%; /* "Big as fuck" */
+            max-width: none;
+            opacity: 0.04; 
+            transform: rotate(-25deg);
+            filter: grayscale(100%);
+          }
+          .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #38BDF2; padding-bottom: 15px; margin-bottom: 40px; }
+          .logo { height: 70px; object-fit: contain; }
+          .report-info { text-align: right; font-size: 11px; font-weight: bold; text-transform: uppercase; color: #2E2E2F; line-height: 1.5; }
+          h1 { margin: 0; font-size: 32px; letter-spacing: -0.06em; font-weight: 900; text-transform: uppercase; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; position: relative; z-index: 10; background: rgba(255,255,255,0.7); }
+          th { background: #2E2E2F; color: white; border: 1px solid #2E2E2F; padding: 14px 10px; text-align: left; text-transform: uppercase; letter-spacing: 0.15em; font-size: 11px; }
+          td { border: 1px solid #ddd; padding: 14px 10px; vertical-align: top; background: transparent; }
+          .status { font-weight: 900; text-transform: uppercase; font-size: 10px; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; }
+        </style></head><body>
+          <div class="watermark-container">
+            <img src="${watermarkLogo}" class="watermark" />
+          </div>
+          <div class="header">
+            <div>
+              <h1>Support History</h1>
+              <p style="margin: 5px 0 0; font-size: 14px; font-weight: 600; color: #38BDF2;">${profile?.organizerName || 'Official Document'}</p>
+            </div>
+            <div class="report-info">
+              <img src="${watermarkLogo}" class="logo" /><br/>
+              <span style="color: #666;">Ref: LOG-${Date.now().toString().slice(-6)}</span><br/>
+              Date: ${new Date().toLocaleDateString()}<br/>
+              Capacity: ${printData.length} Tickets
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>Reference / Subject</th><th>Current Status</th><th>Entry Date</th></tr></thead>
+            <tbody>
+              ${printData.map(t => `
+                <tr>
+                  <td>
+                    <div style="font-weight: 800; font-size: 14px; margin-bottom: 6px; color: #000;">${t.title || 'No Subject'}</div>
+                    <div style="font-size: 11px; color: #444; line-height: 1.4;">${t.message ? t.message.substring(0, 150) + (t.message.length > 150 ? '...' : '') : 'No message body.'}</div>
+                  </td>
+                  <td style="width: 120px; text-align: center;"><span class="status">${t.metadata?.status || 'Open'}</span></td>
+                  <td style="width: 120px; text-align: right; font-weight: 600;">${new Date(t.created_at).toLocaleDateString()}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+          <div style="margin-top: 60px; text-align: center; font-size: 11px; font-weight: bold; color: #2E2E2F; border-top: 2px solid #eee; padding-top: 20px; text-transform: uppercase; letter-spacing: 0.1em;">
+            StartupLab Business Ticketing System • Official Organizer Report
+          </div>
+        </body></html>`);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  const handleExportSupport = () => {
+    const selected = history.filter(t => selectedRows.has(t.notification_id));
+    const exportData = selected.length > 0 ? selected : history;
+    const csvContent = `Subject,Status,Date\n${exportData.map(t => `${t.title || ''},${t.metadata?.status || 'Open'},${new Date(t.created_at).toLocaleDateString()}`).join('\n')}`;
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `support_history_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleBulkArchive = async () => {
+    if (selectedRows.size === 0) {
+      showToast('info', 'Select tickets to archive first');
+      return;
+    }
+    try {
+      setRefreshing(true);
+      await apiService.bulkArchiveSupportTickets(Array.from(selectedRows));
+      showToast('success', `${selectedRows.size} tickets archived successfully.`);
+      setSelectedRows(new Set());
+      await loadHistory();
+    } catch (err: any) {
+      showToast('error', err.message || 'Failed to archive tickets');
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedRows.size === 0) {
+      showToast('info', 'Select tickets to delete first');
+      return;
+    }
+    if (!window.confirm(`Are you sure you want to permanently delete ${selectedRows.size} tickets and all their messages?`)) return;
+    try {
+      setRefreshing(true);
+      await apiService.bulkDeleteSupportTickets(Array.from(selectedRows));
+      showToast('success', `${selectedRows.size} tickets deleted successfully.`);
+      setSelectedRows(new Set());
+      await loadHistory();
+    } catch (err: any) {
+      showToast('error', err.message || 'Failed to delete tickets');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     loadProfile();
@@ -106,6 +250,36 @@ export const OrganizerSupport: React.FC = () => {
       setSubmitting(false);
     }
   };
+
+  const renderMessageContent = (message: string) => {
+    if (!message) return null;
+    
+    // Check for [IMAGE_URL: some_url]
+    const imageMatch = message.match(/\[IMAGE_URL: (.*?)\]/);
+    if (imageMatch) {
+      const imageUrl = imageMatch[1];
+      const textPart = message.replace(/\[IMAGE_URL: (.*?)\]/g, '').trim();
+      
+      return (
+        <div className="space-y-3">
+          {textPart && <p className="text-sm font-medium whitespace-pre-wrap leading-relaxed">{textPart}</p>}
+          <div className="relative group cursor-pointer" onClick={() => window.open(imageUrl, '_blank')}>
+            <img 
+              src={imageUrl} 
+              alt="Attachment" 
+              className="max-h-60 rounded-lg border-2 border-white/20 shadow-sm transition-all group-hover:scale-[1.02] active:scale-[0.98]" 
+            />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+               <ICONS.Eye className="w-5 h-5 text-white" />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return <p className="text-sm font-medium whitespace-pre-wrap leading-relaxed">{message}</p>;
+  };
+
 
   if (loading) return <PageLoader label="Loading support center..." />;
 
@@ -263,19 +437,71 @@ export const OrganizerSupport: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="bg-transparent border border-[#2E2E2F]/10 rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-[#2E2E2F]/5 border-b border-[#2E2E2F]/5">
-                <tr>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40">Subject</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40">Status</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40 text-right">Date Posted</th>
-                </tr>
-              </thead>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40">
+                {selectedRows.size > 0 ? `${selectedRows.size} selected` : `Total ${history.length} tickets`}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={handlePrintSupport} 
+                className="w-10 h-10 flex items-center justify-center bg-[#38BDF2] border-2 border-[#38BDF2] rounded-full text-white hover:bg-[#2E2E2F] hover:border-[#2E2E2F] transition-all shadow-md group"
+                title={`Print ${selectedRows.size > 0 ? `Selected (${selectedRows.size})` : 'All'}`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+              </button>
+              <button 
+                onClick={handleExportSupport} 
+                className="w-10 h-10 flex items-center justify-center bg-[#38BDF2] border-2 border-[#38BDF2] rounded-full text-white hover:bg-[#2E2E2F] hover:border-[#2E2E2F] transition-all shadow-md group"
+                title={`Export ${selectedRows.size > 0 ? `Selected (${selectedRows.size})` : 'All'}`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              </button>
+              {selectedRows.size > 0 && (
+                <button 
+                  onClick={handleBulkArchive} 
+                  className="flex items-center gap-2 px-5 py-2.5 bg-red-600 border border-red-600 rounded-xl text-white hover:bg-red-700 transition-all text-[10px] font-black uppercase tracking-widest shadow-lg animate-in fade-in slide-in-from-right-4 duration-300"
+                >
+                  <ICONS.Lock className="w-4 h-4" />
+                  Archive ({selectedRows.size})
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-transparent border border-[#2E2E2F]/10 rounded-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-[#F2F2F2] border-b border-[#2E2E2F]/5">
+                  <tr>
+                    <th className="px-4 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40 w-12">
+                      <div className="flex justify-center">
+                        <Checkbox 
+                          checked={selectedRows.size === history.length && history.length > 0} 
+                          onChange={toggleAll} 
+                          size="sm"
+                        />
+                      </div>
+                    </th>
+                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40">Subject</th>
+                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40">Status</th>
+                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-[#2E2E2F]/40 text-right">Date Posted</th>
+                  </tr>
+                </thead>
               <tbody className="divide-y divide-[#2E2E2F]/5">
                 {history.map((t) => (
-                  <tr key={t.notification_id} className="hover:bg-[#2E2E2F]/5 transition-colors cursor-pointer" onClick={() => openThread(t)}>
+                  <tr key={t.notification_id} className={`hover:bg-[#2E2E2F]/5 transition-colors cursor-pointer ${selectedRows.has(t.notification_id) ? 'bg-[#38BDF2]/10' : ''}`} onClick={() => openThread(t)}>
+                    <td className="px-4 py-6" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex justify-center">
+                        <Checkbox 
+                          checked={selectedRows.has(t.notification_id)} 
+                          onChange={() => toggleRow(t.notification_id)} 
+                          size="sm"
+                        />
+                      </div>
+                    </td>
                     <td className="px-8 py-6">
                       <div className="space-y-1">
                         <p className="text-sm font-bold text-[#2E2E2F] flex items-center gap-2">
@@ -300,6 +526,7 @@ export const OrganizerSupport: React.FC = () => {
             </table>
           </div>
         </div>
+      </div>
       )}
 
       {selectedTicket && (
@@ -340,9 +567,7 @@ export const OrganizerSupport: React.FC = () => {
                       </div>
                       <div className="bg-[#38BDF2] px-4 py-3 rounded-xl rounded-br-none border-0 shadow-sm text-white">
                          <p className="text-sm font-bold mb-1.5">{selectedTicket.title}</p>
-                         <p className="text-sm font-medium whitespace-pre-wrap leading-relaxed">
-                           {selectedTicket.message}
-                         </p>
+                         {renderMessageContent(selectedTicket.message)}
                       </div>
                    </div>
                    <p className="text-[10px] font-bold text-[#2E2E2F]/30 uppercase tracking-[0.2em] mr-14">
@@ -371,7 +596,7 @@ export const OrganizerSupport: React.FC = () => {
                              ? 'bg-[#2E2E2F]/5 text-[#2E2E2F] rounded-bl-none border border-[#2E2E2F]/5' 
                              : 'bg-[#38BDF2] text-white rounded-br-none border-0'
                          }`}>
-                            <p className="text-sm font-medium whitespace-pre-wrap leading-relaxed">{m.message}</p>
+                            {renderMessageContent(m.message)}
                          </div>
                       </div>
                       <p className={`text-[10px] font-bold uppercase tracking-[0.2em] text-[#2E2E2F]/30 ${m.is_admin_reply ? 'ml-14' : 'mr-14'}`}>

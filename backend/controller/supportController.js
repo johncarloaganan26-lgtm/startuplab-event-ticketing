@@ -1,6 +1,49 @@
 import supabase from '../database/db.js';
 import { sendSmtpEmail } from '../utils/smtpMailer.js';
 import { getAdminSmtpConfig } from '../utils/notificationService.js';
+import crypto from 'crypto';
+import path from 'path';
+
+const STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'startuplab-business-ticketing';
+
+// Helper to format messages for HTML emails (newlines to <br> and [IMAGE_URL] to <img>)
+const formatEmailMessage = (msg = '') => {
+  let formatted = String(msg || '').replace(/\n/g, '<br/>');
+  // Replace [IMAGE_URL: url] with <img> tag
+  formatted = formatted.replace(/\[IMAGE_URL: (.*?)\]/g, '<div style="margin-top: 20px;"><img src="$1" style="max-width: 100%; border-radius: 8px; border: 1px solid #E2E8F0;" alt="Attachment"/></div>');
+  return formatted;
+};
+
+export const uploadSupportImage = async (req, res) => {
+  try {
+    const file = req.file;
+    if (!file) return res.status(400).json({ error: 'Image file is required' });
+    if (!file.mimetype || !file.mimetype.startsWith('image/')) {
+      return res.status(400).json({ error: 'Only image uploads are allowed' });
+    }
+
+    const ext = path.extname(file.originalname || '') || '.png';
+    const fileName = `${crypto.randomUUID()}${ext}`;
+    const filePath = `support-attachments/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .upload(filePath, file.buffer, {
+        contentType: file.mimetype,
+        upsert: true,
+      });
+
+    if (uploadError) return res.status(500).json({ error: uploadError.message });
+
+    const { data: publicData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(filePath);
+    const publicUrl = publicData?.publicUrl;
+    if (!publicUrl) return res.status(500).json({ error: 'Failed to generate public URL' });
+
+    return res.json({ publicUrl, path: filePath });
+  } catch (err) {
+    return res.status(500).json({ error: err?.message || 'Image upload failed' });
+  }
+};
 
 export const submitSupportTicket = async (req, res) => {
   try {
@@ -23,13 +66,13 @@ export const submitSupportTicket = async (req, res) => {
     // 2. Find the Superadmin receiving this
     const { data: adminUser } = await supabase
       .from('users')
-      .select('userId, email, name')
+      .select('userId, email')
       .eq('role', 'ADMIN')
       .limit(1)
       .maybeSingle();
 
     if (!adminUser) {
-      return res.status(404).json({ error: 'System administrator not found.' });
+      return res.status(503).json({ error: 'System administrator not found. Please try again later.' });
     }
 
     // 3. Create a ticket record using the notifications table to avoid schema issues
@@ -57,6 +100,7 @@ export const submitSupportTicket = async (req, res) => {
       return res.status(500).json({ error: 'Failed to create support ticket in system.' });
     }
 
+
     // 4. Send Real Time Email to the Admin!
     // We use the Admin's own SMTP settings to send TO themselves
     const adminSmtp = await getAdminSmtpConfig();
@@ -82,7 +126,7 @@ export const submitSupportTicket = async (req, res) => {
                 </div>
 
                 <div style="font-size: 16px; line-height: 1.6; color: #475569;">
-                  ${message.replace(/\n text-decoration: none/g, '<br/>')}
+                  ${formatEmailMessage(message)}
                 </div>
               </div>
 
@@ -130,7 +174,7 @@ export const submitSupportTicket = async (req, res) => {
                 </p>
 
                 <div style="background-color: #F8FAFC; padding: 24px; border-radius: 12px; border: 1px solid #E2E8F0; font-size: 14px; color: #475569; font-style: italic;">
-                  "${message.replace(/\n/g, '<br/>')}"
+                  "${formatEmailMessage(message)}"
                 </div>
 
                 <div style="margin-top: 40px; text-align: center;">
@@ -238,6 +282,7 @@ export const getMySupportTickets = async (req, res) => {
       `)
       .eq('type', 'SUPPORT_TICKET')
       .eq('actor_user_id', userId)
+      .eq('is_archived', false) // Only active
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -245,6 +290,34 @@ export const getMySupportTickets = async (req, res) => {
   } catch (err) {
     console.error('[Support] Load My Tickets Error:', err);
     res.status(500).json({ error: 'Failed to load support history' });
+  }
+};
+
+export const getArchivedSupportTickets = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { data, error } = await supabase
+      .from('notifications')
+      .select(`
+        *, 
+        messages:support_messages(
+          message_id, 
+          message, 
+          created_at, 
+          is_admin_reply,
+          sender:users!sender_user_id(name, imageUrl)
+        )
+      `)
+      .eq('type', 'SUPPORT_TICKET')
+      .eq('actor_user_id', userId)
+      .eq('is_archived', true) // Only archived
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('[Support] Load Archived Tickets Error:', err);
+    res.status(500).json({ error: 'Failed to load archived tickets' });
   }
 };
 
@@ -359,7 +432,7 @@ export const replyToSupportTicket = async (req, res) => {
                       </p>
 
                       <div style="background-color: #F1F5F9; padding: 24px; border-radius: 12px; border-left: 4px solid #38BDF2; font-size: 16px; line-height: 1.6; color: #0F172A; margin-bottom: 32px;">
-                        ${message.replace(/\n/g, '<br/>')}
+                        ${formatEmailMessage(message)}
                       </div>
 
                       <a href="${process.env.FRONTEND_URL || 'https://startuplab.ph'}/#/organizer-support" style="display: block; width: 100%; padding: 20px 0; background-color: #0F172A; color: #FFFFFF; font-size: 14px; font-weight: 700; text-align: center; text-decoration: none; border-radius: 12px; letter-spacing: 0.1em;">
@@ -446,7 +519,7 @@ export const submitContactForm = async (req, res) => {
                 </tr>
               </table>
               <div style="margin-top: 20px; pt-16px; border-top: 1px dashed #E2E8F0; padding-top: 16px; font-size: 14px; color: #475569; font-style: italic;">
-                "${(message || '').replace(/\n/g, '<br/>')}"
+                "${formatEmailMessage(message || '')}"
               </div>
             </div>
 
@@ -512,13 +585,13 @@ export const submitContactForm = async (req, res) => {
               </table>
 
               <div style="background-color: #F8FAFC; padding: 24px; border-radius: 12px; font-size: 16px; line-height: 1.6; color: #475569; border: 1px solid #E2E8F0;">
-                ${(message || '').replace(/\n/g, '<br/>')}
+                ${formatEmailMessage(message || '')}
               </div>
             </div>
 
             <div style="text-align: center; margin-top: 50px;">
               <p style="font-size: 11px; color: #94A3B8; line-height: 1.6;">
-                &copy; 2026 StartupLab Business Ticketing. All rights reserved.
+                StartupLab Admin Notification • ${new Date().toLocaleString()}
               </p>
             </div>
           </div>
@@ -534,6 +607,32 @@ export const submitContactForm = async (req, res) => {
         from: `Contact Form <${adminSmtp.fromAddress}>`,
         config: adminSmtp,
       });
+
+      // Also create an In-App Notification for the Admin! (User request match)
+      const { data: adminFull } = await supabase
+        .from('users')
+        .select('userId')
+        .eq('email', adminUser.email)
+        .maybeSingle();
+
+      if (adminFull?.userId) {
+        await supabase.from('notifications').insert({
+          recipient_user_id: adminFull.userId,
+          type: 'SUPPORT_TICKET', // Keep same type for Admin filtering
+          title: `Guest Inquiry: ${inquiryType || 'General'}`,
+          message: `${safeName} (${email}): ${message}`,
+          metadata: {
+            status: 'open',
+            orgName: safeName,
+            guestName: safeName,
+            guestEmail: email,
+            guestMobile: mobileNumber,
+            category: inquiryType || 'Support',
+            isGuest: true
+          },
+          is_read: false
+        });
+      }
     }
 
     return res.json({ success: true });
@@ -557,5 +656,72 @@ export const getSupportMessages = async (req, res) => {
   } catch (err) {
     console.error('[Support] Load Messages Error:', err);
     res.status(500).json({ error: 'Failed to load messages' });
+  }
+};
+
+export const bulkArchiveSupportTickets = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    const userId = req.user?.id;
+    if (!ids || !Array.isArray(ids)) return res.status(400).json({ error: 'List of ticket IDs is required' });
+
+    for (const id of ids) {
+      const { data: current } = await supabase.from('notifications').select('metadata').eq('notification_id', id).single();
+      await supabase.from('notifications').update({
+        is_archived: true,
+        metadata: { ...(current?.metadata || {}), status: 'archived' }
+      })
+      .eq('notification_id', id)
+      .eq('actor_user_id', userId);
+    }
+
+    res.json({ success: true, message: `${ids.length} tickets archived.` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const bulkDeleteSupportTickets = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    const userId = req.user?.id;
+    if (!ids || !Array.isArray(ids)) return res.status(400).json({ error: 'List of ticket IDs is required' });
+
+    // 1. Delete associated messages first
+    await supabase.from('support_messages').delete().in('notification_id', ids);
+
+    // 2. Delete the actual notifications
+    const { error } = await supabase.from('notifications')
+      .delete()
+      .in('notification_id', ids)
+      .eq('actor_user_id', userId);
+
+    if (error) throw error;
+
+    res.json({ success: true, message: `${ids.length} tickets deleted.` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const bulkRestoreSupportTickets = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    const userId = req.user?.id;
+    if (!ids || !Array.isArray(ids)) return res.status(400).json({ error: 'List of ticket IDs is required' });
+
+    for (const id of ids) {
+      const { data: current } = await supabase.from('notifications').select('metadata').eq('notification_id', id).single();
+      await supabase.from('notifications').update({
+        is_archived: false,
+        metadata: { ...(current?.metadata || {}), status: 'open' }
+      })
+      .eq('notification_id', id)
+      .eq('actor_user_id', userId);
+    }
+
+    res.json({ success: true, message: `${ids.length} tickets restored.` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };

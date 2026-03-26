@@ -5,7 +5,10 @@ import { apiService } from '../../services/apiService';
 import { Button, Card, Input } from '../../components/Shared';
 import { ICONS } from '../../constants';
 
+import { useToast } from '../../context/ToastContext';
+
 export const CheckIn: React.FC = () => {
+  const { showToast } = useToast();
   const [code, setCode] = useState('');
   const [status, setStatus] = useState<'idle' | 'success' | 'error' | 'scanning'>('idle');
   const [attendeeInfo, setAttendeeInfo] = useState<any>(null);
@@ -23,11 +26,14 @@ export const CheckIn: React.FC = () => {
       const result = await apiService.checkInTicket(code.trim());
       setAttendeeInfo(result);
       setStatus('success');
+      showToast('success', 'Ticket checked in successfully!');
       setCode('');
     } catch (err: any) {
       setStatus('error');
       const msg = err?.message || 'This code is unrecognized or already used.';
-      setErrorMsg(msg.replace(/"/g, ''));
+      const cleanMsg = msg.replace(/"/g, '');
+      setErrorMsg(cleanMsg);
+      showToast('error', cleanMsg);
     }
   };
 
@@ -42,11 +48,14 @@ export const CheckIn: React.FC = () => {
       const result = await apiService.checkInTicket(value.trim());
       setAttendeeInfo(result);
       setStatus('success');
+      showToast('success', 'Ticket checked in successfully!');
       setCode('');
     } catch (err: any) {
       setStatus('error');
       const msg = err?.message || 'This code is unrecognized or already used.';
-      setErrorMsg(msg.replace(/"/g, ''));
+      const cleanMsg = msg.replace(/"/g, '');
+      setErrorMsg(cleanMsg);
+      showToast('error', cleanMsg);
     } finally {
       isProcessingScan.current = false;
     }
@@ -162,7 +171,7 @@ export const CheckIn: React.FC = () => {
               </div>
               <h2 className="text-2xl font-bold mb-1 text-[#2E2E2F]">Ticket Not Valid</h2>
               <p className="text-[#2E2E2F]/70 text-sm mb-8 font-medium">We couldn't find a valid ticket for this code. Please try again.</p>
-              <Button className="w-full py-2 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest bg-[#38BDF2] text-[#F2F2F2] hover:bg-[#2E2E2F] hover:text-[#F2F2F2] min-h-[32px] transition-colors" onClick={reset}>
+              <Button className="w-full py-2 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest bg-[#38BDF2] text-[#F2F2F2] min-h-[32px] transition-colors" onClick={reset}>
                 Try Another Code
               </Button>
             </div>
@@ -181,7 +190,7 @@ export const CheckIn: React.FC = () => {
             <button
               type="submit"
               disabled={!code || status === 'scanning'}
-              className="py-2 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest bg-[#38BDF2] text-[#F2F2F2] hover:bg-[#2E2E2F] hover:text-[#F2F2F2] min-h-[32px] transition-colors disabled:opacity-50"
+              className="py-2 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest bg-[#38BDF2] text-[#F2F2F2] min-h-[32px] transition-colors disabled:opacity-50"
             >
               Verify
             </button>

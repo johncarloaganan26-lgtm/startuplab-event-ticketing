@@ -107,6 +107,65 @@ export const SettingsView: React.FC = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+
+  const toggleRow = (id: string) => {
+    setSelectedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleAll = () => {
+    if (selectedRows.size === teamMembers.length) {
+      setSelectedRows(new Set());
+    } else {
+      setSelectedRows(new Set(teamMembers.map(m => m.id)));
+    }
+  };
+
+  const handlePrintTeam = () => {
+    const selected = teamMembers.filter(m => selectedRows.has(m.id));
+    const printData = selected.length > 0 ? selected : teamMembers;
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html><head><title>Team Members</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          th { background: #f5f5f5; }
+        </style></head><body>
+        <h1>Team Members</h1>
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th></tr></thead>
+          <tbody>
+            ${printData.map(m => `<tr><td>${m.name || ''}</td><td>${m.email || ''}</td><td>${m.role || ''}</td><td>${m.isOwner ? 'Owner' : 'Member'}</td></tr>`).join('')}
+          </tbody>
+        </table></body></html>`);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  const handleExportTeam = () => {
+    const selected = teamMembers.filter(m => selectedRows.has(m.id));
+    const exportData = selected.length > 0 ? selected : teamMembers;
+    const csvContent = `Name,Email,Role,Status\n${exportData.map(m => `${m.name || ''},${m.email || ''},${m.role || ''},${m.isOwner ? 'Owner' : 'Member'}`).join('\n')}`;
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `team_members_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
   React.useEffect(() => {
     fetch(`${API_BASE}/api/users/all`, { credentials: 'include' })
       .then(res => res.json())
@@ -289,6 +348,16 @@ export const SettingsView: React.FC = () => {
                         <tr>
                           <th className="px-10 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em]">Name</th>
                           <th className="px-10 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em]">Position</th>
+                          <th className="px-4 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button onClick={handlePrintTeam} className="p-2 bg-[#38BDF2] text-white rounded-lg hover:bg-[#2E2E2F] transition-colors" title="Print All">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                              </button>
+                              <button onClick={handleExportTeam} className="p-2 bg-[#38BDF2] text-white rounded-lg hover:bg-[#2E2E2F] transition-colors" title="Export All CSV">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                              </button>
+                            </div>
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#2E2E2F]/10">
@@ -564,15 +633,7 @@ const AdminEmailSettings: React.FC<{ setNotification: any }> = ({ setNotificatio
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6">
-        <div className="pl-6">
-          <h1 className="text-xl font-bold text-[#2E2E2F] tracking-tight">
-            Email Settings
-          </h1>
-          <p className="text-[#2E2E2F]/40 text-[11px] mt-1.5 font-bold">
-            Configure server parameters for system-wide mail transmission and verification
-          </p>
-        </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-end gap-4 pb-6">
         <Button
           onClick={handleSave}
           className="bg-[#38BDF2] hover:bg-[#2E2E2F] text-white px-8 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-sm active:scale-95"

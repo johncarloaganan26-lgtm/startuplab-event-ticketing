@@ -3,6 +3,7 @@ import supabase, { createAuthClient, supabaseConfig } from '../database/db.js';
 import { sendMakeNotification } from '../utils/makeWebhook.js';
 
 import { notifyUserByPreference, getAdminSmtpConfig } from "../utils/notificationService.js";
+import { logAudit } from "../utils/auditLogger.js";
 
 const ORGANIZER_ROLE = 'ORGANIZER';
 
@@ -221,6 +222,9 @@ export const register = async (req, res) => {
         }
       }
     }
+    
+    // Log registration
+    await logAudit({ actionType: 'REGISTER', actorUserId: userId, req });
 
     return res.status(201).json({
       message: "Registration successful! A verification link has been sent to your email. You must click it before you can sign in.",
@@ -258,6 +262,10 @@ export const login = async (req, res) => {
     };
     res.cookie("access_token", access_token, { ...base, maxAge: 60 * 60 * 1000 });
     res.cookie("refresh_token", refresh_token, { ...base, maxAge: 14 * 24 * 60 * 60 * 1000 });
+    
+    // Log login
+    await logAudit({ actionType: 'LOGIN', actorUserId: user.user.id, req });
+
     return res.json({
       message: "Logged in successfully",
       user: user.user,
@@ -303,6 +311,15 @@ export async function logout(req, res) {
       await supabase.auth.signOut({ scope: "global" });
     } catch (e) {
       // ignore
+    }
+
+    // Log logout
+    if (accessToken) {
+      // Best effort decode for logging
+      try {
+        const { data: user } = await supabase.auth.getUser(accessToken);
+        if (user?.user) await logAudit({ actionType: 'LOGOUT', actorUserId: user.user.id, req });
+      } catch {}
     }
 
     // Always expire cookies; names and attributes must match how you set them at login

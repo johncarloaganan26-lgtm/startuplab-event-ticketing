@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Input, Badge, Modal } from '../../components/Shared';
+import { Card, Button, Input, Badge, Modal, Checkbox } from '../../components/Shared';
 import { ICONS } from '../../constants';
 import { UserRole } from '../../types';
 import { apiService } from '../../services/apiService';
+import { useToast } from '../../context/ToastContext';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -21,12 +22,62 @@ interface TeamMember {
 }
 
 export const TeamSettings: React.FC = () => {
-    const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+    const { showToast } = useToast();
     const [activeSubTab, setActiveSubTab] = useState<'directory' | 'permissions'>('directory');
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const [isInviting, setIsInviting] = useState(false);
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
     const [staffLimit, setStaffLimit] = useState<{ allowed: boolean; message?: string; limit?: number; current?: number } | null>(null);
+
+    const handlePrintTeam = () => {
+        const printData = teamMembers;
+        
+        const printContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Team Members Report</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    h1 { color: #2E2E2F; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                    th { background-color: #F2F2F2; }
+                    .owner-badge { background: #38BDF2; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; }
+                </style>
+            </head>
+            <body>
+                <h1>Team Members Report</h1>
+                <p>Total Members: ${printData.length}</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Position</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${printData.map(m => `
+                            <tr>
+                                <td>${m.name}</td>
+                                <td>${m.role || 'Team Member'}</td>
+                                <td>${m.isOwner ? '<span class="owner-badge">OWNER</span>' : 'Member'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        `;
+        
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
+    };
 
     const refreshTeamData = async () => {
         try {
@@ -145,7 +196,7 @@ export const TeamSettings: React.FC = () => {
     const handleInviteSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!inviteData.email.trim()) {
-            setNotification({ message: 'Email is required.', type: 'error' });
+            showToast('error', 'Email is required.');
             return;
         }
 
@@ -167,7 +218,7 @@ export const TeamSettings: React.FC = () => {
 
             if (!res.ok) {
                 const errorPayload = await res.json().catch(() => ({}));
-                setNotification({ message: errorPayload?.error || 'Failed to send invitation.', type: 'error' });
+                showToast('error', errorPayload?.error || 'Failed to send invitation.');
                 return;
             }
 
@@ -183,10 +234,10 @@ export const TeamSettings: React.FC = () => {
             setTeamMembers(prev => [...prev, newMember]);
             setInviteData({ email: '', role: 'STAFF', perspective: UserRole.STAFF, permissions: ['view_events'] });
             setIsInviteModalOpen(false);
-            setNotification({ message: 'Invitation sent successfully.', type: 'success' });
+            showToast('success', 'Invitation sent successfully.');
             refreshTeamData(); // Refetch to update limit status and pending list
         } catch {
-            setNotification({ message: 'Failed to send invitation.', type: 'error' });
+            showToast('error', 'Failed to send invitation.');
         } finally {
             setIsInviting(false);
         }
@@ -215,17 +266,6 @@ export const TeamSettings: React.FC = () => {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500 pb-20">
-            {notification && (
-                <div className="fixed top-24 right-8 z-[120]">
-                    <Card className={`flex items-center gap-4 px-6 py-4 rounded-xl border-2 shadow-xl ${notification.type === 'success' ? 'bg-[#F2F2F2] border-[#38BDF2]/40 text-[#2E2E2F]' : 'bg-[#F2F2F2] border-red-500/30 text-[#2E2E2F]'}`}>
-                        <div className={`p-2 rounded-xl border-2 ${notification.type === 'success' ? 'bg-[#38BDF2]/10 border-[#38BDF2]/20 text-[#2E2E2F]' : 'bg-red-50 border-red-200 text-[#2E2E2F]'}`}>
-                            {notification.type === 'success' ? <ICONS.CheckCircle className="w-5 h-5" /> : <ICONS.Layout className="w-5 h-5" />}
-                        </div>
-                        <p className="font-bold text-sm tracking-tight">{notification.message}</p>
-                        <button onClick={() => setNotification(null)} className="ml-4 text-[#2E2E2F]/60 hover:text-[#2E2E2F] text-lg font-black">&times;</button>
-                    </Card>
-                </div>
-            )}
 
             <div className="flex justify-end pb-2 border-b border-[#2E2E2F]/10">
                 <div className="flex bg-[#F2F2F2] p-1 rounded-xl border-2 border-[#2E2E2F]/15 shrink-0">
@@ -249,21 +289,51 @@ export const TeamSettings: React.FC = () => {
                     <div className="space-y-6">
                         <div className="flex justify-between items-center">
                             <label className="block text-[10px] font-semibold text-[#2E2E2F]/60 uppercase tracking-[0.2em] mb-1 ml-1">Team Directory</label>
-                            <Button
-                                onClick={() => setIsInviteModalOpen(true)}
-                                disabled={staffLimit?.allowed === false}
-                                variant={staffLimit?.allowed === false ? 'outline' : 'primary'}
-                                className={staffLimit?.allowed === false ? 'opacity-50 cursor-not-allowed border-2 border-[#2E2E2F]/15' : ''}
-                            >
-                                <span className={`text-[9px] font-semibold uppercase tracking-widest flex items-center gap-2 ${staffLimit?.allowed === false ? 'text-[#2E2E2F]' : 'text-white'}`}>
-                                    {staffLimit?.allowed === false ? (
-                                        <ICONS.Lock className="w-3.5 h-3.5" />
-                                    ) : (
-                                        <ICONS.Users className="w-3.5 h-3.5" />
-                                    )}
-                                    {staffLimit?.allowed === false ? 'Invite Locked' : 'Invite a Team Member'}
-                                </span>
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={handlePrintTeam}
+                                    className="w-10 h-10 flex items-center justify-center bg-[#38BDF2] border-2 border-[#38BDF2] rounded-full text-white hover:bg-[#2E2E2F] hover:border-[#2E2E2F] transition-all shadow-md"
+                                    title="Print All"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    </svg>
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const exportData = teamMembers;
+                                        const csvContent = `Name,Email,Role,Status\n${exportData.map(m => `${m.name},${m.email},${m.role},${m.isOwner ? 'Owner' : 'Member'}`).join('\n')}`;
+                                        const blob = new Blob([csvContent], { type: 'text/csv' });
+                                        const url = window.URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `team_members_${new Date().toISOString().split('T')[0]}.csv`;
+                                        a.click();
+                                        window.URL.revokeObjectURL(url);
+                                    }}
+                                    className="w-10 h-10 flex items-center justify-center bg-[#38BDF2] border-2 border-[#38BDF2] rounded-full text-white hover:bg-[#2E2E2F] hover:border-[#2E2E2F] transition-all shadow-md"
+                                    title="Export All"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </button>
+                                <Button
+                                    onClick={() => setIsInviteModalOpen(true)}
+                                    disabled={staffLimit?.allowed === false}
+                                    variant={staffLimit?.allowed === false ? 'outline' : 'primary'}
+                                    className={staffLimit?.allowed === false ? 'opacity-50 cursor-not-allowed border-2 border-[#2E2E2F]/15' : ''}
+                                >
+                                    <span className={`text-[9px] font-semibold uppercase tracking-widest flex items-center gap-2 ${staffLimit?.allowed === false ? 'text-[#2E2E2F]' : 'text-white'}`}>
+                                        {staffLimit?.allowed === false ? (
+                                            <ICONS.Lock className="w-3.5 h-3.5" />
+                                        ) : (
+                                            <ICONS.Users className="w-3.5 h-3.5" />
+                                        )}
+                                        {staffLimit?.allowed === false ? 'Invite Locked' : 'Invite a Team Member'}
+                                    </span>
+                                </Button>
+                            </div>
                         </div>
                         <Card className="overflow-hidden border-2 border-[#2E2E2F]/15 rounded-xl bg-[#F2F2F2] shadow-sm">
                             <div className="overflow-x-auto">
@@ -272,6 +342,7 @@ export const TeamSettings: React.FC = () => {
                                         <tr>
                                             <th className="px-10 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em]">Name</th>
                                             <th className="px-10 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em]">Position</th>
+                                            <th className="px-10 py-6 text-[9px] font-black text-[#2E2E2F]/60 uppercase tracking-[0.2em] text-right w-24"></th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-[#2E2E2F]/10">

@@ -1,10 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Input, Badge } from '../../components/Shared';
+import { Card, Button, Input, Badge, Checkbox } from '../../components/Shared';
 import { apiService } from '../../services/apiService';
 import { OrganizerProfile } from '../../types';
 import { useUser } from '../../context/UserContext';
 import { ICONS } from '../../constants';
+import { useToast } from '../../context/ToastContext';
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png']);
@@ -53,6 +54,7 @@ export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
 }) => {
   const { name, setUser, userId, role, email, isOnboarded: currentOnboarded } = useUser();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const [loading, setLoading] = React.useState(true);
@@ -63,7 +65,6 @@ export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
   const [formData, setFormData] = React.useState<FormState>(toFormState(null, name || ''));
   const [localPreviewUrl, setLocalPreviewUrl] = React.useState('');
   const [localCoverPreviewUrl, setLocalCoverPreviewUrl] = React.useState('');
-  const [notification, setNotification] = React.useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const canCustomBrand = !!(profile?.plan?.features?.enable_custom_branding || profile?.plan?.features?.custom_branding);
 
@@ -79,10 +80,7 @@ export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
         setFormData(toFormState(organizer, name || ''));
       } catch (error) {
         if (!isMounted) return;
-        setNotification({
-          message: extractErrorMessage(error, 'Failed to load organizer profile.'),
-          type: 'error',
-        });
+        showToast('error', extractErrorMessage(error, 'Failed to load organizer profile.'));
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -92,7 +90,7 @@ export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [name]);
+  }, [userId]);
 
   React.useEffect(() => {
     return () => {
@@ -110,11 +108,11 @@ export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
 
   const handleFileUpload = async (file: File) => {
     if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
-      setNotification({ message: 'Only JPEG and PNG images are allowed.', type: 'error' });
+      showToast('error', 'Only JPEG and PNG images are allowed.');
       return;
     }
     if (file.size > MAX_IMAGE_SIZE) {
-      setNotification({ message: 'Image must be 10MB or smaller.', type: 'error' });
+      showToast('error', 'Image must be 10MB or smaller.');
       return;
     }
 
@@ -123,15 +121,11 @@ export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
     setUploading(true);
 
     try {
-      const { publicUrl, organizer } = await apiService.uploadOrganizerImage(file);
+      const { publicUrl } = await apiService.uploadOrganizerImage(file);
       setFormData((prev) => ({ ...prev, profileImageUrl: publicUrl }));
-      if (organizer) setProfile(organizer);
-      setNotification({ message: 'Organizer image uploaded successfully.', type: 'success' });
+      showToast('success', 'Image uploaded. Click Save to update your profile.');
     } catch (error) {
-      setNotification({
-        message: extractErrorMessage(error, 'Image upload failed.'),
-        type: 'error',
-      });
+      showToast('error', extractErrorMessage(error, 'Image upload failed.'));
     } finally {
       setUploading(false);
     }
@@ -139,7 +133,7 @@ export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
 
   const handleFileInputChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!canCustomBrand) {
-      setNotification({ message: 'Logo upload is a Professional feature. Upgrade to unlock custom branding.', type: 'error' });
+      showToast('error', 'Logo upload is a Professional feature. Upgrade to unlock custom branding.');
       return;
     }
     const file = event.target.files?.[0];
@@ -149,11 +143,11 @@ export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
 
   const handleCoverFileUpload = async (file: File) => {
     if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
-      setNotification({ message: 'Only JPEG and PNG images are allowed.', type: 'error' });
+      showToast('error', 'Only JPEG and PNG images are allowed.');
       return;
     }
     if (file.size > MAX_IMAGE_SIZE) {
-      setNotification({ message: 'Image must be 10MB or smaller.', type: 'error' });
+      showToast('error', 'Image must be 10MB or smaller.');
       return;
     }
 
@@ -162,15 +156,11 @@ export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
     setUploading(true);
 
     try {
-      const { publicUrl, organizer } = await apiService.uploadOrganizerCoverImage(file);
+      const { publicUrl } = await apiService.uploadOrganizerCoverImage(file);
       setFormData((prev) => ({ ...prev, coverImageUrl: publicUrl }));
-      if (organizer) setProfile(organizer);
-      setNotification({ message: 'Cover image uploaded successfully.', type: 'success' });
+      showToast('success', 'Cover image uploaded. Click Save to update your profile.');
     } catch (error) {
-      setNotification({
-        message: extractErrorMessage(error, 'Cover image upload failed.'),
-        type: 'error',
-      });
+      showToast('error', extractErrorMessage(error, 'Cover image upload failed.'));
     } finally {
       setUploading(false);
     }
@@ -178,10 +168,9 @@ export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
 
   const handleDrop = async (event: React.DragEvent<HTMLDivElement>, isCover = false) => {
     if (!canCustomBrand) {
-      event.preventDefault();
       event.stopPropagation();
       setDragActive(false);
-      setNotification({ message: 'Logo upload is a Professional feature.', type: 'error' });
+      showToast('error', 'Logo upload is a Professional feature.');
       return;
     }
     event.preventDefault();
@@ -205,10 +194,7 @@ export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
     const bio = stripHtml(formData.bio).trim();
 
     if (!organizerName || !bio) {
-      setNotification({ 
-        message: !organizerName ? 'Organizer Name is required.' : 'Bio / Description is required.', 
-        type: 'error' 
-      });
+      showToast('error', !organizerName ? 'Organizer Name is required.' : 'Bio / Description is required.');
       setSaving(false);
       return;
     }
@@ -231,26 +217,21 @@ export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
 
       const saved = await apiService.upsertOrganizer(payload);
       setProfile(saved);
+      setLocalPreviewUrl('');
+      setLocalCoverPreviewUrl('');
       setFormData(toFormState(saved, name || ''));
-      setNotification({
-        message: onboardingMode ? 'Organizer profile setup complete.' : 'Organizer profile updated.',
-        type: 'success'
-      });
+      showToast('success', onboardingMode ? 'Organizer profile setup complete.' : 'Organizer profile updated.');
       if (userId && role && email) {
         setUser({
           userId,
           role,
           email,
           isOnboarded: saved.isOnboarded || onboardingMode || currentOnboarded,
-          name: name || saved.organizerName,
         });
       }
       onSaved?.(saved);
     } catch (error) {
-      setNotification({
-        message: extractErrorMessage(error, 'Failed to save organizer profile.'),
-        type: 'error',
-      });
+      showToast('error', extractErrorMessage(error, 'Failed to save organizer profile.'));
     } finally {
       setSaving(false);
     }
@@ -261,18 +242,6 @@ export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
 
   return (
     <div className="space-y-8 pb-20">
-      {notification && (
-        <div className="fixed top-24 right-8 z-[120]">
-          <Card
-            className={`px-5 py-3 rounded-xl border-2 shadow-sm ${notification.type === 'success'
-              ? 'bg-[#38BDF2]/20 border-[#38BDF2]/40 text-[#2E2E2F]'
-              : 'bg-[#2E2E2F]/10 border-[#2E2E2F]/30 text-[#2E2E2F]'
-              }`}
-          >
-            <p className="text-sm font-bold tracking-tight">{notification.message}</p>
-          </Card>
-        </div>
-      )}
 
       <form onSubmit={handleSave} className="space-y-6">
         <Card className="p-8 rounded-xl border-2 border-[#2E2E2F]/15 bg-[#F2F2F2]">
@@ -412,15 +381,11 @@ export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
                 />
 
                 <div className="flex items-end pb-1">
-                  <label className="flex items-center gap-3 text-sm text-[#2E2E2F]/80 font-medium cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.emailOptIn}
-                      onChange={(event) => handleFormChange('emailOptIn', event.target.checked)}
-                      className="w-4 h-4 accent-[#38BDF2]"
-                    />
-                    Receive organizer email updates
-                  </label>
+                  <Checkbox
+                    checked={formData.emailOptIn}
+                    onChange={(val) => handleFormChange('emailOptIn', val)}
+                    label="Receive organizer email updates"
+                  />
                 </div>
 
                 <div className="md:col-span-2">
@@ -500,7 +465,7 @@ export const OrganizerSettings: React.FC<OrganizerSettingsProps> = ({
                           value={formData.brandColor}
                           disabled={!canCustomBrand}
                           onChange={(e) => handleFormChange('brandColor', e.target.value)}
-                          className={`w-10 h-10 p-0 border-none bg-transparent cursor-pointer ${!canCustomBrand ? 'opacity-50 cursor-not-allowed Pointer-events-none' : ''}`}
+                            className={`w-10 h-10 p-0 border-none bg-transparent cursor-pointer ${!canCustomBrand ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                         />
                       </div>
                     </div>

@@ -205,6 +205,15 @@ export const upsertOrganizer = async (req, res) => {
       payload.profileImageUrl = normalizeTrimmed(req.body?.profileImageUrl);
     }
 
+    const userSelect = await (async () => {
+      let resp = await supabase.from('users').select('name, imageUrl').eq('userId', ownerUserId).maybeSingle();
+      if (resp.error && resp.error.message?.includes('userId')) {
+        resp = await supabase.from('users').select('name, imageUrl').eq('id', ownerUserId).maybeSingle();
+      }
+      return resp;
+    })();
+    const userData = userSelect.data;
+
     if (existing?.organizerId) {
       const { data, error } = await supabase
         .from('organizers')
@@ -213,18 +222,11 @@ export const upsertOrganizer = async (req, res) => {
         .select('*')
         .single();
       if (error) return res.status(500).json({ error: error.message });
-      if (data && data.organizerId) {
-        // Sync to users table if name/image is missing or we just onboarded
-        // Safe check for userId vs id column in users table
-        let userSelect = await supabase.from('users').select('name, imageUrl').eq('userId', ownerUserId).maybeSingle();
-        if (userSelect.error && userSelect.error.message?.includes('userId')) {
-          userSelect = await supabase.from('users').select('name, imageUrl').eq('id', ownerUserId).maybeSingle();
-        }
-        
-        const userData = userSelect.data;
+      
+      if (data && data.organizerId && userData) {
         const updates = {};
-        if (data.organizerName && (!userData?.name || payload.isOnboarded)) updates.name = data.organizerName;
-        if (data.profileImageUrl && (!userData?.imageUrl || payload.isOnboarded)) updates.imageUrl = data.profileImageUrl;
+        if (data.organizerName && !userData.name) updates.name = data.organizerName;
+        if (data.profileImageUrl && !userData.imageUrl) updates.imageUrl = data.profileImageUrl;
         
         if (Object.keys(updates).length > 0) {
           let userUpdate = await supabase.from('users').update(updates).eq('userId', ownerUserId);
@@ -232,6 +234,18 @@ export const upsertOrganizer = async (req, res) => {
             await supabase.from('users').update(updates).eq('id', ownerUserId);
           }
         }
+      }
+
+      // Ensure plan is attached for frontend consistency
+      if (data && !data.plan && data.currentPlanId) {
+        const { data: planData } = await supabase
+          .from('plans')
+          .select('*')
+          .eq('planId', data.currentPlanId)
+          .maybeSingle();
+        data.plan = planData;
+      } else if (data && !data.plan && existing?.plan) {
+        data.plan = existing.plan;
       }
 
       await logAudit({
@@ -256,13 +270,30 @@ export const upsertOrganizer = async (req, res) => {
 
     if (error) return res.status(500).json({ error: error.message });
 
-    // Sync to users table for new organizers too
-    if (data.organizerName || data.profileImageUrl) {
+    // Sync to users table for new organizers too, only if missing
+    if (data && userData) {
       const updates = {};
-      if (data.organizerName) updates.name = data.organizerName;
-      if (data.profileImageUrl) updates.imageUrl = data.profileImageUrl;
-      await supabase.from('users').update(updates).eq('userId', ownerUserId);
+      if (data.organizerName && !userData.name) updates.name = data.organizerName;
+      if (data.profileImageUrl && !userData.imageUrl) updates.imageUrl = data.profileImageUrl;
+      
+      if (Object.keys(updates).length > 0) {
+        let userUpdate = await supabase.from('users').update(updates).eq('userId', ownerUserId);
+        if (userUpdate.error && userUpdate.error.message?.includes('userId')) {
+          await supabase.from('users').update(updates).eq('id', ownerUserId);
+        }
+      }
     }
+
+    // Ensure plan is attached for frontend consistency
+    if (data && !data.plan && data.currentPlanId) {
+      const { data: planData } = await supabase
+        .from('plans')
+        .select('*')
+        .eq('planId', data.currentPlanId)
+        .maybeSingle();
+      data.plan = planData;
+    }
+
     const counts = await getEventsHostedCounts([data.organizerId]);
 
     await logAudit({
@@ -404,27 +435,9 @@ export const uploadOrganizerImage = async (req, res) => {
     const publicUrl = publicData?.publicUrl;
     if (!publicUrl) return res.status(500).json({ error: 'Failed to generate public URL' });
 
-    // Keep this endpoint useful by updating profileImageUrl when profile already exists.
-    const existing = await getOrganizerByOwnerUserId(ownerUserId);
-    let organizer = existing;
-
-    if (existing?.organizerId) {
-      const { data, error } = await supabase
-        .from('organizers')
-        .update({ profileImageUrl: publicUrl, updated_at: new Date().toISOString() })
-        .eq('organizerId', existing.organizerId)
-        .select('*')
-        .single();
-
-      if (error) return res.status(500).json({ error: error.message });
-      const counts = await getEventsHostedCounts([data.organizerId]);
-      organizer = serializeOrganizerRecord(data, counts.get(data.organizerId) || 0);
-    }
-
     return res.json({
       publicUrl,
       path: filePath,
-      organizer,
     });
   } catch (err) {
     if (isOrganizerTableMissingError(err)) {
@@ -468,26 +481,9 @@ export const uploadOrganizerCoverImage = async (req, res) => {
     const publicUrl = publicData?.publicUrl;
     if (!publicUrl) return res.status(500).json({ error: 'Failed to generate public URL' });
 
-    const existing = await getOrganizerByOwnerUserId(ownerUserId);
-    let organizer = existing;
-
-    if (existing?.organizerId) {
-      const { data, error } = await supabase
-        .from('organizers')
-        .update({ coverImageUrl: publicUrl, updated_at: new Date().toISOString() })
-        .eq('organizerId', existing.organizerId)
-        .select('*')
-        .single();
-
-      if (error) return res.status(500).json({ error: error.message });
-      const counts = await getEventsHostedCounts([data.organizerId]);
-      organizer = serializeOrganizerRecord(data, counts.get(data.organizerId) || 0);
-    }
-
     return res.json({
       publicUrl,
       path: filePath,
-      organizer,
     });
   } catch (err) {
     return res.status(500).json({ error: err?.message || 'Unexpected error' });

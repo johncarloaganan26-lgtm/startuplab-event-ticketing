@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, PageLoader } from '../../components/Shared';
 import { apiService } from '../../services/apiService';
 import { ICONS } from '../../constants';
+import { useToast } from '../../context/ToastContext';
 
 interface Transaction {
   orderId: string;
@@ -37,6 +38,7 @@ const formatDate = (iso: string) => {
 };
 
 export const OrganizerReports: React.FC = () => {
+  const { showToast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +46,65 @@ export const OrganizerReports: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [filter, setFilter] = useState<'all' | 'completed' | 'pending' | 'failed'>('all');
   const [dateRange, setDateRange] = useState<'week' | 'month' | 'all'>('all');
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+
+  const toggleRow = (id: string) => {
+    setSelectedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleAll = () => {
+    if (selectedRows.size === transactions.length) {
+      setSelectedRows(new Set());
+    } else {
+      setSelectedRows(new Set(transactions.map(t => t.orderId || '')));
+    }
+  };
+
+  const handlePrintReports = () => {
+    const selectedData = transactions.filter(t => selectedRows.has(t.orderId || ''));
+    const printContent = selectedData.length > 0 ? selectedData : transactions;
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html><head><title>Transactions Report</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          th { background: #f5f5f5; }
+        </style></head><body>
+        <h1>Transactions Report</h1>
+        <table>
+          <thead><tr><th>Order ID</th><th>Event</th><th>Attendee</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody>
+            ${printContent.map(t => `<tr><td>${t.orderId || ''}</td><td>${t.eventName || ''}</td><td>${t.customerName || ''}</td><td>${t.amount || 0}</td><td>${t.paymentStatus || ''}</td><td>${t.createdAt ? new Date(t.createdAt).toLocaleDateString() : ''}</td></tr>`).join('')}
+          </tbody>
+        </table></body></html>`);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  const handleExportReports = () => {
+    const selectedData = transactions.filter(t => selectedRows.has(t.orderId || ''));
+    const exportData = selectedData.length > 0 ? selectedData : transactions;
+    const csvContent = `Order ID,Event,Attendee,Email,Amount,Status,Date\n${exportData.map(t => `${t.orderId || ''},${t.eventName || ''},${t.customerName || ''},${t.customerEmail || ''},${t.amount || 0},${t.paymentStatus || ''},${t.createdAt ? new Date(t.createdAt).toLocaleDateString() : ''}`).join('\n')}`;
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   const [profile, setProfile] = useState<any>(null);
 
@@ -89,7 +150,7 @@ export const OrganizerReports: React.FC = () => {
 
   const handleExport = () => {
     if (!hasAdvancedReports) {
-      alert('Advanced Reports are only available on Professional and Enterprise plans.');
+      showToast('info', 'Advanced Reports are only available on Professional and Enterprise plans.');
       return;
     }
     // Call the new backend API to trigger spreadsheet download
@@ -215,12 +276,25 @@ export const OrganizerReports: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-transparent border-b border-[#2E2E2F]/10">
+                <th className="px-4 py-4 text-xs font-bold text-[#2E2E2F]/60 uppercase tracking-widest whitespace-nowrap w-12">
+                  <input type="checkbox" checked={selectedRows.size === transactions.length && transactions.length > 0} onChange={toggleAll} className="w-4 h-4 rounded" />
+                </th>
                 <th className="px-6 py-4 text-xs font-bold text-[#2E2E2F]/60 uppercase tracking-widest whitespace-nowrap">Order ID</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#2E2E2F]/60 uppercase tracking-widest whitespace-nowrap">Event</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#2E2E2F]/60 uppercase tracking-widest whitespace-nowrap">Attendee</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#2E2E2F]/60 uppercase tracking-widest text-right whitespace-nowrap">Amount</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#2E2E2F]/60 uppercase tracking-widest text-center whitespace-nowrap">Status</th>
                 <th className="px-6 py-4 text-xs font-bold text-[#2E2E2F]/60 uppercase tracking-widest text-right whitespace-nowrap">Date</th>
+                <th className="px-4 py-4 text-xs font-bold text-[#2E2E2F]/60 uppercase tracking-widest text-right whitespace-nowrap">
+                  <div className="flex items-center justify-end gap-2">
+                    <button onClick={handlePrintReports} className="p-2 bg-[#38BDF2] text-white rounded-lg hover:bg-[#2E2E2F] transition-colors" title="Print">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                    </button>
+                    <button onClick={handleExportReports} className="p-2 bg-[#38BDF2] text-white rounded-lg hover:bg-[#2E2E2F] transition-colors" title="Export CSV">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    </button>
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -234,8 +308,11 @@ export const OrganizerReports: React.FC = () => {
                 transactions.map((transaction, index) => (
                   <tr
                     key={transaction.orderId || index}
-                    className="border-b border-[#2E2E2F]/5 hover:bg-[#38BDF2]/5 transition-colors"
+                    className={`border-b border-[#2E2E2F]/5 hover:bg-[#38BDF2]/5 transition-colors ${selectedRows.has(transaction.orderId || '') ? 'bg-[#38BDF2]/10' : ''}`}
                   >
+                    <td className="px-4 py-4">
+                      <input type="checkbox" checked={selectedRows.has(transaction.orderId || '')} onChange={() => toggleRow(transaction.orderId || '')} className="w-4 h-4 rounded" />
+                    </td>
                     <td className="px-6 py-4">
                       <span className="text-[11px] font-bold font-mono text-[#2E2E2F]/60 uppercase tracking-widest bg-[#2E2E2F]/5 px-2 py-1 rounded">
                         {transaction.orderId?.slice(0, 8) || '-'}

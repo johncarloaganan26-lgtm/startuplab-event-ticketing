@@ -186,6 +186,15 @@ export const SubscriptionPlans: React.FC = () => {
     setDraft(defaultDraft);
   };
 
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.classList.add('hide-admin-ui');
+    } else {
+      document.body.classList.remove('hide-admin-ui');
+    }
+    return () => document.body.classList.remove('hide-admin-ui');
+  }, [isModalOpen]);
+
   const handleToggleActive = async (plan: AdminPlan) => {
     try {
       await apiService.updateAdminPlanStatus(plan.planId, !plan.isActive);
@@ -298,6 +307,7 @@ export const SubscriptionPlans: React.FC = () => {
         title={editingPlan ? 'Edit Pricing Plan' : 'Create New Pricing Plan'}
         subtitle={editingPlan ? `Editing: ${editingPlan.name}` : 'Set up a new subscription plan for organizers'}
         size="xl"
+        zoom
       >
         <div className="space-y-12 py-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">

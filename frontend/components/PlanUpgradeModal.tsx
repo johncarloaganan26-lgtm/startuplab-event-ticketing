@@ -3,7 +3,7 @@ import { ICONS } from '../constants';
 import { AdminPlan } from '../types';
 import { apiService } from '../services/apiService';
 import { useToast } from '../context/ToastContext';
-import { Button, Modal, PageLoader } from './Shared';
+import { Button, Modal, PageLoader, Checkbox } from './Shared';
 import { PricingPlansGrid } from './PricingPlansGrid';
 import { PlanBillingCycle, sortPlansForDisplay, getPlanAmount, formatLimitValue, formatPlanCurrency } from '../utils/pricingPlans';
 
@@ -85,19 +85,15 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
       showClose={false}
       footer={
         <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-3 hover:opacity-70 cursor-pointer transition-opacity" onClick={() => setDontShowAgain(!dontShowAgain)}>
-            <div className="relative flex items-center justify-center">
-              <input
-                type="checkbox"
-                checked={dontShowAgain}
-                onChange={(e) => setDontShowAgain(e.target.checked)}
-                className="w-5 h-5 rounded-xl accent-[#38BDF2] cursor-pointer"
-              />
-            </div>
-            <span className="text-sm font-semibold text-[#2E2E2F]/70">
-              {dontShowAgain ? "Won't show again until next login" : 'Don\'t show again'}
-            </span>
-          </div>
+            <Checkbox
+              checked={dontShowAgain}
+              onChange={setDontShowAgain}
+              label={
+                <span className="text-sm font-semibold text-[#2E2E2F]/70">
+                  {dontShowAgain ? "Won't show again until next login" : 'Don\'t show again'}
+                </span>
+              }
+            />
           <Button variant="outline" onClick={handleClose} className="border-[#2E2E2F]/20 text-white">
             Cancel / Close
           </Button>

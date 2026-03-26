@@ -2,6 +2,7 @@ import React from 'react';
 import { ICONS } from '../constants';
 import { apiService } from '../services/apiService';
 import { HitPaySettings } from '../types';
+import { useToast } from '../context/ToastContext';
 
 type HitPayScope = 'admin' | 'organizer';
 
@@ -73,8 +74,7 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
 
   const [editingApiKey, setEditingApiKey] = React.useState(true);
   const [editingSalt, setEditingSalt] = React.useState(true);
-
-  const [notification, setNotification] = React.useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const { showToast } = useToast();
 
   const hasStoredApiKey = !!storedSettings?.maskedHitpayApiKey;
   const hasStoredSalt = !!storedSettings?.maskedHitpaySalt;
@@ -102,10 +102,7 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
         hydrateForm(response.settings);
       } catch (error) {
         if (!isMounted) return;
-        setNotification({
-          message: extractErrorMessage(error, 'Failed to load HitPay settings.'),
-          type: 'error',
-        });
+        showToast('error', extractErrorMessage(error, 'Failed to load HitPay settings.'));
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -114,11 +111,6 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
     return () => { isMounted = false; };
   }, [hydrateForm, scope]);
 
-  React.useEffect(() => {
-    if (!notification) return;
-    const timer = window.setTimeout(() => setNotification(null), 5000);
-    return () => window.clearTimeout(timer);
-  }, [notification]);
 
   const handleInputChange = (field: keyof FormState, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -132,7 +124,7 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
       const requiresSalt = (!hasStoredSalt || editingSalt);
 
       if (requiresApiKey && !currentData.hitpayApiKey.trim()) {
-        setNotification({ message: 'API Key is required.', type: 'error' });
+        showToast('error', 'API Key is required.');
         // Rever back the toggle if we were just trying to enable it
         if (updatedData?.enabled === true) {
           setFormData(prev => ({ ...prev, enabled: false }));
@@ -141,7 +133,7 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
       }
 
       if (requiresSalt && !currentData.hitpaySalt.trim()) {
-        setNotification({ message: 'Webhook salt is required.', type: 'error' });
+        showToast('error', 'Webhook salt is required.');
         if (updatedData?.enabled === true) {
           setFormData(prev => ({ ...prev, enabled: false }));
         }
@@ -150,7 +142,7 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
     }
 
     if (!backendReady) {
-      setNotification({ message: 'Backend not ready. Cannot save securely.', type: 'error' });
+      showToast('error', 'Backend not ready. Cannot save securely.');
       return;
     }
 
@@ -182,7 +174,7 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
 
       if (!response.backendReady) {
         setBackendReady(false);
-        setNotification({ message: 'HitPay settings endpoint is not available.', type: 'error' });
+        showToast('error', 'HitPay settings endpoint is not available.');
         return;
       }
 
@@ -196,9 +188,9 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
       };
 
       hydrateForm(nextSettings);
-      setNotification({ message: 'Settings saved.', type: 'success' });
+      showToast('success', 'Settings saved.');
     } catch (error) {
-      setNotification({ message: extractErrorMessage(error, 'Failed to save settings.'), type: 'error' });
+      showToast('error', extractErrorMessage(error, 'Failed to save settings.'));
       // Revert toggle on fail
       if (updatedData?.enabled !== undefined) {
         setFormData(prev => ({ ...prev, enabled: !updatedData.enabled }));
@@ -278,13 +270,6 @@ export const HitPayGatewaySettings: React.FC<HitPayGatewaySettingsProps> = ({
 
   return (
     <div className="max-w-4xl pt-4">
-      {notification && (
-        <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 text-sm font-medium border ${notification.type === 'error' ? 'bg-red-50 text-red-800 border-red-200' : 'bg-green-50 text-green-800 border-green-200'}`}>
-          <AlertCircleIcon className="w-5 h-5 shrink-0" />
-          {notification.message}
-          <button onClick={() => setNotification(null)} className="ml-auto text-current opacity-60 hover:opacity-100">&times;</button>
-        </div>
-      )}
 
       {/* Disabled / Dummy Gateways to match the screenshot layout */}
       <DummyGatewayCard name="Easebuzz" />

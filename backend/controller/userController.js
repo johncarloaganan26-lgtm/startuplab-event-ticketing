@@ -315,8 +315,6 @@ export const getAllUsers = async (req, res) => {
     const shouldScopeToRequesterTeam =
       requesterRole === 'ORGANIZER' || requesterRole === 'STAFF' || (requesterRole === 'ADMIN' && teamOnlyRequested);
 
-    console.log('[getAllUsers] requesterId:', requesterId, 'requesterRole:', requesterRole, 'teamOnly:', teamOnlyRequested);
-
     const isRequesterRecord = (user) =>
       String(user?.userId || user?.id || '') === String(requesterId || '');
 
@@ -325,7 +323,6 @@ export const getAllUsers = async (req, res) => {
       .select("userId, name, email, role, imageUrl, canviewevents, caneditevents, canmanualcheckin, canreceivenotifications, employerId");
 
     let { data, error } = await query;
-    console.log('[getAllUsers] db response data length:', data?.length, 'error:', error);
 
     if (error && error.message?.includes('column')) {
       const fallbackQuery = db.from("users").select("*");

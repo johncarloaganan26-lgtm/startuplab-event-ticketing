@@ -348,6 +348,24 @@ export const getSummary = async (req, res) => {
       totalPaidEvents = paidEventIds.size;
     }
 
+    // Organizer Subscription Analytics (Global for Admin)
+    let totalPlanRevenue = 0;
+    let activeSubscriptions = 0;
+    
+    try {
+      const { data: subsData, error: subsErr } = await supabase
+        .from('organizersubscriptions')
+        .select('priceAmount, status')
+        .in('status', ['active', 'paid', 'ACTIVE', 'PAID']);
+        
+      if (!subsErr && subsData) {
+        totalPlanRevenue = subsData.reduce((sum, s) => sum + (Number(s.priceAmount) || 0), 0);
+        activeSubscriptions = subsData.length;
+      }
+    } catch (subsExc) {
+      console.warn('[Analytics] Failed to fetch subscription summary:', subsExc);
+    }
+
     return res.json({
       totalRegistrations,
       ticketsSoldToday,
@@ -356,6 +374,8 @@ export const getSummary = async (req, res) => {
       attendanceRate,
       paymentSuccessRate,
       totalPaidEvents,
+      totalPlanRevenue,
+      activeSubscriptions
     });
   } catch (err) {
     logAnalyticsError('getSummary.catch', err, { requesterId: req.user?.id });
@@ -394,8 +414,9 @@ export const getRecentTransactions = async (req, res) => {
     const { data, error, count } = Array.isArray(filteredEventIds) && filteredEventIds.length
       ? await supabase
       .from('orders')
-      .select('orderId, eventId, buyerName, buyerEmail, totalAmount, currency, status, created_at', { count: 'exact' })
+      .select('orderId, eventId, buyerName, buyerEmail, totalAmount, currency, status, created_at, deleted_at', { count: 'exact' })
       .in('eventId', filteredEventIds)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .range(from, to)
       : { data: [], error: null, count: 0 };
@@ -652,6 +673,8 @@ export const getRecentOrders = async (req, res) => {
 };
 
 
+
+
 export const getAuditLogs = async (req, res) => {
   try {
     const { page, limit, from, to } = resolvePagination(req);
@@ -675,7 +698,7 @@ export const getAuditLogs = async (req, res) => {
 
     let query = supabase
       .from('auditLogs')
-      .select('auditLogId, actionType, orderId, ticketId, paymentTransactionId, webhookEventsId, actorUserId, createdAt', { count: 'exact' });
+      .select('auditLogId, actionType, orderId, ticketId, paymentTransactionId, webhookEventsId, actorUserId, details, createdAt', { count: 'exact' });
 
     // ADMIN role sees ALL audit logs
     if (role === 'ADMIN') {
@@ -683,10 +706,40 @@ export const getAuditLogs = async (req, res) => {
         .order('createdAt', { ascending: false })
         .range(from, to);
       if (error) return res.status(500).json({ error: error.message });
-      const total = typeof count === 'number' ? count : 0;
+
+      const items = data || [];
+      const actorUserIds = [...new Set(items.map(l => l.actorUserId).filter(Boolean))];
+      let userMap = new Map();
+
+      if (actorUserIds.length > 0) {
+        const { data: usersData } = await supabase
+          .from('users')
+          .select('userId, name, email')
+          .in('userId', actorUserIds);
+        (usersData || []).forEach(u => userMap.set(u.userId, u.name || u.email || 'System User'));
+      }
+
+      const mappedItems = items.map(log => {
+        let target = 'System';
+        if (log.orderId) target = `Order #${log.orderId.slice(-8)}`;
+        else if (log.ticketId) target = `Ticket #${log.ticketId.slice(-8)}`;
+        else if (log.details?.eventName) target = log.details.eventName;
+        else if (log.details?.organizerName) target = log.details.organizerName;
+
+        return {
+          id: log.auditLogId,
+          action: (log.actionType || 'SYSTEM_ACTION').replace(/_/g, ' '),
+          actorName: userMap.get(log.actorUserId) || 'System',
+          performedBy: userMap.get(log.actorUserId) || 'System',
+          target,
+          timestamp: log.createdAt,
+          details: log.details || {}
+        };
+      });
+
       return res.json({
-        items: data || [],
-        pagination: buildPagination(page, limit, total)
+        items: mappedItems,
+        pagination: buildPagination(page, limit, typeof count === 'number' ? count : 0)
       });
     }
 
@@ -705,12 +758,42 @@ export const getAuditLogs = async (req, res) => {
     const { data, error, count } = await query
       .order('createdAt', { ascending: false })
       .range(from, to);
-    console.log('[getAuditLogs] non-admin query result:', { data, error, count });
+
     if (error) return res.status(500).json({ error: error.message });
-    const total = typeof count === 'number' ? count : 0;
+
+    const items = data || [];
+    const actorUserIds = [...new Set(items.map(l => l.actorUserId).filter(Boolean))];
+    let userMap = new Map();
+
+    if (actorUserIds.length > 0) {
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('userId, name, email')
+        .in('userId', actorUserIds);
+      (usersData || []).forEach(u => userMap.set(u.userId, u.name || u.email || 'System User'));
+    }
+
+    const finalMappedItems = items.map(log => {
+      let target = 'System';
+      if (log.orderId) target = `Order #${log.orderId.slice(-8)}`;
+      else if (log.ticketId) target = `Ticket #${log.ticketId.slice(-8)}`;
+      else if (log.details?.eventName) target = log.details.eventName;
+      else if (log.details?.organizerName) target = log.details.organizerName;
+
+      return {
+        id: log.auditLogId,
+        action: (log.actionType || 'SYSTEM_ACTION').replace(/_/g, ' '),
+        actorName: userMap.get(log.actorUserId) || 'System',
+        performedBy: userMap.get(log.actorUserId) || 'System',
+        target,
+        timestamp: log.createdAt,
+        details: log.details || {}
+      };
+    });
+
     return res.json({
-      items: data || [],
-      pagination: buildPagination(page, limit, total)
+      items: finalMappedItems,
+      pagination: buildPagination(page, limit, typeof count === 'number' ? count : 0)
     });
   } catch (err) {
     console.error('[getAuditLogs] error:', err);
@@ -723,13 +806,11 @@ export const exportEventReport = async (req, res) => {
     const { eventId } = req.params;
     if (!eventId) return res.status(400).json({ error: 'eventId required' });
 
-    // Ensure authorized access to this event
     const filteredEventIds = await getFilteredEventIds(req);
     if (!filteredEventIds.includes(eventId)) {
       return res.status(403).json({ error: 'Not authorized to export this event' });
     }
 
-    // Load orders
     const { data: orders, error: orderErr } = await supabase
       .from('orders')
       .select('orderId, buyerName, buyerEmail, totalAmount, status, created_at')
@@ -737,46 +818,27 @@ export const exportEventReport = async (req, res) => {
       .eq('status', 'PAID');
 
     if (orderErr) return res.status(500).json({ error: orderErr.message });
+    if (!orders || orders.length === 0) return res.status(404).json({ error: 'No data to export' });
 
-    if (!orders || orders.length === 0) {
-      return res.status(404).json({ error: 'No data to export for this event' });
-    }
+    const oIds = orders.map(o => o.orderId);
+    const [attResp, ticketResp, ttResp] = await Promise.all([
+      supabase.from('attendees').select('attendeeId, orderId, name, email, company').in('orderId', oIds),
+      supabase.from('tickets').select('ticketCode, attendeeId, status, issuedAt, ticketTypeId').in('orderId', oIds),
+      supabase.from('ticketTypes').select('ticketTypeId, name, priceAmount').eq('eventId', eventId)
+    ]);
 
-    const orderIds = orders.map(o => o.orderId);
+    if (attResp.error) throw attResp.error;
+    if (ticketResp.error) throw ticketResp.error;
+    if (ttResp.error) throw ttResp.error;
 
-    // Load attendees for those orders
-    const { data: attendees, error: attErr } = await supabase
-      .from('attendees')
-      .select('attendeeId, orderId, name, email, company')
-      .in('orderId', orderIds);
+    const ticketTypeMap = new Map((ttResp.data || []).map(tt => [tt.ticketTypeId, tt]));
+    const orderMap = new Map(orders.map(o => [o.orderId, o]));
+    const ticketMap = new Map((ticketResp.data || []).map(t => [t.attendeeId, t]));
 
-    if (attErr) return res.status(500).json({ error: attErr.message });
-
-    // Load ticket info for the attendees
-    const { data: tickets, error: ticketErr } = await supabase
-      .from('tickets')
-      .select('ticketCode, attendeeId, status, issuedAt, ticketTypeId')
-      .in('orderId', orderIds);
-      
-    if (ticketErr) return res.status(500).json({ error: ticketErr.message });
-
-    // Load ticket types
-    const { data: ticketTypes, error: ttErr } = await supabase
-      .from('ticketTypes')
-      .select('ticketTypeId, name, priceAmount')
-      .eq('eventId', eventId);
-
-    if (ttErr) return res.status(500).json({ error: ttErr.message });
-
-    const ticketTypeMap = new Map((ticketTypes || []).map(tt => [tt.ticketTypeId, tt]));
-    const orderMap = new Map((orders || []).map(o => [o.orderId, o]));
-    const ticketMap = new Map((tickets || []).map(t => [t.attendeeId, t]));
-
-    // Construct CSV Data
     const csvHeaders = ['Attendee Name', 'Attendee Email', 'Company', 'Ticket Code', 'Ticket Type', 'Ticket Price', 'Ticket Status', 'Order Purchase Date'];
     let csvRows = [csvHeaders.join(',')];
 
-    for (const attendee of (attendees || [])) {
+    for (const attendee of (attResp.data || [])) {
       const order = orderMap.get(attendee.orderId);
       const ticket = ticketMap.get(attendee.attendeeId);
       const ticketType = ticket ? ticketTypeMap.get(ticket.ticketTypeId) : null;
@@ -794,11 +856,9 @@ export const exportEventReport = async (req, res) => {
       csvRows.push(row.join(','));
     }
 
-    const csvContent = csvRows.join('\n');
-
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename="event_report_${eventId}.csv"`);
-    return res.status(200).send(csvContent);
+    return res.status(200).send(csvRows.join('\n'));
 
   } catch (err) {
     console.error('[exportEventReport] error:', err);
@@ -900,6 +960,186 @@ export const exportAllReports = async (req, res) => {
 
   } catch (err) {
     console.error('[exportAllReports] error:', err);
+    return res.status(500).json({ error: err?.message || 'Unexpected error' });
+  }
+};export const archiveTransaction = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { data, error } = await supabase
+      .from('orders')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('orderId', orderId)
+      .select();
+
+    if (error) return res.status(500).json({ error: error.message });
+    return res.json({ success: true, data });
+  } catch (err) {
+    return res.status(500).json({ error: err?.message || 'Unexpected error' });
+  }
+};
+
+export const restoreTransaction = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { data, error } = await supabase
+      .from('orders')
+      .update({ deleted_at: null })
+      .eq('orderId', orderId)
+      .select();
+
+    if (error) return res.status(500).json({ error: error.message });
+    return res.json({ success: true, data });
+  } catch (err) {
+    return res.status(500).json({ error: err?.message || 'Unexpected error' });
+  }
+};
+
+export const deleteTransaction = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    await supabase.from('tickets').delete().eq('orderId', orderId);
+    await supabase.from('attendees').delete().eq('orderId', orderId);
+    await supabase.from('orderItems').delete().eq('orderId', orderId);
+    
+    const { data, error } = await supabase
+      .from('orders')
+      .delete()
+      .eq('orderId', orderId)
+      .select();
+
+    if (error) return res.status(500).json({ error: error.message });
+    return res.json({ success: true, data });
+  } catch (err) {
+    return res.status(500).json({ error: err?.message || 'Unexpected error' });
+  }
+};
+
+
+export const getArchivedTransactions = async (req, res) => {
+  try {
+    const filteredEventIds = await getFilteredEventIds(req);
+    const { from, to } = resolvePagination(req);
+
+    const { data, error, count } = await supabase
+      .from('orders')
+      .select('orderId, eventId, buyerName, buyerEmail, totalAmount, currency, status, created_at, deleted_at', { count: 'exact' })
+      .in('eventId', filteredEventIds)
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false })
+      .range(from, to);
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    const eventIds = sanitizeUuidList((data || []).map(item => item.eventId));
+    let eventMap = new Map();
+    if (eventIds.length) {
+      const { data: eventRows } = await supabase
+        .from('events')
+        .select('eventId, eventName')
+        .in('eventId', eventIds);
+      eventMap = new Map((eventRows || []).map(row => [row.eventId, row.eventName]));
+    }
+
+    const items = (data || []).map(item => ({
+      orderId: item.orderId,
+      customerName: item.buyerName,
+      customerEmail: item.buyerEmail,
+      amount: item.totalAmount,
+      currency: item.currency,
+      paymentStatus: item.status,
+      createdAt: item.created_at,
+      archivedAt: item.deleted_at,
+      eventName: eventMap.get(item.eventId) || 'Unknown Event'
+    }));
+
+    return res.json({
+      transactions: items,
+      total: count || 0
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err?.message || 'Unexpected error' });
+  }
+};
+
+export const getPlanMetrics = async (req, res) => {
+  try {
+    const { data: plans } = await supabase.from('plans').select('planId, name');
+    const planMap = new Map((plans || []).map(p => [p.planId, p.name]));
+
+    const { data: subs, error } = await supabase
+      .from('organizersubscriptions')
+      .select('planId, priceAmount, created_at, status')
+      .in('status', ['active', 'paid', 'ACTIVE', 'PAID']);
+
+    if (error) throw error;
+
+    // Revenue by Plan
+    const revenueByPlan = {};
+    (subs || []).forEach(s => {
+      const name = planMap.get(s.planId) || 'Unknown';
+      revenueByPlan[name] = (revenueByPlan[name] || 0) + (Number(s.priceAmount) || 0);
+    });
+
+    // Subscriptions over time (last 30 days)
+    const last30Days = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      last30Days.push({
+        date: d.toISOString().split('T')[0],
+        count: 0,
+        revenue: 0
+      });
+    }
+
+    (subs || []).forEach(s => {
+      const date = new Date(s.created_at).toISOString().split('T')[0];
+      const day = last30Days.find(d => d.date === date);
+      if (day) {
+        day.count++;
+        day.revenue += (Number(s.priceAmount) || 0);
+      }
+    });
+
+    return res.json({
+      revenueByPlan: Object.entries(revenueByPlan).map(([name, value]) => ({ name, value })),
+      dailyMetrics: last30Days
+    });
+  } catch (err) {
+    console.error('[Analytics] getPlanMetrics error:', err);
+    return res.status(500).json({ error: err?.message || 'Unexpected error' });
+  }
+};
+
+export const getSubscriptionHealth = async (req, res) => {
+  try {
+    const { data: plans } = await supabase.from('plans').select('planId, name');
+    const { data: subs } = await supabase
+      .from('organizersubscriptions')
+      .select('planId, status')
+      .in('status', ['active', 'paid', 'ACTIVE', 'PAID']);
+
+    const planCounts = {};
+    (subs || []).forEach(s => {
+      planCounts[s.planId] = (planCounts[s.planId] || 0) + 1;
+    });
+
+    const metrics = (plans || []).map(p => ({
+      name: p.name,
+      count: planCounts[p.planId] || 0
+    }));
+
+    // Get total organizers for conversion rate
+    const { count: totalOrganizers } = await supabase
+      .from('organizers')
+      .select('organizerId', { count: 'exact', head: true });
+
+    return res.json({
+      planDistribution: metrics,
+      totalOrganizers: totalOrganizers || 0,
+      activeSubscribers: subs.length
+    });
+  } catch (err) {
     return res.status(500).json({ error: err?.message || 'Unexpected error' });
   }
 };

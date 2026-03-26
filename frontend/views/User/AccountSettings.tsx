@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Input } from '../../components/Shared';
 import { ICONS } from '../../constants';
 import { useUser } from '../../context/UserContext';
 import { supabase } from "../../supabase/supabaseClient";
+import { useToast } from '../../context/ToastContext';
 
 const API = import.meta.env.VITE_API_BASE;
 
@@ -29,19 +29,13 @@ const XCircleIcon = (props: any) => (
 
 export const AccountSettings: React.FC = () => {
     const { userId, name, email, imageUrl, setUser, role } = useUser();
+    const { showToast } = useToast();
     const [formName, setFormName] = useState(name || '');
     const [previewUrl, setPreviewUrl] = useState<string | null>(imageUrl || null);
     const [saving, setSaving] = useState(false);
     const [passwordLoading, setPasswordLoading] = useState(false);
-    const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        if (notification) {
-            const t = setTimeout(() => setNotification(null), 4000);
-            return () => clearTimeout(t);
-        }
-    }, [notification]);
 
     // 🔥 Auto-sync form state when context updates (e.g. after backend JIT sync)
     useEffect(() => {
@@ -75,9 +69,9 @@ export const AccountSettings: React.FC = () => {
             const newUrl = data.imageUrl || localUrl;
             setPreviewUrl(newUrl);
             setUser({ userId: userId!, role: role!, email: email!, name: formName || name, imageUrl: newUrl });
-            setNotification({ message: 'Profile photo updated!', type: 'success' });
+            showToast('success', 'Profile photo updated!');
         } catch {
-            setNotification({ message: 'Failed to upload photo.', type: 'error' });
+            showToast('error', 'Failed to upload photo.');
         } finally {
             setSaving(false);
         }
@@ -96,9 +90,9 @@ export const AccountSettings: React.FC = () => {
             });
             if (!res.ok) throw new Error('Save failed');
             setUser({ userId: userId!, role: role!, email: email!, name: trimmed, imageUrl: previewUrl });
-            setNotification({ message: 'Name updated successfully!', type: 'success' });
+            showToast('success', 'Name updated successfully!');
         } catch {
-            setNotification({ message: 'Failed to save name.', type: 'error' });
+            showToast('error', 'Failed to save name.');
         } finally {
             setSaving(false);
         }
@@ -119,9 +113,9 @@ export const AccountSettings: React.FC = () => {
                 throw new Error(data.error || 'Failed to send reset link');
             }
 
-            setNotification({ message: 'Password reset link sent to your email!', type: 'success' });
+            showToast('success', 'Password reset link sent to your email!');
         } catch (err: any) {
-            setNotification({ message: err.message || 'Failed to send reset email.', type: 'error' });
+            showToast('error', err.message || 'Failed to send reset email.');
         } finally {
             setPasswordLoading(false);
         }
@@ -137,17 +131,6 @@ export const AccountSettings: React.FC = () => {
 
     return (
         <div className="space-y-10 pb-20">
-            {notification && (
-                <div className="fixed top-24 right-8 z-[120] animate-in slide-in-from-right-10 duration-500">
-                    <Card className={`flex items-center gap-4 px-6 py-4 rounded-xl shadow-2xl border ${notification.type === 'success' ? 'bg-[#F2F2F2] border-green-200 text-[#2E2E2F]' : 'bg-[#F2F2F2] border-red-200 text-[#2E2E2F]'}`}>
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${notification.type === 'success' ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'bg-red-500 text-white shadow-lg shadow-red-500/30'}`}>
-                            {notification.type === 'success' ? <ICONS.CheckCircle className="w-5 h-5" /> : <XCircleIcon className="w-5 h-5" />}
-                        </div>
-                        <p className="font-black text-sm tracking-tight">{notification.message}</p>
-                        <button onClick={() => setNotification(null)} className="ml-4 text-[#2E2E2F]/40 hover:text-[#2E2E2F] text-xl font-black transition-colors">&times;</button>
-                    </Card>
-                </div>
-            )}
 
             {/* Profile Section */}
             <Card className="p-10 border-2 border-[#2E2E2F]/15 rounded-xl bg-[#F2F2F2] shadow-sm">

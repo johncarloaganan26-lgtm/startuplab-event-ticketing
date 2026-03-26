@@ -184,32 +184,32 @@ export const UserHome: React.FC = () => {
             )}
 
             {/* Welcome Section */}
-            <div className="bg-[#F2F2F2] border-2 border-[#2E2E2F]/15 rounded-xl p-10 md:p-14 mb-4">
+            <div className="bg-[#38BDF2] border-2 border-[#38BDF2] rounded-xl p-10 md:p-14 mb-4 shadow-[0_20px_40px_-10px_rgba(56,189,242,0.3)]">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
                     <div className="max-w-2xl">
-                        <div className="w-12 h-12 rounded-xl bg-[#2E2E2F]/10 flex items-center justify-center mb-8">
-                            <ICONS.Home className="w-6 h-6 text-[#2E2E2F]" />
+                        <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-8">
+                            <ICONS.Home className="w-6 h-6 text-white" />
                         </div>
-                        <h1 className="text-3xl md:text-[2rem] font-black text-[#2E2E2F] tracking-tight">
+                        <h1 className="text-3xl md:text-[2rem] font-black text-white tracking-tight">
                             Oh hello, {displayName}
                         </h1>
-                        <p className="mt-1 text-sm font-semibold text-[#2E2E2F]/65">
+                        <p className="mt-1 text-sm font-semibold text-white/80">
                             Welcome back to your event nerve center. Craft new experiences, engage your audience, and scale your influence with StartupLab.
                         </p>
                     </div>
                     <div className="flex gap-10 shrink-0">
                         <div className="text-center group">
-                            <p className={`text-[#2E2E2F] text-5xl font-black leading-none mb-3 transition-all duration-700 ${loadingStats ? 'opacity-0 scale-50' : 'opacity-100 scale-100'}`}>
+                            <p className={`text-white text-5xl font-black leading-none mb-3 transition-all duration-700 ${loadingStats ? 'opacity-0 scale-50' : 'opacity-100 scale-100'}`}>
                                 {stats.liveEventsCount}
                             </p>
-                            <p className="text-[10px] uppercase font-black text-[#2E2E2F] tracking-[0.25em] opacity-40 group-hover:opacity-100 transition-opacity">Live Events</p>
+                            <p className="text-[10px] uppercase font-black text-white tracking-[0.25em] opacity-60 group-hover:opacity-100 transition-opacity">Live Events</p>
                         </div>
-                        <div className="w-px h-14 bg-[#2E2E2F]/10 self-center" />
+                        <div className="w-px h-14 bg-white/20 self-center" />
                         <div className="text-center group">
-                            <p className={`text-[#2E2E2F] text-5xl font-black leading-none mb-3 transition-all duration-700 delay-100 ${loadingStats ? 'opacity-0 scale-50' : 'opacity-100 scale-100'}`}>
+                            <p className={`text-white text-5xl font-black leading-none mb-3 transition-all duration-700 delay-100 ${loadingStats ? 'opacity-0 scale-50' : 'opacity-100 scale-100'}`}>
                                 {stats.ticketsSold}
                             </p>
-                            <p className="text-[10px] uppercase font-black text-[#2E2E2F] tracking-[0.25em] opacity-40 group-hover:opacity-100 transition-opacity">Tickets</p>
+                            <p className="text-[10px] uppercase font-black text-white tracking-[0.25em] opacity-60 group-hover:opacity-100 transition-opacity">Tickets</p>
                         </div>
                     </div>
                 </div>
@@ -244,8 +244,8 @@ export const UserHome: React.FC = () => {
                             return (
                                 <>
                                     <div className="flex items-center gap-4 mb-4">
-                                        <div className="p-2.5 bg-[#F2F2F2] rounded-xl border-2 border-[#2E2E2F]/10">
-                                            <ICONS.CreditCard className="w-5 h-5 text-[#2E2E2F]" />
+                                        <div className="p-2.5 bg-[#38BDF2] rounded-xl shadow-[0_8px_16px_-4px_rgba(56,189,242,0.4)]">
+                                            <ICONS.CreditCard className="w-5 h-5 text-white" />
                                         </div>
                                         <div>
                                             <p className="text-[9px] font-black uppercase tracking-widest text-[#2E2E2F]/60">Paid Events Used</p>
@@ -280,8 +280,8 @@ export const UserHome: React.FC = () => {
                     {emailQuota && (
                         <div className="bg-[#F2F2F2] border-[#2E2E2F]/15 border-2 rounded-xl p-6 flex flex-col justify-between min-h-[160px] shadow-sm transition-all hover:border-[#38BDF2]/30">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="p-2 bg-[#2E2E2F]/10 rounded-xl">
-                                    <ICONS.Mail className="w-5 h-5 text-[#2E2E2F]" strokeWidth={2} />
+                                <div className="p-2.5 bg-[#38BDF2] rounded-xl shadow-[0_8px_16px_-4px_rgba(56,189,242,0.4)]">
+                                    <ICONS.Mail className="w-5 h-5 text-white" strokeWidth={2} />
                                 </div>
                                 <div>
                                     <p className="text-[9px] font-black uppercase tracking-widest text-[#2E2E2F]/60">Email Quota</p>
@@ -317,51 +317,51 @@ export const UserHome: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Create First Event Card */}
                 <div
-                    className="group relative bg-[#F2F2F2] border-2 border-[#2E2E2F]/5 rounded-xl p-8 flex flex-col items-start transition-all duration-300 hover:border-[#2E2E2F]/20 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.05)] hover:-translate-y-1"
+                    className="group relative bg-[#F2F2F2] border-2 border-[#2E2E2F]/5 rounded-xl p-8 flex flex-col items-start transition-all duration-300 hover:border-[#38BDF2]/40 hover:bg-[#38BDF2]/5 hover:shadow-[0_20px_40px_-20px_rgba(56,189,242,0.15)] hover:-translate-y-1"
                     onClick={() => navigate('/my-events/create')}
                 >
-                    <div className="w-14 h-14 rounded-xl bg-[#2E2E2F]/10 text-[#2E2E2F] flex items-center justify-center mb-8 group-hover:bg-[#2E2E2F] group-hover:text-white transition-all">
+                    <div className="w-14 h-14 rounded-xl bg-[#38BDF2] text-white flex items-center justify-center mb-8 shadow-[0_10px_20px_-5px_rgba(56,189,242,0.3)] transition-all">
                         <ICONS.Plus className="w-8 h-8 stroke-[3]" />
                     </div>
                     <h2 className="text-2xl font-black text-[#2E2E2F] tracking-tight mb-3">Create First Event</h2>
                     <p className="text-[#2E2E2F]/60 font-medium leading-relaxed mb-8 flex-1">
                         Follow the organizer workflow: complete your identity, set up your organization profile, pick a subscription plan, save your event as a draft, then add tickets before finally publishing.
                     </p>
-                    <div className="flex items-center gap-2 text-[10px] font-black text-[#2E2E2F]/40 tracking-[0.2em] group-hover:text-[#2E2E2F] transition-colors">
+                    <div className="flex items-center gap-2 text-[10px] font-black text-[#2E2E2F]/40 tracking-[0.2em] group-hover:text-[#38BDF2] transition-colors">
                         Start Wizard <ICONS.ChevronRight className="w-4 h-4" />
                     </div>
                 </div>
 
                 {/* Manage Events Card */}
                 <div
-                    className="group relative bg-[#F2F2F2] border-2 border-[#2E2E2F]/5 rounded-xl p-8 flex flex-col items-start transition-all duration-300 hover:border-[#2E2E2F]/20 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.05)] hover:-translate-y-1"
+                    className="group relative bg-[#F2F2F2] border-2 border-[#2E2E2F]/5 rounded-xl p-8 flex flex-col items-start transition-all duration-300 hover:border-[#38BDF2]/40 hover:bg-[#38BDF2]/5 hover:shadow-[0_20px_40px_-20px_rgba(56,189,242,0.15)] hover:-translate-y-1"
                     onClick={() => navigate('/my-events')}
                 >
-                    <div className="w-14 h-14 rounded-xl bg-[#2E2E2F]/10 text-[#2E2E2F] flex items-center justify-center mb-8 group-hover:bg-[#2E2E2F] group-hover:text-white transition-all">
+                    <div className="w-14 h-14 rounded-xl bg-[#38BDF2] text-white flex items-center justify-center mb-8 shadow-[0_10px_20px_-5px_rgba(56,189,242,0.3)] transition-all">
                         <ICONS.Calendar className="w-7 h-7 stroke-[2]" />
                     </div>
                     <h2 className="text-2xl font-black text-[#2E2E2F] tracking-tight mb-3">Manage My Events</h2>
                     <p className="text-[#2E2E2F]/60 font-medium leading-relaxed mb-8 flex-1">
                         View, edit, and track the performance of all your existing events. Stay on top of registrations.
                     </p>
-                    <div className="flex items-center gap-2 text-[10px] font-black text-[#2E2E2F]/40 tracking-[0.2em] group-hover:text-[#2E2E2F] transition-colors">
+                    <div className="flex items-center gap-2 text-[10px] font-black text-[#2E2E2F]/40 tracking-[0.2em] group-hover:text-[#38BDF2] transition-colors">
                         Open Library <ICONS.ChevronRight className="w-4 h-4" />
                     </div>
                 </div>
 
                 {/* Help & Support Card */}
                 <div
-                    className="group relative bg-[#F2F2F2] border-2 border-[#2E2E2F]/5 rounded-xl p-8 flex flex-col items-start transition-all duration-300 hover:border-[#2E2E2F]/20 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.05)] hover:-translate-y-1"
+                    className="group relative bg-[#F2F2F2] border-2 border-[#2E2E2F]/5 rounded-xl p-8 flex flex-col items-start transition-all duration-300 hover:border-[#38BDF2]/40 hover:bg-[#38BDF2]/5 hover:shadow-[0_20px_40px_-20px_rgba(56,189,242,0.15)] hover:-translate-y-1"
                     onClick={() => navigate('/organizer-support')}
                 >
-                    <div className="w-14 h-14 rounded-xl bg-[#2E2E2F]/10 text-[#2E2E2F] flex items-center justify-center mb-8 group-hover:bg-[#2E2E2F] group-hover:text-white transition-all">
+                    <div className="w-14 h-14 rounded-xl bg-[#38BDF2] text-white flex items-center justify-center mb-8 shadow-[0_10px_20px_-5px_rgba(56,189,242,0.3)] transition-all">
                         <ICONS.MessageSquare className="w-7 h-7 stroke-[2]" />
                     </div>
                     <h2 className="text-2xl font-black text-[#2E2E2F] tracking-tight mb-3">Help & Support</h2>
                     <p className="text-[#2E2E2F]/60 font-medium leading-relaxed mb-8 flex-1">
                         Need assistance? Our support team is here to help you optimize your event operations and resolve any technical issues.
                     </p>
-                    <div className="flex items-center gap-2 text-[10px] font-black text-[#2E2E2F]/40 tracking-[0.2em] group-hover:text-[#2E2E2F] transition-colors">
+                    <div className="flex items-center gap-2 text-[10px] font-black text-[#2E2E2F]/40 tracking-[0.2em] group-hover:text-[#38BDF2] transition-colors">
                         Open Support <ICONS.ChevronRight className="w-4 h-4" />
                     </div>
                 </div>

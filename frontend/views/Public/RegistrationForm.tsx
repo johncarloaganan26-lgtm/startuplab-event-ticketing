@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/apiService';
 import { Event, TicketType } from '../../types';
-import { Button, Card, Input, PageLoader } from '../../components/Shared';
+import { Card, Badge, Button, Input, Modal, Checkbox, PageLoader } from '../../components/Shared';
 import { ICONS } from '../../constants';
 import { useUser } from '../../context/UserContext';
 
@@ -420,23 +420,17 @@ export const RegistrationForm: React.FC = () => {
                     </div>
 
                     <div className="md:col-span-2 pt-4 border-t border-[#2E2E2F]/10 space-y-4">
-                      <label className="flex items-start gap-4 cursor-pointer group select-none">
-                        <div className="relative mt-1">
-                          <input
-                            type="checkbox"
-                            className="peer sr-only"
-                            checked={formData.termsAccepted}
-                            onChange={(e) => setFormData({ ...formData, termsAccepted: e.target.checked })}
-                          />
-                          <div className="w-6 h-6 border-2 border-[#2E2E2F]/20 rounded-xl bg-[#F2F2F2] peer-checked:bg-[#38BDF2] peer-checked:border-[#38BDF2] transition-colors flex items-center justify-center">
-                            <ICONS.CheckCircle className={`w-4 h-4 text-[#F2F2F2] transition-opacity ${formData.termsAccepted ? 'opacity-100' : 'opacity-0'}`} strokeWidth={4} />
-                          </div>
-                        </div>
-                        <span className="text-sm font-medium text-[#2E2E2F]/70 leading-relaxed group-hover:text-[#2E2E2F] transition-colors">
-                          I acknowledge that I have read and agree to the <a href="#" className="text-[#2E2E2F] font-bold hover:underline" style={{ color: brandColor }}>Terms and Conditions</a> and <a href="#" className="text-[#2E2E2F] font-bold hover:underline" style={{ color: brandColor }}>Privacy Policy</a> governing this event session.
-                        </span>
-                      </label>
-                      {errors.terms && <p className="text-[11px] font-semibold text-[#2E2E2F] uppercase tracking-wide pl-10">{errors.terms}</p>}
+                      <Checkbox
+                        checked={formData.termsAccepted}
+                        onChange={(val) => setFormData({ ...formData, termsAccepted: val })}
+                        size="lg"
+                        label={
+                          <span className="text-sm font-medium text-[#2E2E2F]/70 leading-relaxed group-hover:text-[#2E2E2F] transition-colors">
+                            I acknowledge that I have read and agree to the <a href="#" className="text-[#2E2E2F] font-bold hover:underline" style={{ color: brandColor }}>Terms and Conditions</a> and <a href="#" className="text-[#2E2E2F] font-bold hover:underline" style={{ color: brandColor }}>Privacy Policy</a> governing this event session.
+                          </span>
+                        }
+                      />
+                      {errors.terms && <p className="text-[11px] font-semibold text-[#2E2E2F] uppercase tracking-wide pl-12">{errors.terms}</p>}
                     </div>
                   </div>
                 </div>

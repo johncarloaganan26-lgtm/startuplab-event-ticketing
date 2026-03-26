@@ -1044,6 +1044,50 @@ export const apiService = {
     return res.json();
   },
 
+  archiveTransaction: async (orderId: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/api/analytics/transactions/${encodeURIComponent(orderId)}/archive`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || `Failed to archive transaction: ${res.status}`);
+    }
+  },
+
+  restoreTransaction: async (orderId: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/api/analytics/transactions/${encodeURIComponent(orderId)}/restore`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || `Failed to restore transaction: ${res.status}`);
+    }
+  },
+
+  deleteTransaction: async (orderId: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/api/analytics/transactions/${encodeURIComponent(orderId)}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || `Failed to delete transaction: ${res.status}`);
+    }
+  },
+
+  getArchivedTransactions: async () => {
+    const res = await fetch(`${API_BASE}/api/analytics/transactions/archived`, {
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || `Failed to load archived transactions: ${res.status}`);
+    }
+    return res.json();
+  },
+
   getRecentOrders: async (page = 1, limit = 10) => {
     const res = await fetch(`${API_BASE}/api/analytics/orders?page=${page}&limit=${limit}`, {
       credentials: 'include'
@@ -1353,5 +1397,84 @@ export const apiService = {
     });
     if (!res.ok) throw new Error(`Failed to load support messages: ${res.status}`);
     return await res.json();
-  }
+  },
+
+  bulkArchiveSupportTickets: async (ids: string[]): Promise<any> => {
+    const res = await fetch(`${API_BASE}/api/user/support/bulk-archive`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ ids })
+    });
+    if (!res.ok) throw new Error(`Failed to archive tickets: ${res.status}`);
+    return await res.json();
+  },
+
+  bulkDeleteSupportTickets: async (ids: string[]): Promise<any> => {
+    const res = await fetch(`${API_BASE}/api/user/support/bulk-delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ ids })
+    });
+    if (!res.ok) throw new Error(`Failed to delete tickets: ${res.status}`);
+    return await res.json();
+  },
+
+  getArchivedSupportTickets: async (): Promise<any[]> => {
+    const res = await fetch(`${API_BASE}/api/user/support/archived`, {
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error(`Failed to load archived tickets: ${res.status}`);
+    return await res.json();
+  },
+
+  uploadSupportImage: async (file: File): Promise<{ publicUrl: string }> => {
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await apiService._fetch(`${API_BASE}/api/support/upload`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData
+    });
+    if (!res.ok) throw new Error(`Failed to upload support image: ${res.status}`);
+    return await res.json();
+  },
+  
+  bulkRestoreSupportTickets: async (ids: string[]): Promise<any> => {
+    const res = await fetch(`${API_BASE}/api/user/support/bulk-restore`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ ids })
+    });
+    if (!res.ok) throw new Error(`Failed to restore tickets: ${res.status}`);
+    return await res.json();
+  },
+  
+  getPlanMetrics: async () => {
+    const res = await fetch(`${API_BASE}/api/analytics/plan-metrics`, {
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || `Failed to load plan metrics: ${res.status}`);
+    }
+    return res.json();
+  },
+
+  getSubscriptionHealth: async () => {
+    const res = await fetch(`${API_BASE}/api/analytics/subscription-health`, {
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || `Failed to load subscription health: ${res.status}`);
+    }
+    return res.json();
+  },
 };
+
+
+

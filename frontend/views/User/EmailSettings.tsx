@@ -1,18 +1,18 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Input } from '../../components/Shared';
 import { apiService } from '../../services/apiService';
 import { ICONS } from '../../constants';
 import { OrganizerProfile } from '../../types';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../context/ToastContext';
 
 export const EmailSettings: React.FC = () => {
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [testing, setTesting] = useState(false);
     const [profile, setProfile] = useState<OrganizerProfile | null>(null);
-    const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
     const [formData, setFormData] = useState({
         emailProvider: 'SMTP',
@@ -62,9 +62,9 @@ export const EmailSettings: React.FC = () => {
         try {
             setSaving(true);
             await apiService.updateSmtpSettings(formData);
-            setNotification({ message: 'Email settings saved successfully!', type: 'success' });
+            showToast('success', 'Email settings saved successfully!');
         } catch (err: any) {
-            setNotification({ message: err.message || 'Failed to save settings', type: 'error' });
+            showToast('error', err.message || 'Failed to save settings');
         } finally {
             setSaving(false);
         }
@@ -72,26 +72,20 @@ export const EmailSettings: React.FC = () => {
 
     const handleTest = async () => {
         if (!testRecipient) {
-            setNotification({ message: 'Please enter a recipient email for the test.', type: 'error' });
+            showToast('error', 'Please enter a recipient email for the test.');
             return;
         }
         try {
             setTesting(true);
             await apiService.testSmtpSettings({ ...formData, recipientEmail: testRecipient });
-            setNotification({ message: 'Test email sent! Please check your inbox.', type: 'success' });
+            showToast('success', 'Test email sent! Please check your inbox.');
         } catch (err: any) {
-            setNotification({ message: err.message || 'SMTP test failed.', type: 'error' });
+            showToast('error', err.message || 'SMTP test failed.');
         } finally {
             setTesting(false);
         }
     };
 
-    useEffect(() => {
-        if (notification) {
-            const timer = setTimeout(() => setNotification(null), 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [notification]);
 
     if (loading) return <div className="p-8 text-[#2E2E2F]/60">Loading email settings...</div>;
 
@@ -166,17 +160,6 @@ export const EmailSettings: React.FC = () => {
 
     return (
         <div className="pb-16 space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {notification && (
-                <div className="fixed top-24 right-8 z-[120] animate-in slide-in-from-right-10 duration-500">
-                    <Card className={`flex items-center gap-4 px-6 py-4 rounded-xl shadow-xl border ${notification.type === 'success' ? 'bg-[#F2F2F2] border-[#38BDF2]/20 text-[#2E2E2F]' : 'bg-[#F2F2F2] border-red-200 text-[#2E2E2F]'}`}>
-                        <div className={`p-2 rounded-xl ${notification.type === 'success' ? 'bg-[#38BDF2] text-[#F2F2F2] shadow-lg shadow-[#38BDF2]/30' : 'bg-red-500 text-white shadow-lg shadow-red-500/30'}`}>
-                            {notification.type === 'success' ? <ICONS.CheckCircle className="w-5 h-5" /> : <ICONS.Layout className="w-5 h-5" />}
-                        </div>
-                        <p className="font-black text-sm tracking-tight">{notification.message}</p>
-                        <button onClick={() => setNotification(null)} className="ml-4 text-[#2E2E2F]/40 hover:text-[#2E2E2F] text-xl font-black transition-colors">&times;</button>
-                    </Card>
-                </div>
-            )}
 
             {/* Header Area */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6">

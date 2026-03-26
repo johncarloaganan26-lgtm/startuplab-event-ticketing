@@ -15,6 +15,139 @@ export const SupportTickets: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { showToast } = useToast();
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+
+  const toggleRow = (id: string) => {
+    setSelectedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleAll = () => {
+    if (selectedRows.size === tickets.length) {
+      setSelectedRows(new Set());
+    } else {
+      setSelectedRows(new Set(tickets.map(t => t.notification_id)));
+    }
+  };
+
+  const handlePrintTickets = () => {
+    const selected = tickets.filter(t => selectedRows.has(t.notification_id));
+    const printData = selected.length > 0 ? selected : tickets;
+    const watermarkLogo = 'https://xmjdcbzgdfylbqkjoyyb.supabase.co/storage/v1/object/public/startuplab-business-ticketing/assets/assets/image%20(1).svg';
+
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Support Tickets Report</title>
+        <style>
+          @page { size: portrait; margin: 20mm; }
+          body { font-family: 'Inter', sans-serif; color: #2E2E2F; padding: 0; margin: 0; position: relative; min-height: 100vh; }
+          .watermark-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            z-index: -1000;
+            pointer-events: none;
+            overflow: hidden;
+          }
+          .watermark {
+            width: 120%;
+            max-width: none;
+            opacity: 0.04; 
+            transform: rotate(-25deg);
+            filter: grayscale(100%);
+          }
+          .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #38BDF2; padding-bottom: 15px; margin-bottom: 40px; }
+          .logo { height: 70px; object-fit: contain; }
+          .report-info { text-align: right; font-size: 11px; font-weight: bold; text-transform: uppercase; color: #2E2E2F; line-height: 1.5; }
+          h1 { margin: 0; font-size: 32px; letter-spacing: -0.06em; font-weight: 900; text-transform: uppercase; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; position: relative; z-index: 10; background: rgba(255,255,255,0.7); }
+          th { background: #2E2E2F; color: white; border: 1px solid #2E2E2F; padding: 14px 10px; text-align: left; text-transform: uppercase; letter-spacing: 0.15em; font-size: 11px; }
+          td { border: 1px solid #ddd; padding: 14px 10px; vertical-align: top; background: transparent; }
+          .status { font-weight: 900; text-transform: uppercase; font-size: 10px; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; }
+          .resolved { color: #10B981; border-color: #10B981; }
+          .pending { color: #F59E0B; border-color: #F59E0B; }
+        </style>
+      </head>
+      <body>
+        <div class="watermark-container">
+          <img src="${watermarkLogo}" class="watermark" />
+        </div>
+        <div class="header">
+          <div>
+            <h1>Organizer Support</h1>
+            <p style="margin: 5px 0 0; font-size: 14px; font-weight: 600; color: #38BDF2;">Admin Control Panel Logs</p>
+          </div>
+          <div class="report-info">
+            <img src="${watermarkLogo}" class="logo" /><br/>
+            <span style="color: #666;">Ref: ADM-LOG-${Date.now().toString().slice(-6)}</span><br/>
+            Date: ${new Date().toLocaleDateString()}<br/>
+            Load: ${printData.length} Tickets
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Inquiry / Organizer</th>
+              <th>Current Status</th>
+              <th>Submission Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${printData.map(t => `
+              <tr>
+                <td>
+                  <div style="font-weight: 800; font-size: 14px; margin-bottom: 6px; color: #000;">${t.title}</div>
+                  <div style="font-size: 11px; color: #444; line-height: 1.4;">
+                    <span style="font-weight: bold; color: #38BDF2;">${t.organizer?.organizerName || t.metadata?.orgName || t.actor?.name || 'Organizer'}</span>: 
+                    ${t.message ? t.message.substring(0, 150) + (t.message.length > 150 ? '...' : '') : 'N/A'}
+                  </div>
+                </td>
+                <td style="width: 120px; text-align: center;">
+                  <span class="status ${t.metadata?.status === 'resolved' || t.is_read ? 'resolved' : 'pending'}">
+                    ${t.metadata?.status === 'resolved' || t.is_read ? 'Resolved' : 'Pending'}
+                  </span>
+                </td>
+                <td style="width: 120px; text-align: right; font-weight: 600;">${new Date(t.created_at).toLocaleDateString()}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <div style="margin-top: 60px; text-align: center; font-size: 11px; font-weight: bold; color: #2E2E2F; border-top: 2px solid #eee; padding-top: 20px; text-transform: uppercase; letter-spacing: 0.1em;">
+          StartupLab Internal Support Management • Confidential Admin Record
+        </div>
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  const handleExportTickets = () => {
+    const selected = tickets.filter(t => selectedRows.has(t.notification_id));
+    const exportData = selected.length > 0 ? selected : tickets;
+    const csvContent = `Organizer,Subject,Status,Date\n${exportData.map(t => `${t.organizer?.organizerName || t.metadata?.orgName || t.actor?.name || 'Organizer'},${t.title},${t.metadata?.status === 'resolved' ? 'Resolved' : 'Pending'},${new Date(t.created_at).toLocaleDateString()}`).join('\n')}`;
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `support_tickets_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   useEffect(() => {
     loadTickets();
@@ -62,6 +195,30 @@ export const SupportTickets: React.FC = () => {
     }
   };
 
+  const handleBulkResolve = async () => {
+    if (selectedRows.size === 0) return;
+    try {
+      setRefreshing(true);
+      const ids = Array.from(selectedRows);
+      await Promise.all(ids.map(id => apiService.resolveSupportTicket(id)));
+      
+      setTickets(prev => 
+        prev.map(t => 
+          selectedRows.has(t.notification_id) 
+            ? { ...t, is_read: true, metadata: { ...t.metadata, status: 'resolved' } } 
+            : t
+        )
+      );
+      
+      showToast('success', `${selectedRows.size} inquiries resolved successfully`);
+      setSelectedRows(new Set());
+    } catch (err) {
+      showToast('error', 'Failed to resolve some tickets');
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const loadMessages = async (ticketId: string) => {
     try {
       setRefreshing(true);
@@ -94,6 +251,35 @@ export const SupportTickets: React.FC = () => {
     }
   };
 
+  const renderMessageContent = (message: string) => {
+    if (!message) return null;
+    
+    // Check for [IMAGE_URL: some_url]
+    const imageMatch = message.match(/\[IMAGE_URL: (.*?)\]/);
+    if (imageMatch) {
+      const imageUrl = imageMatch[1];
+      const textPart = message.replace(/\[IMAGE_URL: (.*?)\]/g, '').trim();
+      
+      return (
+        <div className="space-y-3">
+          {textPart && <p className="text-sm font-medium whitespace-pre-wrap leading-relaxed">{textPart}</p>}
+          <div className="relative group cursor-pointer" onClick={() => window.open(imageUrl, '_blank')}>
+            <img 
+              src={imageUrl} 
+              alt="Attachment" 
+              className="max-h-60 rounded-lg border-2 border-white/20 shadow-sm transition-all group-hover:scale-[1.02] active:scale-[0.98]" 
+            />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+               <ICONS.Eye className="w-5 h-5 text-white" />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return <p className="text-sm font-medium whitespace-pre-wrap leading-relaxed">{message}</p>;
+  };
+
   if (loading) return <PageLoader label="Loading support messages..." />;
 
   const getStatusBadge = (ticket: any) => {
@@ -116,22 +302,43 @@ export const SupportTickets: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-7xl pb-20 relative min-h-[600px]">
-      <div className="flex justify-between items-end mb-6">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center text-[#2E2E2F]">
-            <ICONS.MessageSquare className="w-6 h-6 mr-3 text-[#2E2E2F]" />
-            Organizer Support Messages
-          </h1>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-sm text-[#2E2E2F]/60 font-medium">
-              Manage inquiries and direct messages sent by event organizers.
-            </p>
-          </div>
+      <div className="flex justify-end items-center mb-6">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={handlePrintTickets} 
+            className="w-10 h-10 flex items-center justify-center bg-[#38BDF2] border-2 border-[#38BDF2] rounded-full text-white hover:bg-[#2E2E2F] hover:border-[#2E2E2F] transition-all shadow-md group"
+            title={`Print ${selectedRows.size > 0 ? `Selected (${selectedRows.size})` : 'All'}`}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+          </button>
+          <button 
+            onClick={handleExportTickets} 
+            className="w-10 h-10 flex items-center justify-center bg-[#38BDF2] border-2 border-[#38BDF2] rounded-full text-white hover:bg-[#2E2E2F] hover:border-[#2E2E2F] transition-all shadow-md group"
+            title={`Export ${selectedRows.size > 0 ? `Selected (${selectedRows.size})` : 'All'}`}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+          </button>
+          {selectedRows.size > 0 && (
+            <button 
+              onClick={handleBulkResolve} 
+              disabled={tickets.filter(t => selectedRows.has(t.notification_id) && !(t.metadata?.status === 'resolved' || t.is_read)).length === 0}
+              className={`flex items-center gap-2 px-6 py-2.5 border-2 rounded-full transition-all text-[11px] font-black uppercase tracking-widest shadow-lg animate-in fade-in slide-in-from-right-4 ${
+                tickets.filter(t => selectedRows.has(t.notification_id) && !(t.metadata?.status === 'resolved' || t.is_read)).length === 0
+                  ? 'bg-[#F2F2F2] border-[#2E2E2F]/10 text-[#2E2E2F]/20 cursor-not-allowed'
+                  : 'bg-[#38BDF2] border-[#38BDF2] text-white hover:bg-[#0EA5E9]'
+              }`}
+            >
+              <ICONS.CheckCircle className="w-4 h-4" />
+              {tickets.filter(t => selectedRows.has(t.notification_id) && !(t.metadata?.status === 'resolved' || t.is_read)).length === 0
+                ? "Zero Pending Selection"
+                : `Mark Resolved (${tickets.filter(t => selectedRows.has(t.notification_id) && !(t.metadata?.status === 'resolved' || t.is_read)).length})`
+              }
+            </button>
+          )}
+          <button onClick={loadTickets} className="w-10 h-10 flex items-center justify-center bg-transparent border-2 border-[#2E2E2F]/10 rounded-full hover:bg-[#F2F2F2] transition-all group" title="Refresh">
+            <ICONS.RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
+          </button>
         </div>
-        <button onClick={loadTickets} className="text-xs font-bold uppercase tracking-widest px-4 py-2 bg-transparent border-2 border-[#2E2E2F]/10 rounded-xl hover:bg-[#F2F2F2] transition-all flex items-center gap-2 group">
-          <ICONS.RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
-          Refresh
-        </button>
       </div>
 
       {error ? (
@@ -151,6 +358,14 @@ export const SupportTickets: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead className="bg-[#F2F2F2]/50 border-b-2 border-[#2E2E2F]/5">
               <tr>
+                <th className="px-4 py-4 text-xs font-bold uppercase tracking-widest text-[#2E2E2F]/60 w-12">
+                  <input
+                    type="checkbox"
+                    checked={tickets.length > 0 && selectedRows.size === tickets.length}
+                    onChange={toggleAll}
+                    className="w-4 h-4 rounded border-2 border-[#2E2E2F]/30 cursor-pointer accent-[#38BDF2]"
+                  />
+                </th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-[#2E2E2F]/60">Organizer</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-[#2E2E2F]/60">Subject</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-[#2E2E2F]/60">Status</th>
@@ -160,7 +375,15 @@ export const SupportTickets: React.FC = () => {
             </thead>
             <tbody className="divide-y-2 divide-[#2E2E2F]/5">
               {tickets.map((t) => (
-                <tr key={t.notification_id} className={`hover:bg-[#F2F2F2]/30 transition-colors cursor-pointer ${(t.metadata?.status === 'resolved' || t.is_read) ? 'opacity-60' : ''}`} onClick={() => openThread(t)}>
+                <tr key={t.notification_id} className={`hover:bg-[#F2F2F2]/30 transition-colors ${selectedRows.has(t.notification_id) ? 'bg-[#38BDF2]/10' : ''} ${(t.metadata?.status === 'resolved' || t.is_read) ? 'opacity-60' : ''}`} onClick={() => openThread(t)}>
+                  <td className="px-4 py-5" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.has(t.notification_id)}
+                      onChange={() => toggleRow(t.notification_id)}
+                      className="w-4 h-4 rounded border-2 border-[#2E2E2F]/30 cursor-pointer accent-[#38BDF2]"
+                    />
+                  </td>
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-[#2E2E2F] text-white rounded-full flex items-center justify-center text-[11px] font-bold shadow-sm overflow-hidden border border-[#2E2E2F]/5">
@@ -178,7 +401,9 @@ export const SupportTickets: React.FC = () => {
                   </td>
                   <td className="px-6 py-5">
                     <p className="text-sm font-bold text-[#2E2E2F]">{t.title}</p>
-                    <p className="text-xs text-[#2E2E2F]/60 truncate max-w-[200px]">{t.message}</p>
+                    <p className="text-xs text-[#2E2E2F]/60 truncate max-w-[250px]">
+                      {t.message?.replace(/\[IMAGE_URL: (.*?)\]/g, ' [Image] ')}
+                    </p>
                   </td>
                   <td className="px-6 py-5">
                     {getStatusBadge(t)}
@@ -195,26 +420,11 @@ export const SupportTickets: React.FC = () => {
                     <div className="flex justify-end gap-2">
                       <button 
                         onClick={() => openThread(t)}
-                        className="p-2 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl text-[#2E2E2F] hover:bg-[#38BDF2] hover:text-white transition-all shadow-sm"
+                        className="p-2.5 bg-[#2E2E2F]/5 rounded-full text-[#2E2E2F] hover:bg-[#38BDF2] hover:text-white transition-all"
+                        title="View Conversation"
                       >
                         <ICONS.MessageSquare className="w-4 h-4" />
                       </button>
-                      <a 
-                        href={`mailto:${t.actor?.email}?subject=Re: ${t.title}${adminSmtp?.fromAddress ? `&bcc=${adminSmtp.fromAddress}` : ''}`}
-                        title="Reply via Email"
-                        className="p-2 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl text-[#2E2E2F] hover:bg-[#38BDF2] hover:text-white transition-all shadow-sm"
-                      >
-                        <ICONS.Mail className="w-4 h-4" />
-                      </a>
-                      {!(t.metadata?.status === 'resolved' || t.is_read) && (
-                        <button 
-                          onClick={() => handleResolve(t.notification_id)}
-                          title="Mark as Resolved"
-                          className="p-2 bg-[#F2F2F2] border border-[#2E2E2F]/10 rounded-xl text-[#2E2E2F] hover:bg-[#2E2E2F] hover:text-white transition-all shadow-sm"
-                        >
-                          <ICONS.CheckCircle className="w-4 h-4" />
-                        </button>
-                      )}
                     </div>
                   </td>
                 </tr>
@@ -264,9 +474,7 @@ export const SupportTickets: React.FC = () => {
                       </div>
                       <div className="bg-[#2E2E2F]/5 px-4 py-3 rounded-xl rounded-bl-none border border-[#2E2E2F]/5 shadow-sm">
                          <p className="text-sm font-bold text-[#2E2E2F] mb-1.5">{selectedTicket.title}</p>
-                         <p className="text-sm font-medium text-[#2E2E2F]/60 whitespace-pre-wrap leading-relaxed">
-                           {selectedTicket.message}
-                         </p>
+                         {renderMessageContent(selectedTicket.message)}
                       </div>
                    </div>
                    <p className="text-[10px] font-bold text-[#2E2E2F]/30 uppercase tracking-[0.2em] ml-14">
@@ -295,7 +503,7 @@ export const SupportTickets: React.FC = () => {
                              ? 'bg-[#38BDF2] text-white rounded-br-none border-0' 
                              : 'bg-[#2E2E2F]/5 text-[#2E2E2F] rounded-bl-none border border-[#2E2E2F]/5'
                          }`}>
-                            <p className="text-sm font-medium whitespace-pre-wrap leading-relaxed">{m.message}</p>
+                           {renderMessageContent(m.message)}
                          </div>
                       </div>
                       <p className={`text-[10px] font-bold uppercase tracking-[0.2em] text-[#2E2E2F]/30 ${m.is_admin_reply ? 'mr-14' : 'ml-14'}`}>

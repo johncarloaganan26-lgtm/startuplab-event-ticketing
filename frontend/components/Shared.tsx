@@ -195,6 +195,7 @@ export const Modal: React.FC<{
   className?: string;
   contentClassName?: string;
   variant?: 'dialog' | 'page';
+  zoom?: boolean;
 }> = ({
   isOpen,
   onClose,
@@ -207,7 +208,8 @@ export const Modal: React.FC<{
   closeOnBackdrop = true,
   className = '',
   contentClassName = '',
-  variant = 'dialog'
+  variant = 'dialog',
+  zoom = false
 }) => {
     if (!isOpen) return null;
 
@@ -234,7 +236,7 @@ export const Modal: React.FC<{
     };
 
     return (
-      <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-3 sm:p-4">
+      <div className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-4">
         {/* Backdrop */}
         <div
           className="fixed inset-0 z-[990] bg-[#2E2E2F]/60 backdrop-blur-sm transition-opacity"
@@ -246,8 +248,8 @@ export const Modal: React.FC<{
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
-          className={`relative z-[1010] bg-[#F2F2F2] sm:rounded-xl rounded-t-3xl border-x-0 sm:border-x border-b-0 sm:border-b border-[#2E2E2F]/10 w-full ${sizes[size]
-            } max-h-[90vh] sm:max-h-[85vh] overflow-hidden ${className}`}
+          className={`relative z-[1010] bg-[#F2F2F2] rounded-xl border border-[#2E2E2F]/10 w-full ${sizes[size]
+            } max-h-[90vh] sm:max-h-[85vh] overflow-hidden transition-all duration-300 ${zoom ? 'scale-[0.85] sm:scale-[0.9] shadow-2xl' : ''} ${className}`}
         >
           {(title || showClose) && (
             <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-[#2E2E2F]/10 flex items-start justify-between gap-3 sticky top-0 bg-[#F2F2F2] z-10">
@@ -324,6 +326,50 @@ export const PageLoader: React.FC<{
       </div>
     );
   };
+
+export const Checkbox: React.FC<{
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  label?: React.ReactNode;
+  className?: string;
+  size?: 'sm' | 'md' | 'lg';
+  rounded?: 'sm' | 'md' | 'lg' | 'full';
+}> = ({ checked, onChange, label, className = '', size = 'md', rounded = 'md' }) => {
+  const sizes = {
+    sm: 'w-4 h-4',
+    md: 'w-5 h-5',
+    lg: 'w-6 h-6',
+  };
+  
+  const iconSizes = {
+    sm: 'w-2.5 h-2.5',
+    md: 'w-3.5 h-3.5',
+    lg: 'w-4 h-4',
+  };
+
+  const rounding = {
+    sm: 'rounded-sm',
+    md: 'rounded-[4px]',
+    lg: 'rounded-lg',
+    full: 'rounded-full',
+  };
+
+  return (
+    <label className={`flex items-start gap-3 cursor-pointer group select-none ${className}`}>
+      <div 
+        onClick={(e) => { e.stopPropagation(); onChange(!checked); }}
+        className={`${sizes[size]} ${rounding[rounded]} border-2 flex items-center justify-center transition-all ${checked ? 'bg-[#38BDF2] border-[#38BDF2]' : 'border-[#2E2E2F]/20 bg-white group-hover:border-[#38BDF2]/50'}`}
+      >
+        {checked && (
+          <svg xmlns="http://www.w3.org/2000/svg" className={`${iconSizes[size]} text-white`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        )}
+      </div>
+      {label && <span className="text-[13px] font-medium text-[#2E2E2F]/70 leading-tight group-hover:text-[#2E2E2F] transition-colors mt-0.5">{label}</span>}
+    </label>
+  );
+};
 
 export const Branding: React.FC<{ className?: string, light?: boolean }> = ({ className = '', light = false }) => (
   <img

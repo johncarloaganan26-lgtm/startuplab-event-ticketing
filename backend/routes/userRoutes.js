@@ -15,11 +15,15 @@ import {
   submitSupportTicket, 
   getAdminSupportTickets, 
   getMySupportTickets,
+  getArchivedSupportTickets,
   resolveSupportTicket,
   replyToSupportTicket,
   getSupportMessages,
   getAllSupportMessages,
-  submitContactForm
+  submitContactForm,
+  bulkArchiveSupportTickets,
+  bulkDeleteSupportTickets,
+  bulkRestoreSupportTickets
 } from "../controller/supportController.js";
 
 const router = express.Router();
@@ -65,5 +69,9 @@ router.post('/admin/support/:id/resolve', authMiddleware, resolveSupportTicket);
 router.post('/admin/support/:id/reply', authMiddleware, replyToSupportTicket);
 router.get('/support/:id/messages', authMiddleware, getSupportMessages);
 router.post('/contact', submitContactForm);
+router.post('/user/support/bulk-archive', authMiddleware, bulkArchiveSupportTickets);
+router.post('/user/support/bulk-delete', authMiddleware, bulkDeleteSupportTickets);
+router.get('/user/support/archived', authMiddleware, getArchivedSupportTickets);
+router.post('/user/support/bulk-restore', authMiddleware, bulkRestoreSupportTickets);
 
 export default router;

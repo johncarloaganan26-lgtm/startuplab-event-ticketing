@@ -42,13 +42,15 @@ import { UserEvents } from './views/User/UserEvents';
 import { UserHome } from './views/User/UserHome';
 import { OrganizerSubscription } from './views/User/OrganizerSubscription';
 import { OrganizerSupport } from './views/User/OrganizerSupport';
+import { OrganizerDashboard } from './views/User/OrganizerDashboard';
+import { ArchiveSupport } from './views/User/ArchiveSupport';
 import { FloatingSupportModal } from './components/FloatingSupportModal';
 import WelcomeView from './views/User/WelcomeView';
 import { SubscriptionSuccess } from './views/User/SubscriptionSuccess';
 import { ONLINE_LOCATION_VALUE } from './components/BrowseEventsNavigator';
 import { ICONS } from './constants';
 import { Button, Input, Modal, PageLoader } from './components/Shared';
-import { ToastProvider } from './context/ToastContext';
+import { useToast } from './context/ToastContext';
 import { ToastContainer } from './components/ToastContainer';
 import { apiService } from './services/apiService';
 import { UserRole, normalizeUserRole } from './types';
@@ -145,6 +147,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const [unreadCount, setUnreadCount] = React.useState(0);
   const [notificationsLoading, setNotificationsLoading] = React.useState(false);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [selectedNotification, setSelectedNotification] = React.useState<any | null>(null);
 
   // Use localStorage to persist the desktop sidebar toggle status
   const [desktopSidebarOpen, setDesktopSidebarOpen] = React.useState(() => {
@@ -201,6 +204,35 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     } catch (err) {
       console.error('Failed to mark all notifications as read:', err);
     }
+  };
+
+  const renderMessageContent = (msg: string | null) => {
+    if (!msg) return null;
+    
+    // Check for [IMAGE_URL: some_url]
+    const imageMatch = msg.match(/\[IMAGE_URL: (.*?)\]/);
+    if (imageMatch) {
+      const imageUrl = imageMatch[1];
+      const textPart = msg.replace(/\[IMAGE_URL: (.*?)\]/g, '').trim();
+      
+      return (
+        <div className="space-y-3">
+          {textPart && <p className="leading-relaxed whitespace-pre-wrap">{textPart}</p>}
+          <div className="relative group cursor-pointer max-w-sm" onClick={() => window.open(imageUrl, '_blank')}>
+            <img 
+              src={imageUrl} 
+              alt="Attachment" 
+              className="max-h-60 w-auto rounded-lg border border-[#2E2E2F]/10 shadow-sm transition-all group-hover:scale-[1.01] active:scale-[0.99]" 
+            />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+               <ICONS.Eye className="w-5 h-5 text-white" />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return <p className="leading-relaxed whitespace-pre-wrap">{msg}</p>;
   };
 
   // Real-time polling for new notifications (every 30 seconds)
@@ -290,7 +322,7 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     };
     loadOrganizerSidebarBrand();
     return () => { isMounted = false; };
-  }, [role, location.pathname]);
+  }, [role, location.pathname, name]);
 
   React.useEffect(() => {
     return () => {
@@ -498,6 +530,8 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   };
 
 
+  const { showToast } = useToast();
+
   const handleLogout = async () => {
     try {
       // 1. Call backend logout to clear cookies
@@ -515,10 +549,14 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       sessionStorage.removeItem('hideUpgradeModal');
       clearUser();
 
+      // Show toast
+      showToast('success', 'Logged out successfully. See you soon!');
+      
       // 4. Navigate to login
       navigate('/');
     } catch {
       // Still navigate to login even if there was an error
+      clearUser();
       navigate('/');
     }
   };
@@ -673,7 +711,11 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                             {notifications.map((n) => (
                               <div
                                 key={n.notificationId || Math.random()}
-                                className={`p-5 rounded-xl transition-all group relative border ${n.isRead
+                                onClick={() => {
+                                  setSelectedNotification(n);
+                                  if (!n.isRead) handleMarkNotificationRead(n.notificationId);
+                                }}
+                                className={`p-5 rounded-xl transition-all group relative border cursor-pointer ${n.isRead
                                   ? 'bg-transparent border-transparent opacity-60'
                                   : 'bg-[#F2F2F2] border-[#2E2E2F]/5 hover:border-[#38BDF2]/30 shadow-sm'
                                   }`}
@@ -690,7 +732,9 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                                         {n.createdAt ? new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Now'}
                                       </span>
                                     </div>
-                                    <p className="text-xs text-[#2E2E2F]/60 font-medium leading-relaxed line-clamp-2 mb-3">{n.message}</p>
+                                    <div className="text-xs text-[#2E2E2F]/60 font-medium leading-relaxed mb-3">
+                                      {renderMessageContent(n.message)}
+                                    </div>
                                     {!n.isRead && (
                                       <button
                                         onClick={() => handleMarkNotificationRead(n.notificationId)}
@@ -721,6 +765,41 @@ const PortalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 )}
               </div>
             )}
+
+            <Modal
+              isOpen={!!selectedNotification}
+              onClose={() => setSelectedNotification(null)}
+              title={selectedNotification?.title || 'Notification details'}
+              subtitle={selectedNotification?.createdAt ? new Date(selectedNotification.createdAt).toLocaleString() : ''}
+              size="md"
+            >
+              <div className="py-6 sm:py-8">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-14 h-14 rounded-2xl bg-[#38BDF2]/10 flex items-center justify-center text-[#38BDF2] shrink-0 border border-[#38BDF2]/20">
+                    <ICONS.Bell className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-[#2E2E2F]/40 uppercase tracking-widest">Status Update</p>
+                  </div>
+                </div>
+                
+                <div className="p-6 sm:p-8 rounded-2xl bg-[#F2F2F2] border border-[#2E2E2F]/5 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#38BDF2]/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-[#38BDF2]/10 transition-all duration-700" />
+                  <div className="text-sm sm:text-base text-[#2E2E2F]/70 font-medium leading-relaxed relative z-10">
+                    {renderMessageContent(selectedNotification?.message)}
+                  </div>
+                </div>
+
+                <div className="mt-10 flex justify-end">
+                  <Button
+                    onClick={() => setSelectedNotification(null)}
+                    className="px-8 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest"
+                  >
+                    Got it, Close
+                  </Button>
+                </div>
+              </div>
+            </Modal>
             {/* Profile Dropdown */}
             <div className="relative">
               <button
@@ -1245,7 +1324,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     : 'top-[4.85rem] max-h-[calc(100vh-4.85rem)]';
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F2F2F2]">
+    <div className="min-h-screen flex flex-col bg-[#F2F2F2]" style={{ zoom: 0.9 }}>
       <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
         ? 'bg-[#F2F2F2] shadow-[0_10px_30px_-10px_rgba(46,46,47,0.1)] border-b border-[#2E2E2F]/5'
         : 'bg-transparent border-b border-transparent'
@@ -1987,9 +2066,9 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 <Link to="/faq" className="block text-[#2E2E2F]/70 hover:text-[#38BDF2]">FAQ</Link>
                 <button
                   onClick={() => setIsSupportModalOpen(true)}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 !bg-transparent !border-2 !border-solid !border-[#38BDF2] !text-[#38BDF2] font-black uppercase tracking-[0.2em] text-[10px] rounded-xl hover:!bg-[#38BDF2] hover:!text-white transition-all duration-300 active:scale-95 group w-full lg:w-fit"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#38BDF2] text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-xl hover:bg-[#2E2E2F] transition-all duration-300 active:scale-95 shadow-md shadow-[#38BDF2]/20 w-full lg:w-fit"
                 >
-                  <ICONS.AlertTriangle className="w-4 h-4 !text-[#38BDF2] group-hover:!text-white transition-colors duration-300" />
+                  <ICONS.AlertTriangle className="w-4 h-4" />
                   Submit Report / Bug
                 </button>
               </div>
@@ -2018,9 +2097,10 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 // â”€â”€â”€ USER PORTAL LAYOUT (icon sidebar only, no header bar) â”€â”€â”€
 // ─── USER DASHBOARD WRAPPER ───
 const DashboardWrapper: React.FC = () => {
-  const { role, canReceiveNotifications } = useUser();
+  const { role } = useUser();
   if (role === UserRole.ADMIN) return <PortalLayout><AdminDashboard /></PortalLayout>;
-  return <UserPortalLayout><AdminDashboard /></UserPortalLayout>;
+  // For organizers and all others allowed on /dashboard, show the UserHome dashboard
+  return <UserPortalLayout><OrganizerDashboard /></UserPortalLayout>;
 };
 
 // ─── USER PORTAL LAYOUT (Synced with Admin PortalLayout) ───
@@ -2029,6 +2109,8 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   const location = useLocation();
   const { userId, role, email, name, imageUrl, isAuthenticated, clearUser, setUser, canViewEvents, canEditEvents, canManualCheckIn, canReceiveNotifications, hasResolvedSession } = useUser();
   const { isAttendingView, setPublicMode } = useEngagement();
+  const [organizerSidebarLogoUrl, setOrganizerSidebarLogoUrl] = React.useState('');
+  const [organizerSidebarName, setOrganizerSidebarName] = React.useState('');
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   
@@ -2047,6 +2129,8 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   const [notifications, setNotifications] = React.useState<any[]>([]);
   const [unreadCount, setUnreadCount] = React.useState(0);
   const [notificationsLoading, setNotificationsLoading] = React.useState(false);
+  const [selectedNotification, setSelectedNotification] = React.useState<any | null>(null);
+
 
   // Fetch notifications for the notification bell
   const fetchNotifications = React.useCallback(async () => {
@@ -2119,8 +2203,6 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   React.useEffect(() => {
     if (location.pathname === '/user-settings') setSettingsOpen(true);
   }, [location.pathname]);
-  const [organizerSidebarLogoUrl, setOrganizerSidebarLogoUrl] = React.useState('');
-  const [organizerSidebarName, setOrganizerSidebarName] = React.useState('');
   const [hasPrioritySupport, setHasPrioritySupport] = React.useState<boolean | null>(null);
 
   const displayName = email?.trim() || name?.trim() || 'User';
@@ -2204,7 +2286,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     return () => {
       isMounted = false;
     };
-  }, [role, location.pathname]);
+  }, [role, location.pathname, name]);
 
   // No longer needed as handled by RequireRoleRoute
   /*
@@ -2214,12 +2296,19 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   }, [role, location.pathname, navigate]);
   */
 
+  const { showToast } = useToast();
+
   const handleLogout = async () => {
     try {
       await fetch(`${API}/api/auth/logout`, { method: "POST", credentials: "include" });
       await supabase.auth.signOut();
-      clearUser(); navigate('/');
-    } catch { clearUser(); navigate('/'); }
+      clearUser(); 
+      showToast('success', 'Logged out successfully. See you soon!');
+      navigate('/');
+    } catch { 
+      clearUser(); 
+      navigate('/'); 
+    }
   };
 
   const [expandedSections, setExpandedSections] = React.useState<string[]>(['Main', 'Events Records', 'Communication', 'Settings']);
@@ -2438,7 +2527,11 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                             {notifications.map((n) => (
                               <div
                                 key={n.notificationId || Math.random()}
-                                className={`p-5 rounded-xl transition-all group relative border ${n.isRead
+                                onClick={() => {
+                                  setSelectedNotification(n);
+                                  if (!n.isRead) handleMarkNotificationRead(n.notificationId);
+                                }}
+                                className={`p-5 rounded-xl transition-all group relative border cursor-pointer ${n.isRead
                                   ? 'bg-transparent border-transparent opacity-60'
                                   : 'bg-[#F2F2F2] border-[#2E2E2F]/5 hover:border-[#38BDF2]/30 shadow-sm'
                                   }`}
@@ -2628,7 +2721,7 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                   {organizerSidebarLogoUrl ? (
                     <img
                       src={organizerSidebarLogoUrl}
-                      alt={organizerSidebarLogoAlt}
+                      alt={organizerSidebarName || 'Logo'}
                       className="h-12 w-auto max-w-[168px] object-contain"
                     />
                   ) : (
@@ -2684,6 +2777,42 @@ const UserPortalLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             {children}
           </div>
         </div>
+
+        <Modal
+          isOpen={!!selectedNotification}
+          onClose={() => setSelectedNotification(null)}
+          title={selectedNotification?.title || 'Notification details'}
+          subtitle={selectedNotification?.createdAt ? new Date(selectedNotification.createdAt).toLocaleString() : ''}
+          size="md"
+        >
+          <div className="py-6 sm:py-8">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-14 h-14 rounded-2xl bg-[#38BDF2]/10 flex items-center justify-center text-[#38BDF2] shrink-0 border border-[#38BDF2]/20">
+                <ICONS.Bell className="w-7 h-7" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-[#2E2E2F]/40 uppercase tracking-widest">Notification</p>
+                <p className="text-lg font-black text-[#2E2E2F] tracking-tight mt-0.5">Message Details</p>
+              </div>
+            </div>
+            
+            <div className="p-6 sm:p-8 rounded-[1.5rem] bg-[#F2F2F2] border border-[#2E2E2F]/5 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#38BDF2]/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-[#38BDF2]/10 transition-all duration-700" />
+              <p className="text-sm sm:text-base text-[#2E2E2F]/70 font-medium leading-relaxed relative z-10 whitespace-pre-wrap">
+                {selectedNotification?.message}
+              </p>
+            </div>
+
+            <div className="mt-10 flex justify-end">
+              <Button
+                onClick={() => setSelectedNotification(null)}
+                className="px-8 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest bg-[#38BDF2] text-white hover:bg-[#2E2E2F] transition-all"
+              >
+                Close Details
+              </Button>
+            </div>
+          </div>
+        </Modal>
       </main>
     </div>
   );
@@ -2744,7 +2873,7 @@ const HashBypassBridge: React.FC = () => {
 };
 
 const GlobalOnboardingGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { role, isOnboarded, isAuthenticated, setUser, clearUser, hasResolvedSession } = useUser();
+  const { role, isOnboarded, isAuthenticated, setUser, clearUser, hasResolvedSession, authModal, closeAuthModal } = useUser();
   const { isAttendingView } = useEngagement();
   const location = useLocation();
 
@@ -2816,7 +2945,7 @@ const GlobalOnboardingGuard: React.FC<{ children: React.ReactNode }> = ({ childr
     return <Navigate to="/onboarding" replace />;
   }
 
-  const { authModal, closeAuthModal } = useUser();
+
 
   return (
     <>
@@ -2879,6 +3008,7 @@ const App: React.FC = () => (
         <Route path="/user/reports" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><OrganizerReports /></UserPortalLayout></RequireRoleRoute>} />
         <Route path="/subscription" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><OrganizerSubscription /></UserPortalLayout></RequireRoleRoute>} />
         <Route path="/organizer-support" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><OrganizerSupport /></UserPortalLayout></RequireRoleRoute>} />
+        <Route path="/organizer-support/archive" element={<RequireRoleRoute allow={[UserRole.ORGANIZER]}><UserPortalLayout><ArchiveSupport /></UserPortalLayout></RequireRoleRoute>} />
         <Route path="/subscription/success" element={<PublicLayout><SubscriptionSuccess /></PublicLayout>} />
 
         {/* Admin Portal Routes */}

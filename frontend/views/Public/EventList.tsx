@@ -339,15 +339,14 @@ export const EventCard: React.FC<EventCardProps> = ({
       <div className="p-4 sm:p-5 flex-1 flex flex-col">
 
 
-        {/* Organizer Profile Summary - Hidden in Trending Landing & All Events page */}
-        {isLanding && listing !== 'all' && (
-          <div
-            className="flex items-center gap-3 mb-5 p-2 rounded-xl transition-colors hover:bg-black/5 -ml-2"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (organizerId) navigate(`/organizers/${organizerId}`);
-            }}
-          >
+        {/* Organizer Profile Summary */}
+        <div
+          className="flex items-center gap-3 mb-5 p-2 rounded-xl transition-colors hover:bg-black/5 -ml-2"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (organizerId) navigate(`/organizer/${organizerId}`);
+          }}
+        >
             <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 flex items-center justify-center border-2 border-white shadow-sm bg-gradient-to-br from-[#38BDF2] to-[#A5E1FF]">
               {resolvedOrganizer?.profileImageUrl ? (
                 <img src={getImageUrl(resolvedOrganizer.profileImageUrl)} alt={organizerName} className="w-full h-full object-cover" />
@@ -361,7 +360,6 @@ export const EventCard: React.FC<EventCardProps> = ({
               {organizerName}
             </span>
           </div>
-        )}
 
         <h4 className="text-[#2E2E2F] text-xl sm:text-2xl font-bold tracking-tighter leading-tight mb-3 line-clamp-2">
           {event.eventName}
@@ -962,7 +960,7 @@ export const EventList: React.FC<EventListProps> = ({ mode = 'landing', listing 
                     +{organizerCount > 3 ? organizerCount - 3 : 3}
                   </div>
                 </div>
-                <div className="space-y-0.5" onClick={() => navigate('/organizers')}>
+                <div className="space-y-0.5" onClick={() => navigate('/organizers/discover')}>
                   <p className="text-[10px] font-black uppercase tracking-widest text-[#2E2E2F]/40 leading-none">Active Organizers</p>
                   <p className="text-sm font-black text-[#2E2E2F] leading-tight hover:text-[#38BDF2] transition-colors">
                     {organizerCount > 0 ? `${organizerCount}+ Trusted Leaders` : '6+ Trusted Leaders'}

@@ -7,6 +7,7 @@ import { Card, Badge, Button, Modal, Input, PageLoader } from '../../components/
 import { OnsiteLocationAssistant } from '../../components/OnsiteLocationAssistant';
 import { ICONS } from '../../constants';
 import { useUser } from '../../context/UserContext';
+import { useToast } from '../../context/ToastContext';
 
 const getImageUrl = (img: any): string => {
     if (!img) return 'https://via.placeholder.com/800x400';
@@ -88,7 +89,7 @@ export const UserEvents: React.FC = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentEventId, setCurrentEventId] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
-    const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+    const { showToast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
@@ -131,6 +132,65 @@ export const UserEvents: React.FC = () => {
     });
 
     const [promotedEventsMap, setPromotedEventsMap] = useState<Record<string, { promoted: boolean; remainingDays?: number }>>({});
+    const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+
+    const toggleRow = (id: string) => {
+        setSelectedRows(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(id)) {
+                newSet.delete(id);
+            } else {
+                newSet.add(id);
+            }
+            return newSet;
+        });
+    };
+
+    const toggleAll = () => {
+        if (selectedRows.size === events.length) {
+            setSelectedRows(new Set());
+        } else {
+            setSelectedRows(new Set(events.map(e => e.eventId)));
+        }
+    };
+
+    const handlePrintEvents = () => {
+        const selectedData = events.filter(e => selectedRows.has(e.eventId));
+        const printContent = selectedData.length > 0 ? selectedData : events;
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write(`
+                <html><head><title>Events Export</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    th { background: #f5f5f5; }
+                </style></head><body>
+                <h1>Events Export</h1>
+                <table>
+                    <thead><tr><th>Event</th><th>Date</th><th>Location</th><th>Status</th></tr></thead>
+                    <tbody>
+                        ${printContent.map(e => `<tr><td>${e.eventName || ''}</td><td>${new Date(e.startAt).toLocaleDateString() || ''}</td><td>${e.locationType || ''}</td><td>${e.status || ''}</td></tr>`).join('')}
+                    </tbody>
+                </table></body></html>`);
+            printWindow.document.close();
+            printWindow.print();
+        }
+    };
+
+    const handleExportEvents = () => {
+        const selectedData = events.filter(e => selectedRows.has(e.eventId));
+        const exportData = selectedData.length > 0 ? selectedData : events;
+        const csvContent = `Event Name,Date,Location,Status\n${exportData.map(e => `${e.eventName || ''},${new Date(e.startAt).toLocaleDateString()},${e.locationType || ''},${e.status || ''}`).join('\n')}`;
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `events_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    };
     const [promotionQuota, setPromotionQuota] = useState<{ used: number; limit: number; canPromote: boolean } | null>(null);
     const [togglingPromotionId, setTogglingPromotionId] = useState<string | null>(null);
     const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
@@ -275,14 +335,14 @@ export const UserEvents: React.FC = () => {
         try {
             if (currentStatus) {
                 await apiService.demoteEvent(eventId);
-                setNotification({ message: 'Event removed from promotions.', type: 'success' });
+                showToast('success', 'Event removed from promotions.');
             } else {
                 await apiService.promoteEvent(eventId);
-                setNotification({ message: 'Event successfully promoted!', type: 'success' });
+                showToast('success', 'Event successfully promoted!');
             }
             await loadPromotionMetadata();
         } catch (err: any) {
-            setNotification({ message: err.message || 'Promotion action failed.', type: 'error' });
+            showToast('error', err.message || 'Promotion action failed.');
         } finally {
             setTogglingPromotionId(null);
         }
@@ -294,7 +354,7 @@ export const UserEvents: React.FC = () => {
             const data = await apiService.listPromotions(eventId);
             setPromotions(data);
         } catch {
-            setNotification({ message: 'Unable to load promotions.', type: 'error' });
+            showToast('error', 'Unable to load promotions.');
         } finally {
             setPromotionsLoading(false);
         }
@@ -310,7 +370,7 @@ export const UserEvents: React.FC = () => {
                 promotionId: editingPromotion?.promotionId,
                 eventId: currentEventId
             });
-            setNotification({ message: 'Promotion saved.', type: 'success' });
+            showToast('success', 'Promotion saved.');
             setEditingPromotion(null);
             setPromoForm({
                 code: '',
@@ -323,7 +383,7 @@ export const UserEvents: React.FC = () => {
             });
             loadEventPromotions(currentEventId);
         } catch (err: any) {
-            setNotification({ message: err.message || 'Failed to save promotion.', type: 'error' });
+            showToast('error', err.message || 'Failed to save promotion.');
         } finally {
             setSubmitting(false);
         }
@@ -333,10 +393,10 @@ export const UserEvents: React.FC = () => {
         if (!confirm('Are you sure you want to delete this promotion?')) return;
         try {
             await apiService.deletePromotion(promotionId);
-            setNotification({ message: 'Promotion deleted.', type: 'success' });
+            showToast('success', 'Promotion deleted.');
             if (currentEventId) loadEventPromotions(currentEventId);
         } catch {
-            setNotification({ message: 'Failed to delete promotion.', type: 'error' });
+            showToast('error', 'Failed to delete promotion.');
         }
     };
 
@@ -348,7 +408,7 @@ export const UserEvents: React.FC = () => {
             setFormData((prev) => ({ ...prev, ticketTypes }));
         } catch {
             setActiveEventTicketCount(0);
-            setNotification({ message: 'Unable to verify ticket setup for this event.', type: 'error' });
+            showToast('error', 'Unable to verify ticket setup for this event.');
         } finally {
             setTicketReadinessLoading(false);
         }
@@ -382,7 +442,7 @@ export const UserEvents: React.FC = () => {
     const handleNextWizardStep = () => {
         const errorMessage = validateStepBeforeAdvance(wizardStep);
         if (errorMessage) {
-            setNotification({ message: errorMessage, type: 'error' });
+            showToast('error', errorMessage);
             return;
         }
         if (wizardStep === 3 && !isEditMode) {
@@ -397,7 +457,7 @@ export const UserEvents: React.FC = () => {
 
     const handleOpenCreate = () => {
         if (!isOrganizerProfileReady) {
-            setNotification({ message: 'Set up your organization profile first before creating events.', type: 'error' });
+            showToast('error', 'Set up your organization profile first before creating events.');
             navigate('/user-settings?tab=organizer');
             return;
         }
@@ -435,12 +495,6 @@ export const UserEvents: React.FC = () => {
         setSearchParams(nextParams, { replace: true });
     }, [searchParams, setSearchParams, organizerLoading, canStartCreation]);
 
-    useEffect(() => {
-        if (notification) {
-            const t = setTimeout(() => setNotification(null), 4000);
-            return () => clearTimeout(t);
-        }
-    }, [notification]);
 
     useEffect(() => {
         let isMounted = true;
@@ -453,7 +507,7 @@ export const UserEvents: React.FC = () => {
             } catch {
                 if (isMounted) {
                     setOrganizerProfile(null);
-                    setNotification({ message: 'Unable to load organizer profile.', type: 'error' });
+                    showToast('error', 'Unable to load organizer profile.');
                 }
             } finally {
                 if (isMounted) setOrganizerLoading(false);
@@ -578,7 +632,7 @@ export const UserEvents: React.FC = () => {
 
         const totalCap = updatedTickets.reduce((acc, t) => acc + (t.quantityTotal * (t.capacityPerTicket || 1)), 0);
         if (totalCap > maxEventCapacity) {
-            setNotification({ message: `Total capacity (${totalCap}) exceeds your plan limit of ${maxEventCapacity}.`, type: 'error' });
+            showToast('error', `Total capacity (${totalCap}) exceeds your plan limit of ${maxEventCapacity}.`);
             return;
         }
 
@@ -604,16 +658,16 @@ export const UserEvents: React.FC = () => {
                 setWizardStep(4);
                 setIsTicketModalOpen(false);
                 setIsModalOpen(true);
-                setNotification({ message: 'Tickets saved. Final step: set the event status.', type: 'success' });
+                showToast('success', 'Tickets saved. Final step: set the event status.');
                 fetchEvents();
                 return;
             }
 
-            setNotification({ message: 'Ticket inventory updated.', type: 'success' });
+            showToast('success', 'Ticket inventory updated.');
             setIsTicketModalOpen(false);
             fetchEvents();
         } catch {
-            setNotification({ message: 'Failed to update ticket inventory.', type: 'error' });
+            showToast('error', 'Failed to update ticket inventory.');
         } finally {
             setSubmitting(false);
         }
@@ -627,7 +681,7 @@ export const UserEvents: React.FC = () => {
             const { publicUrl } = await apiService.uploadUserEventImage(file, currentEventId || undefined);
             setFormData(prev => ({ ...prev, imageUrl: publicUrl }));
         } catch {
-            setNotification({ message: 'Image upload failed.', type: 'error' });
+            showToast('error', 'Image upload failed.');
         } finally {
             setSubmitting(false);
         }
@@ -638,11 +692,11 @@ export const UserEvents: React.FC = () => {
         setSubmitting(true);
         try {
             await apiService.deleteUserEvent(deleteConfirm.eventId);
-            setNotification({ message: 'Event archived successfully. You can restore it from the Archive page.', type: 'success' });
+            showToast('success', 'Event archived successfully. You can restore it from the Archive page.');
             setDeleteConfirm(null);
             fetchEvents();
         } catch (err) {
-            setNotification({ message: 'Failed to archive event.', type: 'error' });
+            showToast('error', 'Failed to archive event.');
         } finally {
             setSubmitting(false);
         }
@@ -704,10 +758,10 @@ export const UserEvents: React.FC = () => {
             setFinalStatusDecision('');
             setIsModalOpen(false);
             setIsTicketModalOpen(true);
-            setNotification({ message: 'Draft saved. Continue by setting up tickets.', type: 'success' });
+            showToast('success', 'Draft saved. Continue by setting up tickets.');
             fetchEvents();
         } catch (error: any) {
-            setNotification({ message: error?.message || 'Failed to save draft before ticket setup.', type: 'error' });
+            showToast('error', error?.message || 'Failed to save draft before ticket setup.');
         } finally {
             setSubmitting(false);
         }
@@ -720,33 +774,33 @@ export const UserEvents: React.FC = () => {
         setIsModalOpen(true);
         setWizardStep(4);
         setIsPreviewMode(false);
-        setNotification({ message: 'Ticket setup cancelled. Complete tickets to continue to Event Status.', type: 'error' });
+        showToast('error', 'Ticket setup cancelled. Complete tickets to continue to Event Status.');
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.eventName.trim()) {
             setWizardStep(1);
-            setNotification({ message: 'Event name is required.', type: 'error' });
+            showToast('error', 'Event name is required.');
             return;
         }
         if (!formData.eventDate || !formData.location.trim()) {
             setWizardStep(2);
-            setNotification({ message: 'Set the event schedule and location before saving.', type: 'error' });
+            showToast('error', 'Set the event schedule and location before saving.');
             return;
         }
         const isQuickUpdate = e && (e.target as any)?.dataset?.quickUpdate === 'true';
 
         if (!finalStatusDecision && !isQuickUpdate) {
             setWizardStep(5);
-            setNotification({ message: 'Step 5: choose if this event should stay Draft or be Published.', type: 'error' });
+            showToast('error', 'Step 5: choose if this event should stay Draft or be Published.');
             return;
         }
 
         const isPublishingTransition = (formData.status === 'PUBLISHED') && (initialEventStatus !== 'PUBLISHED');
         if (isPublishingTransition && !canPublishByTicketRule) {
             setWizardStep(5);
-            setNotification({ message: 'Add at least one ticket type before publishing this event.', type: 'error' });
+            showToast('error', 'Add at least one ticket type before publishing this event.');
             return;
         }
 
@@ -755,15 +809,15 @@ export const UserEvents: React.FC = () => {
             const payload = buildEventPayload();
             if (isEditMode && currentEventId) {
                 await apiService.updateUserEvent(currentEventId, payload);
-                setNotification({ message: 'Event updated successfully.', type: 'success' });
+                showToast('success', 'Event updated successfully.');
             } else {
                 await apiService.createUserEvent(payload);
-                setNotification({ message: 'Event created successfully!', type: 'success' });
+                showToast('success', 'Event created successfully!');
             }
             handleCloseEventModal();
             fetchEvents();
         } catch (error: any) {
-            setNotification({ message: error?.message || 'Failed to save event.', type: 'error' });
+            showToast('error', error?.message || 'Failed to save event.');
         } finally {
             setSubmitting(false);
         }
@@ -789,13 +843,6 @@ export const UserEvents: React.FC = () => {
 
     return (
         <div className="space-y-0 -mt-4">
-            {notification && (
-                <div className="fixed top-20 right-8 z-[120]">
-                    <Card className={`flex items-center gap-4 px-6 py-4 rounded-2xl border ${notification.type === 'success' ? 'bg-[#38BDF2]/20 border-[#38BDF2]/40 text-[#2E2E2F]' : 'bg-[#2E2E2F]/10 border-[#2E2E2F]/30 text-[#2E2E2F]'}`}>
-                        <p className="font-bold text-sm tracking-tight">{notification.message}</p>
-                    </Card>
-                </div>
-            )}
 
             {!isModalOpen && (
                 <>
@@ -1013,7 +1060,7 @@ export const UserEvents: React.FC = () => {
                                                                 e.stopPropagation();
                                                                 const isPromoted = promotedEventsMap[event.eventId]?.promoted;
                                                                 if (promotionQuota && !isPromoted && !promotionQuota.canPromote) {
-                                                                    setNotification({ message: 'You have reached your promotion limit.', type: 'error' });
+                                                                    showToast('error', 'You have reached your promotion limit.');
                                                                 } else {
                                                                     handleToggleEventPromotion(event.eventId, isPromoted || false);
                                                                 }
@@ -1043,15 +1090,30 @@ export const UserEvents: React.FC = () => {
                                         <table className="w-full text-left">
                                             <thead className="bg-[#F2F2F2] border-b border-[#2E2E2F]/15">
                                                 <tr>
+                                                    <th className="px-4 py-5 text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide w-12">
+                                                        <input type="checkbox" checked={selectedRows.size === events.length && events.length > 0} onChange={toggleAll} className="w-4 h-4 rounded" />
+                                                    </th>
                                                     <th className="px-8 py-5 text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide">Event Identity</th>
                                                     <th className="px-8 py-5 text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide">Date & Location</th>
                                                     <th className="px-8 py-5 text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide">Lifecycle</th>
-                                                    <th className="px-8 py-5 text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide text-center">Actions</th>
+                                                    <th className="px-4 py-5 text-[11px] font-semibold text-[#2E2E2F]/60 uppercase tracking-wide text-right">
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <button onClick={handlePrintEvents} className="p-2 bg-[#38BDF2] text-white rounded-lg hover:bg-[#2E2E2F] transition-colors" title="Print">
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                                                            </button>
+                                                            <button onClick={handleExportEvents} className="p-2 bg-[#38BDF2] text-white rounded-lg hover:bg-[#2E2E2F] transition-colors" title="Export CSV">
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                                            </button>
+                                                        </div>
+                                                    </th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y-2 divide-[#2E2E2F]/15">
                                                 {filteredEvents.map(event => (
-                                                    <tr key={event.eventId} className="hover:bg-[#38BDF2]/10 transition-colors group cursor-pointer" onClick={() => handleOpenEdit(event)}>
+                                                    <tr key={event.eventId} className={`hover:bg-[#38BDF2]/10 transition-colors group cursor-pointer ${selectedRows.has(event.eventId) ? 'bg-[#38BDF2]/10' : ''}`} onClick={() => handleOpenEdit(event)}>
+                                                        <td className="px-4 py-7" onClick={(e) => e.stopPropagation()}>
+                                                            <input type="checkbox" checked={selectedRows.has(event.eventId)} onChange={() => toggleRow(event.eventId)} className="w-4 h-4 rounded" />
+                                                        </td>
                                                         <td className="px-8 py-7">
                                                             <div className="flex items-center gap-5">
                                                                 <div className="w-14 h-14 rounded-2xl overflow-hidden shrink-0 border-2 border-[#2E2E2F]/15 relative">
@@ -1134,7 +1196,7 @@ export const UserEvents: React.FC = () => {
                                                                             e.stopPropagation();
                                                                             const isPromoted = promotedEventsMap[event.eventId]?.promoted;
                                                                             if (promotionQuota && !isPromoted && !promotionQuota.canPromote) {
-                                                                                setNotification({ message: 'You have reached your promotion limit.', type: 'error' });
+                                                                                showToast('error', 'You have reached your promotion limit.');
                                                                             } else {
                                                                                 handleToggleEventPromotion(event.eventId, isPromoted || false);
                                                                             }
@@ -2086,7 +2148,6 @@ export const UserEvents: React.FC = () => {
                     event={selectedEvent}
                     onSave={handleSaveTickets}
                     submitting={submitting}
-                    setNotification={setNotification}
                     maxEventCapacity={maxEventCapacity}
                     isPaymentReady={isPaymentReady}
                 />
@@ -2185,12 +2246,12 @@ interface TicketManagerProps {
     event: Event | null;
     onSave: (tickets: TicketType[]) => void;
     submitting: boolean;
-    setNotification: (n: { message: string; type: 'success' | 'error' }) => void;
     maxEventCapacity: number;
     isPaymentReady: boolean;
 }
 
-function TicketManager({ event, onSave, submitting, setNotification, maxEventCapacity, isPaymentReady }: TicketManagerProps) {
+function TicketManager({ event, onSave, submitting, maxEventCapacity, isPaymentReady }: TicketManagerProps) {
+    const { showToast } = useToast();
     const navigate = useNavigate();
     const [tickets, setTickets] = useState<TicketType[]>([]);
     const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
@@ -2234,7 +2295,7 @@ function TicketManager({ event, onSave, submitting, setNotification, maxEventCap
 
         const newTotalCap = totalGuestCapacity + (newTicket.quantityTotal * (newTicket.capacityPerTicket || 1));
         if (newTotalCap > maxEventCapacity) {
-            setNotification({ message: `Adding this ticket would exceed your plan limit of ${maxEventCapacity} guests.`, type: 'error' });
+            showToast('error', `Adding this ticket would exceed your plan limit of ${maxEventCapacity} guests.`);
             return;
         }
 
@@ -2282,7 +2343,7 @@ function TicketManager({ event, onSave, submitting, setNotification, maxEventCap
                     setTickets(updated);
                 }
             } catch (err) {
-                setNotification({ message: 'Failed to delete ticket type.', type: 'error' });
+                showToast('error', 'Failed to delete ticket type.');
             }
         } else {
             setTickets(tickets.filter(t => t.ticketTypeId !== id));
